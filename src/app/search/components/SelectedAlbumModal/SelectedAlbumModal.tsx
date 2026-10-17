@@ -4,7 +4,7 @@ import { Album } from "../../../../../models/album";
 import { SuccessModal } from "./steps/SuccessAlbumModal";
 import { SaveAlbumModal } from "./steps/SaveAlbumModal";
 import { AlbumAlreadyFavoriteStep } from "./steps/AlbumAlreadyFavoriteStep";
-import { normalizeMoods } from "@/constants/moods";
+import { musicalFeelings } from "@/constants/feelings";
 import { FavoriteFormat } from "@/types/favorites";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -17,6 +17,11 @@ interface ModalProps {
   favoriteData?: any;
   startEditing?: boolean;
 }
+interface Moods {
+  label: string;
+  emoji: string;
+}
+
 export default function SelectedAlbumModal({
   isOpen,
   onClose,
@@ -27,10 +32,23 @@ export default function SelectedAlbumModal({
   startEditing = false,
 }: ModalProps) {
   const [isSaved, setIsSaved] = useState(false);
-  const [feelings, setFeelings] = useState<string[]>([]);
+  const [feelings, setFeelings] = useState<Array<Moods>>([]);
   const [isEditing, setIsEditing] = useState(false);
 
-  const savedFeelings = normalizeMoods(favoriteData?.labeledFeelings ?? []);
+  const savedFeelings = (favoriteData?.labeledFeelings || []).map(
+    (feeling: any) => {
+      const label = typeof feeling === "string" ? feeling : feeling.label;
+      const match = musicalFeelings.find((item) => item.nombre === label);
+      return {
+        label,
+        emoji:
+          typeof feeling === "string"
+            ? match?.emoji || "🎵"
+            : feeling.emoji || match?.emoji || "🎵",
+        symbol: match?.symbol || feeling.symbol,
+      };
+    },
+  );
 
   useEffect(() => {
     if (isOpen) {

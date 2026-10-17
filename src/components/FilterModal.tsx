@@ -2,7 +2,7 @@ import BaseModal from "./BaseModal";
 import { useTranslations } from "@/context/I18nContext";
 import { MdMusicNote } from "react-icons/md";
 import { FilterModalProps } from "@/types/components";
-import MoodSelector from "@/components/MoodSelector";
+import { moodOptions } from "@/constants/moods";
 import { useState } from "react";
 import type { FavoriteFormat } from "@/types/favorites";
 
@@ -13,8 +13,15 @@ export default function FilterModal({
   onFiltersChange,
 }: FilterModalProps) {
   const t = useTranslations("modal");
+  const tMoods = useTranslations("moods");
   const [tagCategory, setTagCategory] = useState("idioma");
   const [tagValue, setTagValue] = useState("");
+
+  const moods = moodOptions.map((mood) => ({
+    value: mood.key,
+    label: tMoods(mood.key),
+    symbol: mood.symbol,
+  }));
 
   const genres = [
     { value: "rock", label: t("filter.genres.rock") },
@@ -31,6 +38,14 @@ export default function FilterModal({
     { value: "cassette", label: "Cassette", icon: "▤" },
     { value: "vinyl", label: "Vinilo", icon: "◍" },
   ];
+
+  const toggleMood = (mood: string) => {
+    const newMoods = currentFilters.moods.includes(mood)
+      ? currentFilters.moods.filter((m) => m !== mood)
+      : [...currentFilters.moods, mood];
+
+    onFiltersChange({ ...currentFilters, moods: newMoods });
+  };
 
   const toggleGenre = (genre: string) => {
     const newGenres = currentFilters.genres.includes(genre)
@@ -76,13 +91,27 @@ export default function FilterModal({
           <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
             {t("filter.moodsTitle")}
           </h3>
-          <MoodSelector
-            mode="mood"
-            size="sm"
-            selected={currentFilters.moods}
-            onChange={(moods) => onFiltersChange({ ...currentFilters, moods })}
-            label={t("filter.moodsTitle")}
-          />
+          <div className="flex flex-wrap gap-2">
+            {moods.map((mood) => {
+              const isSelected = currentFilters.moods.includes(mood.value);
+
+              return (
+                <button
+                  key={mood.value}
+                  onClick={() => toggleMood(mood.value)}
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
+                    isSelected
+                      ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                      : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"
+                  }`}
+                >
+                  <span aria-hidden="true">{mood.symbol}</span>
+                  <span className="text-sm">{mood.label}</span>
+                  {isSelected && <span className="text-xs">✓</span>}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Genres */}

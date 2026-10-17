@@ -20,9 +20,9 @@ type SaveAlbumModalProps = {
   onClose: () => void;
   album: Album;
   onSave: (favoriteData?: any) => void;
-  feelings: string[];
-  setFeelings: React.Dispatch<React.SetStateAction<string[]>>;
-  initialFeelings?: string[];
+  feelings: Array<any>;
+  setFeelings: React.Dispatch<React.SetStateAction<Array<any>>>;
+  initialFeelings?: Array<any>;
   initialActivities?: string[];
   initialFormat?: FavoriteFormat[];
   initialTags?: FavoriteTag[];
@@ -160,12 +160,11 @@ export const SaveAlbumModal = ({
                   Selecciona una o varias emociones para recordar por qué
                   guardas este disco.
                 </p>
-                <div className="mt-5">
+                <div className="mt-5 rounded-xl border border-[var(--collectify-line)] p-2">
                   <MoodSelector
-                    mode="mood"
-                    selected={feelings}
                     onChange={setFeelings}
-                    label="Sensaciones"
+                    compact
+                    initialSelectedMoods={initialFeelings}
                   />
                 </div>
                 <p className="album-action-modal-muted mt-3 text-xs">

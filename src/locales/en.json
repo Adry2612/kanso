@@ -234,12 +234,6 @@
     "sleep": "Sleep",
     "challenge": "Challenge"
   },
-  "moodGroups": {
-    "energy": "Energy",
-    "calm": "Calm",
-    "warmth": "Warmth",
-    "melancholy": "Melancholy"
-  },
   "activities": {
     "working": "Working",
     "studying": "Studying",

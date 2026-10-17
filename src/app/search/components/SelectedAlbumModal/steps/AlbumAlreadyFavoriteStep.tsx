@@ -13,7 +13,7 @@ interface AlbumAlreadyFavoriteStepProps {
   isOpen: boolean;
   onClose: () => void;
   album: Album;
-  feelings: string[];
+  feelings: Array<any>;
   activities: string[];
   onEdit: () => void;
 }
@@ -80,7 +80,7 @@ export const AlbumAlreadyFavoriteStep = ({
             <div className="mt-3 flex flex-wrap gap-2">
               {feelings.length > 0 ? (
                 feelings.map((feeling) => (
-                  <MoodBubble moodKey={feeling} key={feeling} />
+                  <MoodBubble mood={feeling} key={feeling.label} />
                 ))
               ) : (
                 <span className="album-action-modal-muted text-sm">

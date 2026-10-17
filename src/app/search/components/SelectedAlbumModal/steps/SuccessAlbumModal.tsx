@@ -17,7 +17,7 @@ interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   album: Album;
-  feelings: string[];
+  feelings: Array<any>;
 }
 
 export const SuccessModal = ({
@@ -84,8 +84,8 @@ export const SuccessModal = ({
           <div className="mt-6 border-t border-[var(--collectify-line)] pt-5">
             <p className="text-sm font-semibold">{t("relatedEmotions")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {feelings.map((feeling: string) => (
-                <MoodBubble moodKey={feeling} key={feeling} />
+              {feelings.map((feeling: any) => (
+                <MoodBubble mood={feeling} key={feeling.label} />
               ))}
             </div>
           </div>
