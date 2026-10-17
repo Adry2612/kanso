@@ -1,0 +1,185 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "noResults": "No results found",
+    "search": "Search",
+    "favorites": "Favorites",
+    "history": "History",
+    "logout": "Logout",
+    "login": "Login",
+    "welcome": "Welcome"
+  },
+  "header": {
+    "search": "Search",
+    "favorites": "Favorites",
+    "history": "History",
+    "logout": "Logout"
+  },
+  "search": {
+    "title": "Find new music",
+    "subtitle": "Search for your favorite albums and artists to start building your collection.",
+    "placeholder": "Search albums, artists...",
+    "emptySearchPrompt": "Search by title or artist. You can also explore the moods and tags in your collection.",
+    "noAlbumsFound": "We couldn't find albums with that title or artist. Try another search.",
+    "loadingCollection": "Loading your collection...",
+    "collectionLoadError": "We couldn't load your collection. Please try again later.",
+    "emptyCollection": "You don't have any saved albums to explore by mood or tag yet.",
+    "collectionNeedsTags": "Your saved albums don't have moods or tags yet.",
+    "exploreDiscs": "Explore albums and start your collection.",
+    "noQuery": "Type something to search",
+    "noResults": "No results found",
+    "loading": "Loading...",
+    "resultsTitle": "Search results",
+    "album": "Album",
+    "artist": "Artist",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "viewDetails": "View details",
+    "select": "Select"
+  },
+  "favorites": {
+    "title": "My favorites",
+    "noFavorites": "You don't have any favorite albums yet",
+    "loading": "Loading favorites...",
+    "error": "Error loading favorites",
+    "addFirst": "Add your first favorite album from search",
+    "sort": "Sort",
+    "filter": "Filter"
+  },
+  "history": {
+    "title": "Recommendation history",
+    "noHistory": "You don't have any recommendations yet",
+    "loading": "Loading history...",
+    "error": "Error loading history",
+    "moods": "Moods"
+  },
+  "album": {
+    "tracklist": "Tracklist",
+    "noTracks": "No tracks available",
+    "loading": "Loading album...",
+    "error": "Error loading album",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "track": "Track",
+    "duration": "Duration",
+    "artist": "Artist",
+    "releaseDate": "Release date"
+  },
+  "modal": {
+    "close": "Close",
+    "confirm": "Confirm",
+    "cancel": "Go back",
+    "save": "Save album",
+    "delete": "Delete",
+    "edit": "Edit",
+    "selectMood": "How does this album make you feel?",
+    "alreadyFavorite": "This album is already in your favorites",
+    "confirmRemove": "Are you sure you want to remove this album from favorites?",
+    "success": "Album Added Successfully",
+    "savedToFavorites": "Your new album is now part of your collection.",
+    "removedFromFavorites": "Album removed from favorites",
+    "undo": "Undo",
+    "viewCollection": "View my collection",
+    "addAnother": "Add another album",
+    "relatedEmotions": "Related emotions",
+    "select": "Select",
+    "listenOnSpotify": "Listen on Spotify",
+    "editEmotions": "Edit emotions",
+    "sort": {
+      "title": "Sort by",
+      "recent": "Most recent",
+      "oldest": "Oldest",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "artist": "Artist",
+      "releaseYearAsc": "Release year (Old → New)",
+      "releaseYearDesc": "Release year (New → Old)"
+    },
+    "filter": {
+      "title": "Filter collection",
+      "moodsTitle": "Moods",
+      "genresTitle": "Music genres",
+      "clearAll": "Clear filters",
+      "moods": {
+        "happy": "Happy",
+        "sad": "Sad",
+        "energetic": "Energetic",
+        "calm": "Calm",
+        "romantic": "Romantic"
+      },
+      "genres": {
+        "rock": "Rock",
+        "pop": "Pop",
+        "jazz": "Jazz",
+        "electronic": "Electronic",
+        "classical": "Classical",
+        "hiphop": "Hip-Hop"
+      }
+    }
+  },
+  "init": {
+    "welcome": "Welcome to Collectify",
+    "start": "Start",
+    "selectMood": "How are you feeling today?",
+    "getRecommendation": "Get recommendation",
+    "mood": {
+      "happy": "Happy",
+      "sad": "Sad",
+      "energetic": "Energetic",
+      "calm": "Calm",
+      "romantic": "Romantic",
+      "melancholic": "Melancholic",
+      "excited": "Excited",
+      "relaxed": "Relaxed"
+    }
+  },
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create account",
+    "forgotPassword": "Forgot your password?",
+    "loginWithGoogle": "Sign in with Google",
+    "error": "Error signing in"
+  },
+  "recommendation": {
+    "title": "Your recommendation",
+    "based": "Based on your mood",
+    "listenOn": "Listen on",
+    "spotify": "Spotify",
+    "saveToFavorites": "Save to favorites",
+    "getAnother": "Get another recommendation",
+    "noRecommendation": "No recommendation found"
+  },
+  "moods": {
+    "joy": "Joy",
+    "sadness": "Sadness",
+    "energy": "Energy",
+    "calm": "Calm",
+    "melancholy": "Melancholy",
+    "ecstasy": "Ecstasy",
+    "nostalgia": "Nostalgia",
+    "anger": "Anger",
+    "inspiration": "Inspiration",
+    "love": "Love",
+    "relaxation": "Relaxation",
+    "anxiety": "Anxiety",
+    "triumph": "Triumph",
+    "sleep": "Sleep",
+    "challenge": "Challenge"
+  },
+  "activities": {
+    "working": "Working",
+    "studying": "Studying",
+    "exercising": "Working out",
+    "cooking": "Cooking",
+    "relaxing": "Relaxing",
+    "gaming": "Gaming",
+    "commuting": "On the move",
+    "chores": "House chores",
+    "party": "Party"
+  }
+}

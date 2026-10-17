@@ -1,0 +1,185 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "noResults": "No se encontraron resultados",
+    "search": "Buscar",
+    "favorites": "Favoritos",
+    "history": "Histórico",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "welcome": "Bienvenido"
+  },
+  "header": {
+    "search": "Buscar",
+    "favorites": "Favoritos",
+    "history": "Histórico",
+    "logout": "Cerrar sesión"
+  },
+  "search": {
+    "title": "Encuentra nueva música",
+    "subtitle": "Busca tus discos y artistas favoritos para empezar a construir tu colección.",
+    "placeholder": "Buscar álbumes, artistas...",
+    "emptySearchPrompt": "Busca por título o artista. También puedes explorar las emociones y etiquetas de tu colección.",
+    "noAlbumsFound": "No encontramos álbumes con ese título o artista. Prueba con otra búsqueda.",
+    "loadingCollection": "Cargando tu colección...",
+    "collectionLoadError": "No pudimos cargar tu colección. Vuelve a intentarlo más tarde.",
+    "emptyCollection": "Aún no tienes álbumes guardados para explorar por emoción o etiqueta.",
+    "collectionNeedsTags": "Tus álbumes guardados todavía no tienen emociones o etiquetas.",
+    "exploreDiscs": "Explora discos y empieza tu colección.",
+    "noQuery": "Escribe algo para buscar",
+    "noResults": "No se encontraron resultados",
+    "loading": "Cargando...",
+    "resultsTitle": "Resultados de tu búsqueda",
+    "album": "Álbum",
+    "artist": "Artista",
+    "addToFavorites": "Añadir a favoritos",
+    "removeFromFavorites": "Quitar de favoritos",
+    "viewDetails": "Ver detalles",
+    "select": "Seleccionar"
+  },
+  "favorites": {
+    "title": "Mis favoritos",
+    "noFavorites": "No tienes álbumes favoritos todavía",
+    "loading": "Cargando favoritos...",
+    "error": "Error al cargar favoritos",
+    "addFirst": "Añade tu primer álbum favorito desde la búsqueda",
+    "sort": "Ordenar",
+    "filter": "Filtrar"
+  },
+  "history": {
+    "title": "Histórico de recomendaciones",
+    "noHistory": "No tienes recomendaciones todavía",
+    "loading": "Cargando histórico...",
+    "error": "Error al cargar el histórico",
+    "moods": "Estados de ánimo"
+  },
+  "album": {
+    "tracklist": "Lista de canciones",
+    "noTracks": "No hay canciones disponibles",
+    "loading": "Cargando álbum...",
+    "error": "Error al cargar el álbum",
+    "addToFavorites": "Añadir a favoritos",
+    "removeFromFavorites": "Quitar de favoritos",
+    "track": "Pista",
+    "duration": "Duración",
+    "artist": "Artista",
+    "releaseDate": "Fecha de lanzamiento"
+  },
+  "modal": {
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "cancel": "Volver",
+    "save": "Guardar disco",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "selectMood": "¿Cómo te hace sentir este disco?",
+    "alreadyFavorite": "Este álbum ya está en tus favoritos",
+    "confirmRemove": "¿Estás seguro de que quieres quitar este álbum de favoritos?",
+    "success": "Disco Añadido Correctamente",
+    "savedToFavorites": "Tu nuevo disco ahora forma parte de tu colección.",
+    "removedFromFavorites": "Álbum eliminado de favoritos",
+    "undo": "Deshacer",
+    "viewCollection": "Ver mi colección",
+    "addAnother": "Añadir otro disco",
+    "relatedEmotions": "Emociones relacionadas",
+    "select": "Seleccionar",
+    "listenOnSpotify": "Escuchar en Spotify",
+    "editEmotions": "Editar emociones",
+    "sort": {
+      "title": "Ordenar por",
+      "recent": "Más recientes",
+      "oldest": "Más antiguos",
+      "nameAsc": "Nombre (A-Z)",
+      "nameDesc": "Nombre (Z-A)",
+      "artist": "Artista",
+      "releaseYearAsc": "Año de lanzamiento (Antiguo → Nuevo)",
+      "releaseYearDesc": "Año de lanzamiento (Nuevo → Antiguo)"
+    },
+    "filter": {
+      "title": "Filtrar colección",
+      "moodsTitle": "Estados de ánimo",
+      "genresTitle": "Géneros musicales",
+      "clearAll": "Limpiar filtros",
+      "moods": {
+        "happy": "Feliz",
+        "sad": "Triste",
+        "energetic": "Enérgico",
+        "calm": "Tranquilo",
+        "romantic": "Romántico"
+      },
+      "genres": {
+        "rock": "Rock",
+        "pop": "Pop",
+        "jazz": "Jazz",
+        "electronic": "Electrónica",
+        "classical": "Clásica",
+        "hiphop": "Hip-Hop"
+      }
+    }
+  },
+  "init": {
+    "welcome": "Bienvenido a Collectify",
+    "start": "Comenzar",
+    "selectMood": "¿Cómo te sientes hoy?",
+    "getRecommendation": "Obtener recomendación",
+    "mood": {
+      "happy": "Feliz",
+      "sad": "Triste",
+      "energetic": "Enérgico",
+      "calm": "Tranquilo",
+      "romantic": "Romántico",
+      "melancholic": "Melancólico",
+      "excited": "Emocionado",
+      "relaxed": "Relajado"
+    }
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "noAccount": "¿No tienes cuenta?",
+    "createAccount": "Crear cuenta",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "loginWithGoogle": "Iniciar sesión con Google",
+    "error": "Error al iniciar sesión"
+  },
+  "recommendation": {
+    "title": "Tu recomendación",
+    "based": "Basado en tu estado de ánimo",
+    "listenOn": "Escuchar en",
+    "spotify": "Spotify",
+    "saveToFavorites": "Guardar en favoritos",
+    "getAnother": "Obtener otra recomendación",
+    "noRecommendation": "No se encontró ninguna recomendación"
+  },
+  "moods": {
+    "joy": "Alegría",
+    "sadness": "Tristeza",
+    "energy": "Energía",
+    "calm": "Calma",
+    "melancholy": "Melancolía",
+    "ecstasy": "Éxtasis",
+    "nostalgia": "Nostalgia",
+    "anger": "Enfado",
+    "inspiration": "Inspiración",
+    "love": "Amor",
+    "relaxation": "Relajación",
+    "anxiety": "Ansiedad",
+    "triumph": "Triunfo",
+    "sleep": "Sueño",
+    "challenge": "Desafío"
+  },
+  "activities": {
+    "working": "Trabajando",
+    "studying": "Estudiando",
+    "exercising": "Haciendo ejercicio",
+    "cooking": "Cocinando",
+    "relaxing": "Relajándome",
+    "gaming": "Jugando",
+    "commuting": "En el camino",
+    "chores": "Tareas del hogar",
+    "party": "De fiesta"
+  }
+}

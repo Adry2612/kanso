@@ -1,0 +1,50 @@
+[
+  {
+    "id": "in-rainbows",
+    "title": "In Rainbows",
+    "artist": "Radiohead",
+    "year": "2007",
+    "genre": "Rock alternativo",
+    "cover": "https://images.unsplash.com/photo-1539375665275-f9de415ef9ac?w=600&h=600&fit=crop"
+  },
+  {
+    "id": "currents",
+    "title": "Currents",
+    "artist": "Tame Impala",
+    "year": "2015",
+    "genre": "Psicodelia",
+    "cover": "https://images.unsplash.com/photo-1619983081563-430f63602796?w=600&h=600&fit=crop"
+  },
+  {
+    "id": "vespertine",
+    "title": "Vespertine",
+    "artist": "Björk",
+    "year": "2001",
+    "genre": "Electrónica",
+    "cover": "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=600&h=600&fit=crop"
+  },
+  {
+    "id": "discovery",
+    "title": "Discovery",
+    "artist": "Daft Punk",
+    "year": "2001",
+    "genre": "Electrónica",
+    "cover": "https://images.unsplash.com/photo-1524230659092-07f99a75c013?w=600&h=600&fit=crop"
+  },
+  {
+    "id": "melodrama",
+    "title": "Melodrama",
+    "artist": "Lorde",
+    "year": "2017",
+    "genre": "Pop alternativo",
+    "cover": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=600&fit=crop"
+  },
+  {
+    "id": "blue-weekend",
+    "title": "Blue Weekend",
+    "artist": "Wolf Alice",
+    "year": "2021",
+    "genre": "Indie rock",
+    "cover": "https://images.unsplash.com/photo-1524650359799-842906ca1c06?w=600&h=600&fit=crop"
+  }
+]

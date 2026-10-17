@@ -1,103 +1,249 @@
-import Image from "next/image";
+"use client";
+
+import { Link, useTransitionRouter } from "next-view-transitions";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { signInAsGuest } from "@/lib/firebaseAuth";
+import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
+import { Reveal, Stagger, StaggerItem, motion } from "@/components/motion";
+
+const startingPoints = [
+  {
+    number: "01",
+    title: "Elige tu momento",
+    body: "Dinos cómo te sientes o qué vas a hacer.",
+  },
+  {
+    number: "02",
+    title: "Conectamos tu colección",
+    body: "Comparamos ese contexto con tus favoritos.",
+  },
+  {
+    number: "03",
+    title: "Descubre un álbum",
+    body: "Recibe una recomendación pensada para ti.",
+  },
+];
+
+const albums = [
+  {
+    title: "Soft focus",
+    detail: "Calma · Concentración",
+    color: "var(--collectify-mint)",
+  },
+  {
+    title: "Late afternoon",
+    detail: "Ligero · Descubrimiento",
+    color: "#c8b99a",
+  },
+  { title: "Night drive", detail: "Intenso · Movimiento", color: "#8ca7a0" },
+];
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { user } = useAuth();
+  const router = useTransitionRouter();
+  const [isStartingGuest, setIsStartingGuest] = useState(false);
+  const [guestError, setGuestError] = useState<string | null>(null);
+  const startHref = user ? "/home" : "/login?mode=register";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handleGuestStart = async () => {
+    setGuestError(null);
+    setIsStartingGuest(true);
+    try {
+      await signInAsGuest();
+      router.push("/home");
+    } catch (error: unknown) {
+      setGuestError(getGuestSignInErrorMessage(error));
+    } finally {
+      setIsStartingGuest(false);
+    }
+  };
+
+  return (
+    <main className="public-page relative">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 py-5 sm:px-8 lg:px-12">
+        <header className="public-header flex items-center justify-between pb-5">
+          <Link
+            href="/"
+            className="flex items-center gap-3 font-semibold tracking-tight"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <span className="text-lg">Collectify</span>
+          </Link>
+          <nav className="flex items-center gap-3 sm:gap-6">
+            <Link
+              href="/login?mode=login"
+              className="public-muted hidden text-sm transition hover:text-[var(--foreground)] sm:block"
+            >
+              Iniciar sesión
+            </Link>
+            <Link
+              href={startHref}
+              className="public-button px-4 py-2.5 text-sm"
+            >
+              Empezar
+            </Link>
+          </nav>
+        </header>
+
+        <section className="grid items-center gap-14 border-b border-[var(--collectify-line)] py-16 lg:min-h-[610px] lg:grid-cols-[.95fr_1.05fr] lg:gap-24 lg:py-20">
+          <div className="max-w-xl">
+            <Reveal delay={0.02}>
+              <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
+                Tu colección, con más posibilidades
+              </p>
+            </Reveal>
+            <Reveal delay={0.08} y={28}>
+              <h1 className="display mt-5 text-5xl sm:text-6xl lg:text-[5.25rem]">
+                No busques una canción.{" "}
+                <span className="public-accent">Encuentra un momento.</span>
+              </h1>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <p className="public-muted mt-7 max-w-md text-base leading-7 sm:text-lg">
+                Collectify entiende lo que escuchas para recomendarte álbumes
+                que encajan con lo que estás viviendo.
+              </p>
+            </Reveal>
+            <Reveal delay={0.24}>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    href={startHref}
+                    className="public-button px-6 py-3.5 text-sm"
+                  >
+                    Crear mi cuenta
+                  </Link>
+                </motion.div>
+                <motion.button
+                  type="button"
+                  onClick={handleGuestStart}
+                  disabled={isStartingGuest}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="public-button-secondary px-6 py-3.5 text-sm disabled:opacity-60"
+                >
+                  {isStartingGuest ? "Preparando..." : "Probar sin registrarme"}
+                </motion.button>
+                <Link
+                  href="/login?mode=login"
+                  className="public-button-secondary px-6 py-3.5 text-sm"
+                >
+                  Ya tengo cuenta
+                </Link>
+              </div>
+            </Reveal>
+            {guestError && (
+              <div
+                role="alert"
+                className="mt-3 text-sm text-red-600 dark:text-red-300"
+              >
+                <p>{guestError}</p>
+                <Link
+                  href="/login?mode=register"
+                  className="mt-1 inline-block font-semibold underline"
+                >
+                  Crear una cuenta
+                </Link>
+              </div>
+            )}
+          </div>
+          <Reveal delay={0.18} y={30}>
+            <div className="surface-raised public-card overflow-hidden p-5 sm:p-7">
+              <div className="flex items-start justify-between border-b border-[var(--collectify-line)] pb-5">
+                <div>
+                  <p className="public-accent text-xs font-bold uppercase tracking-[.18em]">
+                    Una muestra de tu espacio
+                  </p>
+                  <h2 className="display mt-2 text-2xl">Para escuchar ahora</h2>
+                </div>
+                <span className="public-muted text-xs">03 álbumes</span>
+              </div>
+              <Stagger
+                className="divide-y divide-[var(--collectify-line)]"
+                stagger={0.09}
+              >
+                {albums.map((album, index) => (
+                  <StaggerItem key={album.title}>
+                    <motion.div
+                      whileHover={{ x: 4 }}
+                      className="flex items-center gap-4 py-5"
+                    >
+                      <div
+                        className="flex h-16 w-16 shrink-0 items-end justify-end rounded-[var(--radius-xs)] p-2 shadow-[0_10px_30px_-12px_hsl(var(--shadow-tint)/0.9)]"
+                        style={{
+                          background: `linear-gradient(145deg, ${album.color}, var(--background))`,
+                        }}
+                      >
+                        <span className="text-xs font-bold opacity-70">
+                          0{index + 1}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="truncate text-lg font-medium tracking-[-.03em]">
+                          {album.title}
+                        </h3>
+                        <p className="public-muted mt-1 text-sm">
+                          {album.detail}
+                        </p>
+                      </div>
+                      <span className="public-muted ml-auto text-lg">↗</span>
+                    </motion.div>
+                  </StaggerItem>
+                ))}
+              </Stagger>
+              <div className="public-muted flex items-center justify-between border-t border-[var(--collectify-line)] pt-5 text-xs">
+                <span>Basado en tu colección</span>
+                <span className="public-accent">Personalizado</span>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        <section className="py-14 lg:py-20">
+          <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr] lg:gap-20">
+            <Reveal>
+              <div>
+                <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
+                  Cómo funciona Collectify
+                </p>
+                <h2 className="display mt-3 max-w-sm text-3xl">
+                  Tu forma de escuchar es el punto de partida.
+                </h2>
+                <p className="public-muted mt-5 max-w-sm text-sm leading-6">
+                  Collectify combina tu estado de ánimo, tus actividades y los
+                  álbumes que guardas para ayudarte a descubrir música nueva sin
+                  perder tu identidad.
+                </p>
+              </div>
+            </Reveal>
+            <Stagger className="grid gap-7 sm:grid-cols-3" stagger={0.1}>
+              {startingPoints.map((point) => (
+                <StaggerItem key={point.number}>
+                  <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.99 }}>
+                    <Link
+                      href={startHref}
+                      className="group block border-t border-[var(--collectify-line)] pt-4"
+                    >
+                      <span className="public-accent text-xs font-bold">
+                        {point.number}
+                      </span>
+                      <h3 className="mt-8 text-base font-semibold leading-5 tracking-[-.02em] transition group-hover:text-[var(--collectify-mint)]">
+                        {point.title}
+                      </h3>
+                      <p className="public-muted mt-3 text-sm leading-6">
+                        {point.body}
+                      </p>
+                      <span className="mt-6 block text-lg transition group-hover:translate-x-1">
+                        →
+                      </span>
+                    </Link>
+                  </motion.div>
+                </StaggerItem>
+              ))}
+            </Stagger>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

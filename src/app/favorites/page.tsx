@@ -1,0 +1,268 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import { useAuth } from "@/context/AuthContext";
+import React, { useEffect, useState } from "react";
+import { BiSortAlt2 } from "react-icons/bi";
+import { MdFilterList } from "react-icons/md";
+import { useTransitionRouter } from "next-view-transitions";
+import AlbumCard from "@/components/AlbumCard";
+import { Stagger, StaggerItem } from "@/components/motion";
+import { useTranslations } from "@/context/I18nContext";
+import SortModal from "@/components/SortModal";
+import FilterModal from "@/components/FilterModal";
+import { useFavoritesFilter } from "@/hooks/useFavoritesFilter";
+import { FilterOptions, SortMethod } from "@/types/favorites";
+import { Skeleton } from "@/components/Skeleton";
+
+export default function UserFavorites() {
+  const t = useTranslations("favorites");
+  const tCommon = useTranslations("common");
+  const tModal = useTranslations("modal");
+  const tMoods = useTranslations("moods");
+  const { user } = useAuth();
+  const router = useTransitionRouter();
+  const [favorites, setFavorites] = useState([]);
+  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showSortModal, setShowSortModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [sortBy, setSortBy] = useState<SortMethod>("");
+  const [filters, setFilters] = useState<FilterOptions>({
+    moods: [],
+    genres: [],
+    formats: [],
+    tags: [],
+  });
+
+  const fetchFavorites = async (userId: string) => {
+    setLoading(true);
+    const res = await fetch(`/api/userFavorites?userId=${userId}`);
+    const data = await res.json();
+    setFavorites(data.favorites);
+    setLoading(false);
+  };
+
+  const { groupedFavorites } = useFavoritesFilter(favorites, sortBy, filters);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (user?.uid) {
+      fetchFavorites(user.uid);
+    }
+  }, [user?.uid]);
+
+  if (!mounted || loading) {
+    return (
+      <main className="collectify-main min-h-screen">
+        <div className="flex flex-row items-center justify-between text-white">
+          <Skeleton className="w-56 h-8 mb-8" />
+          <div className="flex gap-4">
+            <Skeleton className="w-28 h-9 rounded-full" />
+            <Skeleton className="w-28 h-9 rounded-full" />
+          </div>
+        </div>
+        <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-6">
+          {[...Array(8)].map((_, idx) => (
+            <div key={`favorite-skeleton-${idx}`} className="space-y-3">
+              <Skeleton className="w-full h-48 rounded-lg" />
+              <Skeleton className="w-3/4 h-4" />
+              <Skeleton className="w-1/2 h-4" />
+            </div>
+          ))}
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="collectify-main min-h-screen">
+      <div className="mb-10 flex flex-col items-start justify-between gap-5 text-white md:flex-row md:items-end">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#9be7a5]">
+            Tu archivo personal
+          </p>
+          <span className="mt-3 block text-5xl font-semibold tracking-tight text-white">
+            {t("title")}
+          </span>
+        </div>
+
+        <div className="flex gap-4">
+          <button
+            onClick={() => setShowSortModal(true)}
+            className="relative flex flex-row items-center justify-center gap-2 rounded-xl border border-emerald-200/10 bg-[#17261c] px-4 py-2 text-[#9be7a5] transition hover:border-[#9be7a5]/50"
+          >
+            <BiSortAlt2 size={20} />
+            {t("sort")}
+            {sortBy && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"></span>
+            )}
+          </button>
+          <button
+            onClick={() => setShowFilterModal(true)}
+            className="relative flex flex-row items-center justify-center gap-2 rounded-xl border border-emerald-200/10 bg-[#17261c] px-4 py-2 text-[#9be7a5] transition hover:border-[#9be7a5]/50"
+          >
+            <MdFilterList size={20} />
+            {t("filter")}
+            {(filters.moods.length > 0 ||
+              filters.genres.length > 0 ||
+              filters.formats.length > 0) && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full flex items-center justify-center text-emerald-950 text-xs font-bold">
+                {filters.moods.length +
+                  filters.genres.length +
+                  filters.formats.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {(sortBy ||
+        filters.moods.length > 0 ||
+        filters.genres.length > 0 ||
+        filters.formats.length > 0) && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {sortBy && (
+            <span className="px-3 py-1 bg-green-900/30 text-green-400 text-sm rounded-full border border-green-400/30 flex items-center gap-2">
+              <BiSortAlt2 size={16} />
+              {t("sort")}:{" "}
+              {tModal(
+                `sort.${sortBy.replace(/-./g, (match) => match[1].toUpperCase()).replace(/^./, (match) => match.toLowerCase())}`,
+              )}
+              <button
+                onClick={() => setSortBy("")}
+                className="hover:text-red-400 transition-colors"
+              >
+                ✕
+              </button>
+            </span>
+          )}
+          {filters.moods.map((mood) => (
+            <span
+              key={mood}
+              className="px-3 py-1 bg-green-900/30 text-green-400 text-sm rounded-full border border-green-400/30 flex items-center gap-2"
+            >
+              {tMoods(mood)}
+              <button
+                onClick={() => {
+                  const newMoods = filters.moods.filter((m) => m !== mood);
+                  setFilters({ ...filters, moods: newMoods });
+                }}
+                className="hover:text-red-400 transition-colors"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+          {filters.genres.map((genre) => (
+            <span
+              key={genre}
+              className="px-3 py-1 bg-green-900/30 text-green-400 text-sm rounded-full border border-green-400/30 flex items-center gap-2"
+            >
+              {tModal(
+                `filter.genres.${genre === "hip-hop" ? "hiphop" : genre}`,
+              )}
+              <button
+                onClick={() => {
+                  const newGenres = filters.genres.filter((g) => g !== genre);
+                  setFilters({ ...filters, genres: newGenres });
+                }}
+                className="hover:text-red-400 transition-colors"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+          {filters.formats.map((format) => (
+            <span
+              key={format}
+              className="flex items-center gap-2 rounded-full border border-emerald-200/20 bg-emerald-300/10 px-3 py-1 text-sm text-[#9be7a5]"
+            >
+              {format === "vinyl"
+                ? "Vinilo"
+                : format === "cassette"
+                  ? "Cassette"
+                  : format === "cd"
+                    ? "CD"
+                    : "Digital"}
+              <button
+                onClick={() =>
+                  setFilters({
+                    ...filters,
+                    formats: filters.formats.filter((item) => item !== format),
+                  })
+                }
+                className="hover:text-[#ff9f76]"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {groupedFavorites.length === 0 ? (
+        <section className="mt-10 max-w-xl rounded-2xl border border-emerald-100/10 bg-[#17261c]/45 p-7 text-center">
+          <span className="text-3xl text-[#9be7a5]">◇</span>
+          <h2 className="mt-4 text-xl font-semibold text-white">
+            {filters.moods.length ||
+            filters.genres.length ||
+            filters.formats.length
+              ? "No hay discos con estos filtros"
+              : t("noFavorites")}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-[#8f9f93]">
+            Ajusta los filtros o explora la búsqueda para empezar a construir tu
+            colección.
+          </p>
+          <button
+            onClick={() => router.push("/search")}
+            className="mt-5 rounded-xl bg-[#9be7a5] px-4 py-3 text-sm font-semibold text-[#102117]"
+          >
+            Explorar discos
+          </button>
+        </section>
+      ) : (
+        groupedFavorites.map((group, idx) => (
+          <div key={idx} className="mb-12">
+            <h2 className="text-4xl font-bold text-white mb-6 border-b border-green-900/30 pb-2">
+              {group.groupName}
+            </h2>
+            <Stagger
+              className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6"
+              stagger={0.04}
+            >
+              {group.items.map((favorite: any) => (
+                <StaggerItem key={favorite.album.id}>
+                  <AlbumCard
+                    album={favorite.album}
+                    tags={favorite.tags || []}
+                    onClick={() => router.push(`/albums/${favorite.album.id}`)}
+                  />
+                </StaggerItem>
+              ))}
+            </Stagger>
+          </div>
+        ))
+      )}
+
+      {/* Modales */}
+      <SortModal
+        isOpen={showSortModal}
+        onClose={() => setShowSortModal(false)}
+        currentSort={sortBy}
+        onSortChange={(value) => setSortBy(value as SortMethod)}
+      />
+
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        currentFilters={filters}
+        onFiltersChange={setFilters}
+      />
+    </main>
+  );
+}

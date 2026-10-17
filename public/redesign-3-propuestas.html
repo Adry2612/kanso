@@ -1,0 +1,1492 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Collectify · Propuestas de rediseño</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #101b14;
+        --bg2: #122017;
+        --panel: #17261c;
+        --panel2: #203a29;
+        --text: #f2f5ef;
+        --muted: #8f9f93;
+        --line: rgba(194, 230, 201, 0.14);
+        --mint: #9be7a5;
+        --lime: #d6f28d;
+        --coral: #ff9f76;
+        --display: "Space Grotesk", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+      }
+      body {
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        background:
+          radial-gradient(
+            circle at 80% 0%,
+            rgba(67, 148, 83, 0.2),
+            transparent 31rem
+          ),
+          var(--bg);
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button {
+        border: 0;
+        color: inherit;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      h1,
+      h2 {
+        font-family: var(--display);
+        letter-spacing: -0.06em;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .app {
+        min-height: 100vh;
+      }
+      .shell {
+        display: grid;
+        grid-template-columns: 228px 1fr;
+        min-height: 100vh;
+      }
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        padding: 28px 19px;
+        border-right: 1px solid var(--line);
+        background: rgba(10, 20, 13, 0.62);
+      }
+      .brand {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 0 10px;
+        font: 700 20px var(--display);
+        letter-spacing: -0.05em;
+      }
+      .mark {
+        display: grid;
+        place-items: center;
+        width: 29px;
+        height: 29px;
+        border-radius: 9px;
+        background: var(--mint);
+        color: var(--bg);
+        font-size: 15px;
+      }
+      .nav {
+        display: grid;
+        gap: 7px;
+        margin-top: 70px;
+      }
+      .nav-label {
+        padding: 0 12px 10px;
+        color: #5c7061;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      .nav-link {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 11px 12px;
+        border-radius: 11px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--text);
+        background: rgba(155, 231, 165, 0.1);
+      }
+      .nav-icon {
+        width: 18px;
+        color: var(--mint);
+        font-size: 18px;
+        text-align: center;
+      }
+      .note {
+        margin-top: auto;
+        padding: 20px 10px 0;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .note b {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--mint);
+      }
+      main {
+        width: 100%;
+        max-width: 1450px;
+        margin: auto;
+        padding: 25px clamp(23px, 4vw, 65px) 60px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .mobile-brand {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        font: 700 18px var(--display);
+      }
+      .search {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        width: min(350px, 45vw);
+        padding: 9px 2px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .search input {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        color: var(--text);
+        background: transparent;
+        font-size: 13px;
+      }
+      .search input::placeholder {
+        color: #617164;
+      }
+      .profile {
+        display: flex;
+        gap: 11px;
+        align-items: center;
+      }
+      .profile-copy {
+        color: var(--muted);
+        font-size: 12px;
+        text-align: right;
+        line-height: 1.3;
+      }
+      .profile-copy b {
+        display: block;
+        color: var(--text);
+      }
+      .avatar {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border: 2px solid rgba(155, 231, 165, 0.4);
+        border-radius: 50%;
+        background: #d1a578;
+        color: #233321;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .eyebrow {
+        color: var(--mint);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .view {
+        animation: show 0.3s ease both;
+      }
+      @keyframes show {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .welcome {
+        max-width: 750px;
+        margin-top: clamp(48px, 8vw, 94px);
+      }
+      .welcome h1 {
+        margin-top: 13px;
+        font-size: clamp(44px, 5.8vw, 76px);
+        line-height: 0.98;
+      }
+      .welcome h1 em {
+        color: var(--mint);
+        font-style: normal;
+      }
+      .intro {
+        max-width: 510px;
+        margin-top: 20px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.72fr);
+        gap: 27px;
+        margin-top: 46px;
+      }
+      .mood-panel {
+        position: relative;
+        overflow: hidden;
+        min-height: 410px;
+        padding: clamp(23px, 3vw, 36px);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: linear-gradient(
+          135deg,
+          rgba(31, 52, 38, 0.96),
+          rgba(18, 31, 23, 0.93)
+        );
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.2);
+      }
+      .mood-panel:after {
+        content: "";
+        position: absolute;
+        right: -100px;
+        bottom: -100px;
+        width: 245px;
+        height: 245px;
+        border: 1px solid rgba(155, 231, 165, 0.18);
+        border-radius: 50%;
+        box-shadow:
+          0 0 0 30px rgba(155, 231, 165, 0.025),
+          0 0 0 65px rgba(155, 231, 165, 0.025);
+      }
+      .panel-head,
+      .row-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 15px;
+      }
+      .panel-head h2 {
+        font-size: 24px;
+        line-height: 1.1;
+      }
+      .panel-head p {
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .step,
+      .tag {
+        padding: 7px 10px;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        color: var(--muted);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .mood-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 9px;
+        margin-top: 34px;
+      }
+      .mood {
+        display: grid;
+        align-content: space-between;
+        min-height: 82px;
+        padding: 12px 8px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(9, 20, 13, 0.24);
+        color: #b4c2b6;
+        text-align: left;
+        transition: 0.2s;
+      }
+      .mood:hover {
+        transform: translateY(-2px);
+        border-color: rgba(155, 231, 165, 0.5);
+      }
+      .mood.selected {
+        border-color: var(--mint);
+        background: var(--mint);
+        color: #102117;
+      }
+      .mood-symbol {
+        font-size: 20px;
+      }
+      .mood-name {
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .mood-meta {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 15px;
+        margin-top: 28px;
+      }
+      .selection {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .selection b {
+        color: var(--text);
+      }
+      .primary {
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: var(--mint);
+        color: #102117;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .primary:hover {
+        background: var(--lime);
+      }
+      .secondary {
+        padding: 11px 15px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: transparent;
+        color: #b4c2b6;
+        font-size: 13px;
+      }
+      .side {
+        display: grid;
+        gap: 27px;
+      }
+      .row-head {
+        align-items: baseline;
+        margin-bottom: 14px;
+      }
+      .row-head h2 {
+        font-size: 18px;
+      }
+      .row-head a {
+        color: var(--mint);
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .album-list {
+        display: grid;
+        gap: 8px;
+      }
+      .album {
+        display: grid;
+        grid-template-columns: 55px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 13px;
+        padding: 8px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+      }
+      .album:hover {
+        border-color: var(--line);
+        background: rgba(29, 48, 35, 0.45);
+      }
+      .cover {
+        width: 55px;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        object-fit: cover;
+      }
+      .album h3 {
+        overflow: hidden;
+        font-size: 13px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .album p,
+      .card p {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .heart {
+        padding: 7px;
+        background: transparent;
+        color: #617164;
+        font-size: 20px;
+      }
+      .heart.saved {
+        color: var(--coral);
+      }
+      .quote {
+        padding-top: 21px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+      .quote b {
+        display: block;
+        margin-top: 10px;
+        color: var(--text);
+        font-size: 12px;
+      }
+      .footer {
+        display: flex;
+        gap: 11px;
+        align-items: center;
+        margin-top: 58px;
+        color: #617164;
+        font-size: 11px;
+      }
+      .pulse {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--mint);
+        box-shadow: 0 0 0 5px rgba(85, 205, 120, 0.1);
+      }
+      .page-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 22px;
+        margin: 75px 0 31px;
+      }
+      .page-head h1 {
+        margin-top: 10px;
+        font-size: clamp(40px, 5vw, 64px);
+      }
+      .page-head > p {
+        max-width: 430px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+      .filters {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+      .filter {
+        padding: 9px 13px;
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .filter.active,
+      .filter:hover {
+        border-color: var(--mint);
+        background: var(--mint);
+        color: #102117;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px 17px;
+      }
+      .card {
+        position: relative;
+        min-width: 0;
+      }
+      .card-img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        margin-bottom: 13px;
+        border-radius: 13px;
+        object-fit: cover;
+        transition: 0.25s;
+      }
+      .card:hover .card-img {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 35px rgba(0, 0, 0, 0.28);
+      }
+      .card h3 {
+        font-size: 14px;
+      }
+      .card p {
+        font-size: 12px;
+      }
+      .card .heart {
+        position: absolute;
+        top: 9px;
+        right: 9px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(16, 27, 20, 0.8);
+      }
+      .history {
+        border-top: 1px solid var(--line);
+      }
+      .history-row {
+        display: grid;
+        grid-template-columns: 32px 55px 1fr auto;
+        gap: 17px;
+        align-items: center;
+        padding: 13px 7px;
+        border-bottom: 1px solid var(--line);
+      }
+      .history-row p {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .history-row time {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .back {
+        display: inline-flex;
+        gap: 8px;
+        margin-top: 55px;
+        color: var(--mint);
+        font-size: 12px;
+      }
+      .detail,
+      .result {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: clamp(28px, 5vw, 75px);
+        align-items: end;
+        margin-top: 26px;
+        padding-bottom: 42px;
+        border-bottom: 1px solid var(--line);
+      }
+      .detail-cover,
+      .result-img {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 16px;
+        object-fit: cover;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
+      }
+      .detail h1,
+      .result h1 {
+        margin-top: 13px;
+        font-size: clamp(45px, 6vw, 78px);
+        line-height: 0.98;
+      }
+      .artist {
+        margin-top: 16px;
+        color: var(--mint);
+        font-size: 16px;
+      }
+      .desc {
+        max-width: 485px;
+        margin-top: 24px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 27px;
+      }
+      .tracks {
+        max-width: 710px;
+        margin-top: 32px;
+      }
+      .tracks h2 {
+        margin-bottom: 12px;
+        font-size: 19px;
+      }
+      .track {
+        display: grid;
+        grid-template-columns: 30px 1fr auto;
+        gap: 14px;
+        padding: 12px 5px;
+        border-bottom: 1px solid var(--line);
+        color: #b4c2b6;
+        font-size: 13px;
+      }
+      .track span:first-child,
+      .track span:last-child {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .result {
+        grid-template-columns: minmax(220px, 0.7fr) 1fr;
+        margin-top: 70px;
+      }
+      .result-img {
+        max-width: 410px;
+      }
+      .match {
+        display: inline-flex;
+        margin-top: 21px;
+        padding: 7px 10px;
+        border: 1px solid rgba(155, 231, 165, 0.25);
+        border-radius: 99px;
+        color: var(--mint);
+        font-size: 11px;
+      }
+      /* Propuesta 02: navegación superior, editorial y basada en una galería horizontal. */
+      body.variant-two .shell {
+        display: block;
+      }
+      .variant-two .sidebar {
+        display: none;
+      }
+      .variant-two main {
+        max-width: 1280px;
+        padding-top: 20px;
+      }
+      .variant-two .topbar {
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      .variant-two .mobile-brand {
+        display: flex;
+      }
+      .variant-two .nav2 {
+        display: flex;
+        gap: 5px;
+      }
+      .variant-two .nav2 a {
+        padding: 9px 12px;
+        border-radius: 99px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .variant-two .nav2 a.active,
+      .variant-two .nav2 a:hover {
+        background: rgba(155, 231, 165, 0.1);
+        color: var(--text);
+      }
+      .variant-two .welcome {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: end;
+        gap: 30px;
+        max-width: none;
+        margin-top: 76px;
+      }
+      .variant-two .welcome h1 {
+        font-size: clamp(50px, 6.2vw, 84px);
+      }
+      .variant-two .intro {
+        justify-self: end;
+        margin-bottom: 5px;
+      }
+      .variant-two .workspace {
+        grid-template-columns: 1fr;
+        margin-top: 45px;
+      }
+      .variant-two .mood-panel {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 25px;
+        align-items: center;
+        min-height: 0;
+        padding: 25px;
+        background: rgba(23, 38, 28, 0.62);
+      }
+      .variant-two .mood-grid {
+        margin-top: 0;
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .variant-two .mood-meta {
+        grid-column: 1/-1;
+      }
+      .variant-two .side {
+        grid-template-columns: 1fr 1fr;
+        margin-top: 25px;
+      }
+      .variant-two .side section:first-child {
+        grid-column: 1/-1;
+      }
+      .variant-two .album-list {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .variant-two .album {
+        grid-template-columns: 70px 1fr;
+        padding: 0;
+        gap: 12px;
+      }
+      .variant-two .album .cover {
+        width: 70px;
+        border-radius: 10px;
+      }
+      .variant-two .album .heart {
+        display: none;
+      }
+      .variant-two .quote {
+        align-self: end;
+      }
+      .variant-two .cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 34px;
+      }
+      .variant-two .card-img {
+        border-radius: 4px;
+      }
+      .variant-two .page-head {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 26px;
+      }
+      .variant-two .switcher {
+        position: static !important;
+        margin: 28px auto 0;
+        justify-content: center;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      /* Propuesta 03: panel modular, navegación secundaria y recomendación como pieza central. */
+      body.variant-three .shell {
+        grid-template-columns: 1fr;
+      }
+      .variant-three .sidebar {
+        display: none;
+      }
+      .variant-three main {
+        max-width: 1240px;
+      }
+      .variant-three .topbar {
+        padding: 14px 18px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(23, 38, 28, 0.65);
+      }
+      .variant-three .mobile-brand {
+        display: flex;
+      }
+      .variant-three .nav3 {
+        display: flex;
+        gap: 5px;
+      }
+      .variant-three .nav3 a {
+        padding: 9px 12px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .variant-three .nav3 a.active,
+      .variant-three .nav3 a:hover {
+        color: var(--mint);
+      }
+      .variant-three .welcome {
+        margin-top: 64px;
+      }
+      .variant-three .welcome h1 {
+        font-size: clamp(43px, 5vw, 68px);
+      }
+      .variant-three .workspace {
+        grid-template-columns: 1fr 280px;
+        gap: 14px;
+        margin-top: 30px;
+      }
+      .variant-three .mood-panel {
+        min-height: 350px;
+        border-radius: 10px;
+      }
+      .variant-three .mood-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 7px;
+      }
+      .variant-three .mood {
+        min-height: 70px;
+        border-radius: 7px;
+      }
+      .variant-three .side {
+        display: contents;
+      }
+      .variant-three .side > section:first-child {
+        grid-column: 2;
+        grid-row: 1/3;
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--panel);
+      }
+      .variant-three .album-list {
+        gap: 17px;
+      }
+      .variant-three .album {
+        grid-template-columns: 45px 1fr;
+        padding: 0;
+      }
+      .variant-three .album .cover {
+        width: 45px;
+      }
+      .variant-three .album .heart {
+        display: none;
+      }
+      .variant-three .quote {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+      .variant-three .footer {
+        display: none;
+      }
+      .variant-three .cards {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .variant-three .card-img {
+        border-radius: 9px;
+      }
+      .variant-three .page-head {
+        margin-top: 55px;
+      }
+      .variant-three .result {
+        margin-top: 45px;
+        padding: 30px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+      }
+      .variant-three .switcher {
+        position: static !important;
+        margin: 28px auto 0;
+        justify-content: center;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .switcher {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: rgba(23, 38, 28, 0.95);
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(14px);
+      }
+      .switcher-label {
+        padding: 0 7px;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .theme-btn {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 2px solid transparent;
+        border-radius: 50%;
+        background: var(--panel2);
+      }
+      .theme-btn.active {
+        border-color: #fff;
+        box-shadow: 0 0 0 2px var(--mint);
+      }
+      .theme-btn:nth-of-type(2) {
+        background: var(--mint);
+      }
+      .theme-btn:nth-of-type(3) {
+        background: var(--lime);
+      }
+      @media (max-width: 900px) {
+        .shell {
+          display: block;
+        }
+        .sidebar {
+          display: none;
+        }
+        .mobile-brand {
+          display: flex;
+        }
+        .variant-two .nav2,
+        .variant-three .nav3 {
+          display: none;
+        }
+        .workspace,
+        .variant-two .workspace,
+        .variant-three .workspace {
+          grid-template-columns: 1fr;
+        }
+        .variant-three .side > section:first-child {
+          grid-column: auto;
+          grid-row: auto;
+        }
+        .variant-three .quote {
+          grid-column: auto;
+          grid-row: auto;
+        }
+        .variant-two .welcome {
+          display: block;
+        }
+        .variant-two .intro {
+          margin-top: 20px;
+        }
+        .cards,
+        .variant-two .cards,
+        .variant-three .cards {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .detail,
+        .result {
+          grid-template-columns: 230px 1fr;
+        }
+      }
+      @media (max-width: 560px) {
+        main {
+          padding: 18px 17px 34px;
+        }
+        .profile-copy {
+          display: none;
+        }
+        .search {
+          width: 38px;
+          border: 0;
+        }
+        .search input {
+          display: none;
+        }
+        .welcome,
+        .variant-two .welcome {
+          margin-top: 54px;
+        }
+        .welcome h1,
+        .variant-two .welcome h1 {
+          font-size: 45px;
+        }
+        .mood-panel,
+        .variant-two .mood-panel {
+          display: block;
+          padding: 21px;
+          min-height: 0;
+        }
+        .mood-grid,
+        .variant-two .mood-grid {
+          grid-template-columns: repeat(2, 1fr);
+          margin-top: 28px;
+        }
+        .mood {
+          min-height: 70px;
+        }
+        .mood-meta {
+          display: block;
+        }
+        .selection {
+          margin-bottom: 15px;
+        }
+        .primary {
+          width: 100%;
+        }
+        .side,
+        .variant-two .side {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 37px;
+        }
+        .variant-two .side section:first-child {
+          grid-column: auto;
+        }
+        .variant-two .album-list {
+          grid-template-columns: 1fr;
+        }
+        .page-head {
+          display: block;
+          margin-top: 53px;
+        }
+        .page-head > p {
+          margin-top: 16px;
+        }
+        .cards,
+        .variant-two .cards,
+        .variant-three .cards {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px 12px;
+        }
+        .history-row {
+          grid-template-columns: 23px 48px 1fr;
+          gap: 9px;
+        }
+        .history-row time {
+          display: none;
+        }
+        .detail,
+        .result {
+          grid-template-columns: 1fr;
+          margin-top: 23px;
+        }
+        .detail-cover,
+        .result-img {
+          max-width: 280px;
+        }
+        .detail h1,
+        .result h1 {
+          font-size: 47px;
+        }
+        .result {
+          margin-top: 52px;
+        }
+        .switcher {
+          right: 50%;
+          transform: translateX(50%);
+          bottom: 14px;
+        }
+        .switcher-label {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="variant-one">
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="#inicio" data-view="home"
+          ><span class="mark">C</span> collectify</a
+        >
+        <nav class="nav">
+          <span class="nav-label">Tu espacio</span
+          ><a class="nav-link active" href="#inicio" data-view="home"
+            ><span class="nav-icon">⌂</span>Inicio</a
+          ><a class="nav-link" href="#explorar" data-view="explore"
+            ><span class="nav-icon">⌕</span>Explorar</a
+          ><a class="nav-link" href="#favoritos" data-view="favorites"
+            ><span class="nav-icon">♡</span>Favoritos</a
+          ><a class="nav-link" href="#historial" data-view="history"
+            ><span class="nav-icon">◷</span>Historial</a
+          >
+        </nav>
+        <div class="note">
+          <b>Una colección que suena a ti.</b>Guarda discos, descubre conexiones
+          y vuelve a tus momentos favoritos.
+        </div>
+      </aside>
+      <main>
+        <header class="topbar">
+          <a class="mobile-brand" href="#inicio" data-view="home"
+            ><span class="mark">C</span> collectify</a
+          >
+          <nav class="nav2">
+            <a href="#inicio" data-view="home">Inicio</a
+            ><a href="#explorar" data-view="explore">Explorar</a
+            ><a href="#favoritos" data-view="favorites">Colección</a>
+          </nav>
+          <nav class="nav3">
+            <a href="#inicio" data-view="home">Inicio</a
+            ><a href="#explorar" data-view="explore">Descubrir</a
+            ><a href="#favoritos" data-view="favorites">Colección</a
+            ><a href="#historial" data-view="history">Historial</a>
+          </nav>
+          <label class="search"
+            >⌕<input
+              id="search"
+              type="search"
+              placeholder="Buscar álbumes o artistas"
+          /></label>
+          <div class="profile">
+            <div class="profile-copy">Buenas tardes,<b>Tu nombre</b></div>
+            <div class="avatar">TN</div>
+          </div>
+        </header>
+        <section id="view-home" class="view">
+          <div class="welcome">
+            <p class="eyebrow">Martes, 7 de septiembre</p>
+            <h1>¿Qué quieres <em>escuchar</em> hoy?</h1>
+            <p class="intro">
+              Cuéntame cómo estás y encontraré un disco que encaje con este
+              momento.
+            </p>
+          </div>
+          <div class="workspace">
+            <section class="mood-panel">
+              <div class="panel-head">
+                <div>
+                  <h2>Elige una sensación</h2>
+                  <p>No hay respuestas incorrectas.</p>
+                </div>
+                <span class="step">01 / 02</span>
+              </div>
+              <div class="mood-grid">
+                <button class="mood selected" data-mood="con energía">
+                  <span class="mood-symbol">↗</span
+                  ><span class="mood-name">Con energía</span></button
+                ><button class="mood" data-mood="en calma">
+                  <span class="mood-symbol">⌁</span
+                  ><span class="mood-name">En calma</span></button
+                ><button class="mood" data-mood="nostálgico">
+                  <span class="mood-symbol">◌</span
+                  ><span class="mood-name">Nostálgico</span></button
+                ><button class="mood" data-mood="concentrado">
+                  <span class="mood-symbol">⊙</span
+                  ><span class="mood-name">Concentrado</span></button
+                ><button class="mood" data-mood="melancólico">
+                  <span class="mood-symbol">☾</span
+                  ><span class="mood-name">Melancólico</span></button
+                ><button class="mood" data-mood="inspirado">
+                  <span class="mood-symbol">✦</span
+                  ><span class="mood-name">Inspirado</span></button
+                ><button class="mood" data-mood="romántico">
+                  <span class="mood-symbol">♡</span
+                  ><span class="mood-name">Romántico</span></button
+                ><button class="mood" data-mood="de fiesta">
+                  <span class="mood-symbol">+</span
+                  ><span class="mood-name">De fiesta</span>
+                </button>
+              </div>
+              <div class="mood-meta">
+                <p class="selection">
+                  Has elegido: <b id="selection">con energía</b>
+                </p>
+                <button class="primary" id="recommend">
+                  Encontrar mi disco →
+                </button>
+              </div>
+            </section>
+            <aside class="side">
+              <section>
+                <div class="row-head">
+                  <h2>De tu colección</h2>
+                  <a href="#favoritos" data-view="favorites">Ver favoritos →</a>
+                </div>
+                <div class="album-list">
+                  <article class="album">
+                    <img
+                      class="cover"
+                      src="https://images.unsplash.com/photo-1619983081563-430f63602796?w=160&h=160&fit=crop"
+                      alt="Vinilo"
+                    />
+                    <div>
+                      <h3>Currents</h3>
+                      <p>Tame Impala · Psicodelia</p>
+                    </div>
+                    <button class="heart saved">♥</button>
+                  </article>
+                  <article class="album">
+                    <img
+                      class="cover"
+                      src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=160&h=160&fit=crop"
+                      alt="Cantante"
+                    />
+                    <div>
+                      <h3>Awaken, My Love!</h3>
+                      <p>Childish Gambino · R&B</p>
+                    </div>
+                    <button class="heart">♡</button>
+                  </article>
+                  <article class="album">
+                    <img
+                      class="cover"
+                      src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=160&h=160&fit=crop"
+                      alt="Artista"
+                    />
+                    <div>
+                      <h3>Melodrama</h3>
+                      <p>Lorde · Pop alternativo</p>
+                    </div>
+                    <button class="heart saved">♥</button>
+                  </article>
+                </div>
+              </section>
+              <section class="quote">
+                <p>
+                  “La música es para el alma lo que las palabras son para la
+                  mente.”
+                </p>
+                <b>— Modest Mouse</b>
+              </section>
+            </aside>
+          </div>
+          <p class="footer">
+            <span class="pulse"></span> Tu espacio musical está listo
+          </p>
+        </section>
+        <section id="view-explore" class="view hidden">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Descubre algo nuevo</p>
+              <h1>Explorar</h1>
+            </div>
+            <p>
+              Una selección de discos para ampliar tu colección, salir de tu
+              zona habitual o volver a un clásico.
+            </p>
+          </div>
+          <div class="filters">
+            <button class="filter active">Para ti</button
+            ><button class="filter">Novedades</button
+            ><button class="filter">Pop alternativo</button
+            ><button class="filter">Electrónica</button>
+          </div>
+          <div class="cards" id="explore-cards"></div>
+        </section>
+        <section id="view-favorites" class="view hidden">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Tu archivo personal</p>
+              <h1>Favoritos</h1>
+            </div>
+            <p>
+              Los discos que has guardado. Una colección que se parece cada vez
+              más a ti.
+            </p>
+          </div>
+          <div class="filters">
+            <button class="filter active">Todos · 12</button
+            ><button class="filter">Por género</button
+            ><button class="filter">Más recientes</button>
+          </div>
+          <div class="cards" id="favorite-cards"></div>
+        </section>
+        <section id="view-history" class="view hidden">
+          <div class="page-head">
+            <div>
+              <p class="eyebrow">Tus descubrimientos</p>
+              <h1>Historial</h1>
+            </div>
+            <p>
+              Una pequeña memoria de las recomendaciones que te han acompañado.
+            </p>
+          </div>
+          <div class="history">
+            <div class="history-row">
+              <span>01</span
+              ><img
+                class="cover"
+                src="https://images.unsplash.com/photo-1619983081563-430f63602796?w=160&h=160&fit=crop"
+                alt=""
+              />
+              <div>
+                <h3>Currents</h3>
+                <p>Recomendado para: con energía</p>
+              </div>
+              <time>Hoy, 16:42</time>
+            </div>
+            <div class="history-row">
+              <span>02</span
+              ><img
+                class="cover"
+                src="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=160&h=160&fit=crop"
+                alt=""
+              />
+              <div>
+                <h3>Vespertine</h3>
+                <p>Recomendado para: en calma</p>
+              </div>
+              <time>Ayer, 22:18</time>
+            </div>
+            <div class="history-row">
+              <span>03</span
+              ><img
+                class="cover"
+                src="https://images.unsplash.com/photo-1524650359799-842906ca1c06?w=160&h=160&fit=crop"
+                alt=""
+              />
+              <div>
+                <h3>Blue Weekend</h3>
+                <p>Recomendado para: nostálgico</p>
+              </div>
+              <time>5 sep, 19:05</time>
+            </div>
+          </div>
+        </section>
+        <section id="view-detail" class="view hidden">
+          <a class="back" href="#explorar" data-view="explore"
+            >← Volver a explorar</a
+          >
+          <div class="detail">
+            <img
+              class="detail-cover"
+              src="https://images.unsplash.com/photo-1539375665275-f9de415ef9ac?w=700&h=700&fit=crop"
+              alt="Vinilo naranja"
+            />
+            <div>
+              <p class="eyebrow">Álbum seleccionado</p>
+              <h1>In Rainbows</h1>
+              <p class="artist">Radiohead · 2007</p>
+              <p class="desc">
+                Un álbum cálido, extraño y preciso. Capas de guitarras,
+                electrónica discreta y canciones que parecen crecer cuanto más
+                las escuchas.
+              </p>
+              <div class="actions">
+                <button class="primary" data-listen>
+                  Escuchar en Spotify ↗</button
+                ><button class="secondary heart saved">♥ Guardado</button>
+              </div>
+            </div>
+          </div>
+          <section class="tracks">
+            <h2>Lista de canciones · 10 pistas</h2>
+            <div class="track">
+              <span>01</span><span>15 Step</span><span>3:57</span>
+            </div>
+            <div class="track">
+              <span>02</span><span>Bodysnatchers</span><span>4:02</span>
+            </div>
+            <div class="track">
+              <span>03</span><span>Nude</span><span>4:15</span>
+            </div>
+            <div class="track">
+              <span>04</span><span>Weird Fishes / Arpeggi</span
+              ><span>5:18</span>
+            </div>
+          </section>
+        </section>
+        <section id="view-result" class="view hidden">
+          <a class="back" href="#inicio" data-view="home"
+            >← Cambiar selección</a
+          >
+          <div class="result">
+            <img
+              class="result-img"
+              src="https://images.unsplash.com/photo-1619983081563-430f63602796?w=800&h=800&fit=crop"
+              alt="Vinilo"
+            />
+            <div>
+              <p class="eyebrow">Tu recomendación · con energía</p>
+              <h1>Currents</h1>
+              <span class="match">92% de afinidad</span>
+              <p class="desc">
+                Tame Impala ha preparado un viaje de psicodelia pop, bajos
+                elásticos y una energía que se queda contigo mucho después del
+                último tema.
+              </p>
+              <div class="actions">
+                <button class="primary" data-listen>
+                  Escuchar en Spotify ↗</button
+                ><button class="secondary heart saved">♥ Guardado</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="switcher">
+      <span class="switcher-label">Diseño</span
+      ><button
+        class="theme-btn active"
+        data-variant="one"
+        aria-label="Archivo lateral"
+      ></button
+      ><button
+        class="theme-btn"
+        data-variant="two"
+        aria-label="Galería editorial"
+      ></button
+      ><button
+        class="theme-btn"
+        data-variant="three"
+        aria-label="Bento modular"
+      ></button>
+    </div>
+    <script>
+      const albums = [
+        ["1539375665275-f9de415ef9ac", "In Rainbows", "Radiohead · 2007"],
+        ["1524368535928-5b5e00ddc76b", "Vespertine", "Björk · 2001"],
+        ["1524230659092-07f99a75c013", "Discovery", "Daft Punk · 2001"],
+        ["1524650359799-842906ca1c06", "Blue Weekend", "Wolf Alice · 2021"],
+      ];
+      function makeCards(saved) {
+        return albums
+          .map(
+            (a) =>
+              `<article class="card"><img class="card-img" src="https://images.unsplash.com/photo-${a[0]}?w=600&h=600&fit=crop" alt="${a[1]}"><button class="heart card-heart ${saved ? "saved" : ""}">${saved ? "♥" : "♡"}</button><h3>${a[1]}</h3><p>${a[2]}</p></article>`,
+          )
+          .join("");
+      }
+      document.querySelector("#explore-cards").innerHTML = makeCards(false);
+      document.querySelector("#favorite-cards").innerHTML = makeCards(true);
+      const views = document.querySelectorAll(".view");
+      function show(name) {
+        views.forEach((v) =>
+          v.classList.toggle("hidden", v.id !== `view-${name}`),
+        );
+        document
+          .querySelectorAll(".nav-link,.nav2 a,.nav3 a")
+          .forEach((l) =>
+            l.classList.toggle("active", l.dataset.view === name),
+          );
+        window.scrollTo(0, 0);
+        bind();
+      }
+      document.querySelectorAll("[data-view]").forEach((l) =>
+        l.addEventListener("click", (e) => {
+          e.preventDefault();
+          show(l.dataset.view);
+        }),
+      );
+      document.querySelectorAll(".mood").forEach((m) =>
+        m.addEventListener("click", () => {
+          document
+            .querySelectorAll(".mood")
+            .forEach((x) => x.classList.remove("selected"));
+          m.classList.add("selected");
+          document.querySelector("#selection").textContent = m.dataset.mood;
+        }),
+      );
+      document
+        .querySelector("#recommend")
+        .addEventListener("click", () => show("result"));
+      function bind() {
+        document.querySelectorAll(".heart").forEach((h) => {
+          if (h.dataset.bound) return;
+          h.dataset.bound = "1";
+          h.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const saved = h.classList.toggle("saved");
+            h.textContent = saved ? "♥" : "♡";
+          });
+        });
+        document.querySelectorAll(".card").forEach((c) => {
+          if (c.dataset.bound) return;
+          c.dataset.bound = "1";
+          c.addEventListener("click", () => show("detail"));
+        });
+      }
+      bind();
+      document.querySelectorAll(".theme-btn").forEach((b) =>
+        b.addEventListener("click", () => {
+          document.body.className = `variant-${b.dataset.variant}`;
+          document
+            .querySelectorAll(".theme-btn")
+            .forEach((x) => x.classList.toggle("active", x === b));
+        }),
+      );
+      document.querySelector("#search").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && e.target.value.trim()) show("explore");
+      });
+      document
+        .querySelectorAll("[data-listen]")
+        .forEach((b) =>
+          b.addEventListener("click", () =>
+            alert("Aquí conectarías el enlace de Spotify."),
+          ),
+        );
+    </script>
+  </body>
+</html>

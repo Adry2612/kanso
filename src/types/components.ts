@@ -1,0 +1,38 @@
+export interface BaseModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}
+
+export interface SortModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentSort: string;
+  onSortChange: (value: string) => void;
+}
+
+export interface FilterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentFilters: {
+    moods: string[];
+    genres: string[];
+    formats: FavoriteFormat[];
+    tags: FavoriteTag[];
+  };
+  onFiltersChange: (filters: {
+    moods: string[];
+    genres: string[];
+    formats: FavoriteFormat[];
+    tags: FavoriteTag[];
+  }) => void;
+}
+
+export interface HeartButtonProps {
+  isFavorite: boolean;
+  onClick: () => void;
+  size?: number;
+}
+import type { FavoriteFormat, FavoriteTag } from "./favorites";
