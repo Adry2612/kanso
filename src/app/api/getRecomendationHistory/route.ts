@@ -1,31 +1,18 @@
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-} from "firebase/firestore";
 import { NextResponse } from "next/server";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 
 export async function GET(request: Request) {
+  const auth = await authenticate(request);
+  if (isAuthFailure(auth)) return auth;
+  const { uid } = auth;
+
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Falta el userId" }, { status: 400 });
-    }
-
-    const historyCollection = collection(
-      db,
-      "users",
-      userId,
-      "recomendationHistory",
-    );
-    const q = query(historyCollection, orderBy("providedAt", "desc"));
-    const historySnapshot = await getDocs(q);
+    const db = adminDb();
+    const historySnapshot = await db
+      .collection(`users/${uid}/recomendationHistory`)
+      .orderBy("providedAt", "desc")
+      .get();
 
     if (historySnapshot.empty) {
       return NextResponse.json({ history: [] }, { status: 200 });
@@ -33,18 +20,16 @@ export async function GET(request: Request) {
 
     const history = await Promise.all(
       historySnapshot.docs.map(async (historyDoc) => {
-        const data = historyDoc.data();
-        const { albumId, moods, providedAt } = data;
+        const { albumId, moods, providedAt } = historyDoc.data();
 
-        const albumDoc = doc(db, "albums", albumId);
-        const albumSnap = await getDoc(albumDoc);
+        const albumSnap = await db.doc(`albums/${albumId}`).get();
 
         return {
           id: historyDoc.id,
           albumId,
           moods: moods || [],
           providedAt: providedAt?.toDate?.()?.toISOString() || providedAt,
-          album: albumSnap.exists() ? albumSnap.data() : null,
+          album: albumSnap.exists ? albumSnap.data() : null,
         };
       }),
     );

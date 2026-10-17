@@ -1,29 +1,31 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { FieldValue } from "firebase-admin/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { userId, albumId, moods } = body;
+  const auth = await authenticate(req);
+  if (isAuthFailure(auth)) return auth;
+  const { uid } = auth;
 
-    if (!userId || !albumId) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const { albumId, moods } = body ?? {};
+
+    if (typeof albumId !== "string" || !albumId.trim()) {
       return NextResponse.json(
-        { error: "Missing required fields: userId and albumId" },
+        { error: "Falta el álbum de la recomendación" },
         { status: 400 },
       );
     }
 
-    const recommendationData = {
-      albumId,
-      moods: moods || [],
-      providedAt: serverTimestamp(),
-    };
-
-    const docRef = await addDoc(
-      collection(db, "users", userId, "recomendationHistory"),
-      recommendationData,
-    );
+    const docRef = await adminDb()
+      .collection(`users/${uid}/recomendationHistory`)
+      .add({
+        albumId,
+        moods: Array.isArray(moods) ? moods : [],
+        providedAt: FieldValue.serverTimestamp(),
+      });
 
     return NextResponse.json({
       success: true,
@@ -32,7 +34,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error saving recommendation:", error);
     return NextResponse.json(
-      { error: "Server error", details: (error as Error).message },
+      { error: "No se pudo guardar la recomendación" },
       { status: 500 },
     );
   }

@@ -7,11 +7,24 @@ import {
   SaveFavoriteResponse,
 } from "@/types/favorites";
 import { normalizeMoods } from "@/constants/moods";
+import { authFetch } from "@/lib/api/authFetch";
+
+// Lee el cuerpo sin asumir que sea JSON: un error de proxy/HTML no debe
+// convertirse en un SyntaxError críptico.
+async function parseJson<T = { error?: string }>(
+  res: Response,
+): Promise<T | null> {
+  try {
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
 
 export const addFavorite = async (
   album: Album,
   user: User,
-  feelings: string[],
+  feelings: (string | { label: string })[],
   format: FavoriteFormat[] = ["digital"],
   activities: string[] = [],
   tags: FavoriteTag[] = [],
@@ -19,16 +32,17 @@ export const addFavorite = async (
   if (!user?.uid) throw new Error("Usuario no autenticado");
 
   const normalizedFeelings = normalizeMoods(
-    feelings.map((feeling: any) =>
+    feelings.map((feeling) =>
       typeof feeling === "string" ? feeling : feeling.label,
     ),
   );
 
-  const res = await fetch("/api/toggleFavorite/", {
+  // El usuario se identifica con el token de la sesión: la API lo ignora del cuerpo.
+  const res = await authFetch("/api/toggleFavorite", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       album,
-      userId: user.uid,
       feelings: normalizedFeelings,
       format,
       activities,
@@ -36,21 +50,22 @@ export const addFavorite = async (
     }),
   });
 
-  const data = await res.json();
+  const data = await parseJson<SaveFavoriteResponse & { error?: string }>(res);
 
-  if (!res.ok) throw new Error(data.error || "Error al guardar favorito");
+  if (!res.ok) throw new Error(data?.error || "No se pudo guardar el álbum");
 
   return data as SaveFavoriteResponse;
 };
 
-export const undoFavorite = async (album: Album, userId: string) => {
-  const res = await fetch("/api/removeFavorite/", {
+export const undoFavorite = async (album: Album) => {
+  const res = await authFetch("/api/removeFavorite", {
     method: "DELETE",
-    body: JSON.stringify({ album, userId }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ album }),
   });
 
   if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || "Error al guardar");
+    const data = await parseJson(res);
+    throw new Error(data?.error || "No se pudo eliminar el álbum");
   }
 };

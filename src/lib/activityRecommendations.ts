@@ -1,11 +1,16 @@
 /**
- * Recomendaciones por actividad en cliente (sin endpoint)
+ * Recomendaciones por actividad.
+ *
+ * Este módulo NO accede a los datos por su cuenta: recibe los favoritos ya
+ * cargados y una función para resolver el detalle de cada álbum. Así la misma
+ * lógica se puede ejecutar en el servidor (con el Admin SDK) sin arrastrar el
+ * SDK de Firestore al cliente.
  */
 
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { musicalFeelings } from "@/constants/feelings";
-import type { ActivityRecommendation } from "@/types/favorites";
+import type {
+  ActivityRecommendation,
+  RecommendedAlbumInfo,
+} from "@/types/favorites";
 import { getMood, normalizeMood } from "@/constants/moods";
 
 export const activityMoodMap: Record<string, string[]> = {
@@ -89,7 +94,7 @@ export type RecommendedAlbum = {
   feelings: FeelingTag[];
   albumId: string;
   labeledFeelings: string[];
-  albumInfo: any;
+  albumInfo?: RecommendedAlbumInfo;
 };
 
 export type ActivityRecommendationsResult = {
@@ -134,12 +139,6 @@ export function getActivityLabel(
   return key ? translateActivity(key) : activity;
 }
 
-function localizeMoodLabel(label: string, translateMood?: MoodTranslator) {
-  if (!translateMood) return label;
-  const key = moodLabelToKey[label];
-  return key ? translateMood(key) : label;
-}
-
 function normalizeMoodLabel(label: unknown): string {
   let rawLabel = "";
 
@@ -175,15 +174,39 @@ function buildFeelingTags(
   });
 }
 
-export async function getRecommendedAlbumByActivity(
-  userId: string,
-  activity: string,
-  translateMood?: MoodTranslator,
-  translateActivity?: ActivityTranslator,
+/** Favorito tal como se guarda en `users/{uid}/favorites`. */
+export type ActivityFavoriteRecord = {
+  id: string;
+  albumId: string;
+  format?: string | string[];
+  ownership?: { format?: string | string[] };
+  tags?: { category?: string; value?: string }[];
+  labeledFeelings?: unknown[];
+  feelings?: unknown[];
+};
+
+export type ComputeActivityRecommendationsParams = {
+  favorites: ActivityFavoriteRecord[];
+  activity: string;
+  translateMood?: MoodTranslator;
+  translateActivity?: ActivityTranslator;
+  format?: string;
+  requiredMoods?: string[];
+  requiredTags?: string[];
+  /** Resuelve el detalle del álbum (el servidor lo hace con el Admin SDK). */
+  getAlbum: (albumId: string) => Promise<RecommendedAlbumInfo | undefined>;
+};
+
+export async function computeActivityRecommendations({
+  favorites,
+  activity,
+  translateMood,
+  translateActivity,
   format = "all",
-  requiredMoods: string[] = [],
-  requiredTags: string[] = [],
-): Promise<ActivityRecommendationsResult> {
+  requiredMoods = [],
+  requiredTags = [],
+  getAlbum,
+}: ComputeActivityRecommendationsParams): Promise<ActivityRecommendationsResult> {
   const normalizedActivity = resolveActivityKey(activity, translateActivity);
   const optimalMoods = getMoodsForActivity(normalizedActivity);
 
@@ -191,17 +214,13 @@ export async function getRecommendedAlbumByActivity(
     return { optimalMoods, recommendations: [], recommendedAlbum: null };
   }
 
-  const favoritesCollection = collection(db, "users", userId, "favorites");
-  const favSnap = await getDocs(favoritesCollection);
-
-  if (favSnap.empty) {
+  if (favorites.length === 0) {
     return { optimalMoods, recommendations: [], recommendedAlbum: null };
   }
 
   const recommendations: ActivityRecommendation[] = [];
 
-  for (const favDoc of favSnap.docs) {
-    const favorite = favDoc.data();
+  for (const favorite of favorites) {
     if (
       format !== "all" &&
       !(Array.isArray(favorite.format)
@@ -217,7 +236,7 @@ export async function getRecommendedAlbumByActivity(
       requiredTags.length > 0 &&
       !requiredTags.some((tag) =>
         favorite.tags?.some(
-          (favoriteTag: { category: string; value: string }) =>
+          (favoriteTag: { category?: string; value?: string }) =>
             `${favoriteTag.category}:${favoriteTag.value}` === tag,
         ),
       )
@@ -245,12 +264,10 @@ export async function getRecommendedAlbumByActivity(
     }
 
     if (matchingMoods.length > 0) {
-      const albumRef = doc(db, "albums", favorite.albumId);
-      const albumSnap = await getDoc(albumRef);
-      const albumInfo = albumSnap.exists() ? albumSnap.data() : null;
+      const albumInfo = await getAlbum(favorite.albumId);
 
       recommendations.push({
-        id: favDoc.id,
+        id: favorite.id,
         albumId: favorite.albumId,
         labeledFeelings: normalizedFeelings,
         matchingMoods,

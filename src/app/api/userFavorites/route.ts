@@ -1,34 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  documentId,
-  getDoc,
-  doc,
-} from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { adminDb } from "@/lib/firebaseAdmin";
+import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { normalizeMoods } from "@/constants/moods";
 
 export async function GET(request: NextRequest) {
+  const auth = await authenticate(request);
+  if (isAuthFailure(auth)) return auth;
+  const { uid } = auth;
+
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Falta el userId" }, { status: 400 });
-    }
-
-    const favoritesCollection = collection(db, "users", userId, "favorites");
-    const favSnapshot = await getDocs(favoritesCollection);
+    const db = adminDb();
+    const favSnapshot = await db.collection(`users/${uid}/favorites`).get();
 
     if (favSnapshot.empty) {
       return NextResponse.json({ favorites: [] });
     }
-
-    const albumsCollection = collection(db, "albums");
 
     const favorites = await Promise.all(
       favSnapshot.docs.map(async (favDoc) => {
@@ -55,8 +41,7 @@ export async function GET(request: NextRequest) {
                   : []
               : ["digital"];
 
-        const albumDoc = doc(albumsCollection, albumId);
-        const albumSnap = await getDoc(albumDoc);
+        const albumSnap = await db.doc(`albums/${albumId}`).get();
 
         return {
           id: favDoc.id,
@@ -66,7 +51,7 @@ export async function GET(request: NextRequest) {
           activities: activities ?? [],
           tags: Array.isArray(tags) ? tags : [],
           format: normalizedFormats,
-          album: albumSnap.exists() ? albumSnap.data() : null,
+          album: albumSnap.exists ? albumSnap.data() : null,
         };
       }),
     );
@@ -76,10 +61,10 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({ favorites });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error obteniendo favoritos:", error);
     return NextResponse.json(
-      { error: error.message || "Error interno del servidor" },
+      { error: "No se pudo obtener la colección" },
       { status: 500 },
     );
   }

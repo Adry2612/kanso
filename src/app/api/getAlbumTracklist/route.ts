@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAlbumTracklist } from "@/services/spotify";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
 import { SpotifyArtist, SpotifyTrack } from "@/types/spotify";
 
 export async function GET(req: Request) {
@@ -16,9 +15,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const albumRef = doc(db, "albums", firebaseId);
-    const albumSnap = await getDoc(albumRef);
-    if (!albumSnap.exists()) {
+    const albumSnap = await adminDb().doc(`albums/${firebaseId}`).get();
+    if (!albumSnap.exists) {
       return NextResponse.json(
         { error: "Album not found in database" },
         { status: 404 },
