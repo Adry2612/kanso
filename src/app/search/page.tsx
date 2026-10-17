@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Album } from "../../../models/album";
 import { useTranslations } from "@/context/I18nContext";
 import AlbumCard from "@/components/AlbumCard";
@@ -12,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getMood, normalizeMoods } from "@/constants/moods";
 import { Link } from "next-view-transitions";
 import { Stagger, StaggerItem } from "@/components/motion";
+import { authFetch } from "@/lib/api/authFetch";
 
 export default function SearchPage() {
   const t = useTranslations("search");
@@ -25,6 +25,8 @@ export default function SearchPage() {
   const [mounted, setMounted] = useState(false);
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
   const [favoritesError, setFavoritesError] = useState(false);
+  const [communitySearches, setCommunitySearches] = useState<string[]>([]);
+  const [communityAlbums, setCommunityAlbums] = useState<any[]>([]);
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
@@ -50,7 +52,7 @@ export default function SearchPage() {
 
     setFavoritesLoaded(false);
     setFavoritesError(false);
-    fetch(`/api/userFavorites?userId=${encodeURIComponent(user.uid)}`)
+    authFetch("/api/userFavorites")
       .then((response) => {
         if (!response.ok) throw new Error("No se pudo cargar la colección");
         return response.json();
@@ -71,6 +73,56 @@ export default function SearchPage() {
         setFavoritesLoaded(true);
       });
   }, [user?.uid]);
+
+  useEffect(() => {
+    fetch("/api/communitySearches")
+      .then((response) => (response.ok ? response.json() : { searches: [] }))
+      .then((data) => {
+        setCommunitySearches(
+          (data.searches || [])
+            .map((item: { term?: string }) => item.term)
+            .filter((term: unknown): term is string => Boolean(term)),
+        );
+      })
+      .catch(() => setCommunitySearches([]));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/communityAlbums")
+      .then((response) => (response.ok ? response.json() : { albums: [] }))
+      .then((data) => setCommunityAlbums(data.albums || []))
+      .catch(() => setCommunityAlbums([]));
+  }, []);
+
+  // Registro de la comunidad: espera a que la consulta se asiente (más que el
+  // debounce de resultados), exige 3 caracteres y coalesce prefijos parciales.
+  const lastRegisteredTerm = useRef<string | null>(null);
+
+  useEffect(() => {
+    const term = query.trim().replace(/\s+/g, " ");
+    if (term.length < 3) return;
+
+    const timer = setTimeout(() => {
+      const normalized = term.toLocaleLowerCase("es");
+      const previous = lastRegisteredTerm.current;
+      if (previous === normalized) return;
+
+      const extendsPrevious =
+        previous !== null && normalized.startsWith(previous);
+
+      lastRegisteredTerm.current = normalized;
+      fetch("/api/communitySearches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          term,
+          previousTerm: extendsPrevious ? previous : undefined,
+        }),
+      }).catch(() => {});
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const collectionMoods = Array.from(
     new Set(
@@ -97,49 +149,57 @@ export default function SearchPage() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!debouncedQuery) {
-        setResult(null);
-        setError(null);
-        return;
-      }
+    const term = debouncedQuery.trim();
 
-      setLoading(true);
+    if (!term) {
+      setResult(null);
       setError(null);
+      setLoading(false);
+      return;
+    }
 
+    // Cancelar la petición anterior: escribir rápido nunca pinta resultados viejos.
+    const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+
+    const fetchData = async () => {
       try {
-        const res = await fetch(
-          `/api/search?q=${encodeURIComponent(debouncedQuery)}`,
-        );
+        const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) {
-          const errData = await res.json();
+          const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || "Error fetching data");
         }
         const data = await res.json();
         setResult(data);
       } catch (err: any) {
+        if (err?.name === "AbortError") return;
         setError(err.message);
         setResult(null);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => controller.abort();
   }, [debouncedQuery]);
 
   return (
     <main className="collectify-main min-h-screen">
       <section className="mt-12 flex max-w-5xl flex-col justify-between gap-7 md:mt-20 md:flex-row md:items-end">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#9be7a5]">
+          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
             Explora tu próxima escucha
           </p>
           <h1 className="collectify-page-title !mt-3 !text-5xl md:!text-6xl">
             {t("title")}
           </h1>
         </div>
-        <p className="max-w-md text-sm leading-relaxed text-[#8f9f93]">
+        <p className="max-w-md text-sm leading-relaxed text-[var(--collectify-muted)]">
           {t("subtitle")}
         </p>
       </section>
@@ -148,24 +208,31 @@ export default function SearchPage() {
         placeholder={t("placeholder")}
         value={query}
         onChange={handleInputChange}
-        className="collectify-input mt-9 mb-12 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[#617164]"
+        className="collectify-input mt-9 mb-12 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--collectify-muted)]"
       />
 
-      {loading && <p className="text-sm text-[#8f9f93]">{t("loading")}</p>}
-      {error && <p className="text-sm text-[#ff9f76]">{error}</p>}
+      {loading && (
+        <p className="text-sm text-[var(--collectify-muted)]">{t("loading")}</p>
+      )}
+      {error && (
+        <p className="text-sm text-[var(--collectify-danger)]">{error}</p>
+      )}
 
       <div className="w-full max-w-6xl pb-16">
         {mounted && result && (
           <>
-            <h2 className="mb-5 text-lg font-semibold tracking-tight text-[#f2f5ef]">
+            <h2 className="mb-5 text-lg font-semibold tracking-tight text-[var(--foreground)]">
               {t("resultsTitle")}:{" "}
-              <span className="text-[#9be7a5]">{debouncedQuery}</span>
+              <span className="text-[var(--collectify-mint)]">
+                {debouncedQuery}
+              </span>
             </h2>
 
             {result.albums?.items?.length > 0 ? (
               <Stagger
                 className="grid w-full grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
                 stagger={0.04}
+                onMount
               >
                 {result.albums.items.map((album: any) => (
                   <StaggerItem key={album.id}>
@@ -178,9 +245,56 @@ export default function SearchPage() {
                 ))}
               </Stagger>
             ) : (
-              <p className="rounded-xl border border-emerald-100/10 bg-[#17261c]/45 p-5 text-sm text-[#b4c2b6]">
-                {t("noAlbumsFound")}
-              </p>
+              <section className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
+                <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+                  {t("noResults")}
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+                  {t("noResultsTitle")}
+                </h2>
+                <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--collectify-muted)]">
+                  {t("noResultsDescription")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="mt-6 rounded-xl bg-[var(--collectify-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--collectify-lime)]"
+                >
+                  {t("clearSearch")}
+                </button>
+                {(collectionMoods.length > 0 || collectionTags.length > 0) && (
+                  <div className="mt-8 border-t border-[var(--collectify-line)] pt-6">
+                    <h3 className="text-sm font-semibold text-[var(--foreground)]">
+                      {t("tryCollection")}
+                    </h3>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {collectionMoods.map((mood) => {
+                        const item = getMood(mood);
+                        return (
+                          <button
+                            key={mood}
+                            type="button"
+                            onClick={() => setQuery(item?.label || mood)}
+                            className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                          >
+                            {item?.symbol} {item?.label}
+                          </button>
+                        );
+                      })}
+                      {collectionTags.map((tag) => (
+                        <button
+                          key={`${tag.category}-${tag.value}`}
+                          type="button"
+                          onClick={() => setQuery(tag.value)}
+                          className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                        >
+                          {tag.category}: {tag.value}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
             )}
             {openModal && (
               <SelectedAlbumModal
@@ -208,13 +322,54 @@ export default function SearchPage() {
         )}
         {mounted && !result && !loading && !error && (
           <section className="mt-2 space-y-10">
-            <div className="rounded-2xl border border-emerald-100/10 bg-[#17261c]/45 p-5 sm:p-7">
-              <p className="text-sm leading-relaxed text-[#b4c2b6]">
+            <div className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
+              <h2 className="text-base font-semibold text-[var(--foreground)]">
+                {t("communityAlbumsTitle")}
+              </h2>
+              {communityAlbums.length > 0 ? (
+                <Stagger
+                  className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                  stagger={0.04}
+                  onMount
+                >
+                  {communityAlbums.map((album) => (
+                    <StaggerItem key={album.id}>
+                      <AlbumCard album={album} />
+                    </StaggerItem>
+                  ))}
+                </Stagger>
+              ) : (
+                <p className="mt-3 text-sm leading-relaxed text-[var(--collectify-muted)]">
+                  {t("communityAlbumsEmpty")}
+                </p>
+              )}
+            </div>
+            {communitySearches.length > 0 && (
+              <div className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
+                <h2 className="text-base font-semibold text-[var(--foreground)]">
+                  {t("communityTitle")}
+                </h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {communitySearches.map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => setQuery(term)}
+                      className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
+              <p className="text-sm leading-relaxed text-[var(--collectify-muted)]">
                 {t("emptySearchPrompt")}
               </p>
               {collectionMoods.length > 0 && (
                 <div className="mt-5">
-                  <h2 className="text-base font-semibold text-white">
+                  <h2 className="text-base font-semibold text-[var(--foreground)]">
                     Tu colección, por emociones
                   </h2>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -225,7 +380,7 @@ export default function SearchPage() {
                           key={mood}
                           type="button"
                           onClick={() => setQuery(item?.label || mood)}
-                          className="rounded-full border border-emerald-100/15 bg-[#101b14]/50 px-3 py-2 text-sm text-[#d6e5d8] transition hover:border-[#9be7a5]/60 hover:text-[#9be7a5]"
+                          className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
                         >
                           {item?.symbol} {item?.label}
                         </button>
@@ -236,7 +391,7 @@ export default function SearchPage() {
               )}
               {collectionTags.length > 0 && (
                 <div className="mt-5">
-                  <h2 className="text-base font-semibold text-white">
+                  <h2 className="text-base font-semibold text-[var(--foreground)]">
                     Explora por tus etiquetas
                   </h2>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -245,7 +400,7 @@ export default function SearchPage() {
                         key={`${tag.category}-${tag.value}`}
                         type="button"
                         onClick={() => setQuery(tag.value)}
-                        className="rounded-full border border-emerald-100/15 bg-[#101b14]/50 px-3 py-2 text-sm text-[#d6e5d8] transition hover:border-[#9be7a5]/60 hover:text-[#9be7a5]"
+                        className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
                       >
                         {tag.category}: {tag.value}
                       </button>
@@ -254,12 +409,15 @@ export default function SearchPage() {
                 </div>
               )}
               {!favoritesLoaded && (
-                <p className="mt-5 text-sm text-[#8f9f93]">
+                <p className="mt-5 text-sm text-[var(--collectify-muted)]">
                   {t("loadingCollection")}
                 </p>
               )}
               {favoritesError && (
-                <p role="alert" className="mt-5 text-sm text-[#ff9f76]">
+                <p
+                  role="alert"
+                  className="mt-5 text-sm text-[var(--collectify-danger)]"
+                >
                   {t("collectionLoadError")}
                 </p>
               )}
@@ -267,13 +425,13 @@ export default function SearchPage() {
                 !favoritesError &&
                 collectionMoods.length === 0 &&
                 collectionTags.length === 0 && (
-                  <p className="mt-5 text-sm leading-relaxed text-[#8f9f93]">
+                  <p className="mt-5 text-sm leading-relaxed text-[var(--collectify-muted)]">
                     {favoritesByAlbum.size === 0 ? (
                       <>
                         {t("emptyCollection")}{" "}
                         <Link
                           href="/favorites"
-                          className="font-semibold text-[#9be7a5] underline"
+                          className="font-semibold text-[var(--collectify-mint)] underline"
                         >
                           {t("exploreDiscs")}
                         </Link>

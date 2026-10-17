@@ -34,6 +34,8 @@ export default function ArtistBackdrop({
 
   return image ? (
     <img
+      loading="lazy"
+      decoding="async"
       src={image}
       alt={`Imagen de ${artistName || "artista"}`}
       className="album-art-modal-artist-image"

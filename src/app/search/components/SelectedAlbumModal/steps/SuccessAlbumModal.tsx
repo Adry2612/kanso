@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { LuUndo2 } from "react-icons/lu";
 import { Album } from "../../../../../../models/album";
-import { useAuth } from "@/context/AuthContext";
 import { useFetch } from "@/hooks/useFetch";
 import { undoFavorite } from "@/lib/api/favorites";
 import { useTranslations } from "@/context/I18nContext";
 import MoodBubble from "@/components/MoodBubble";
+import ModalShell from "@/components/ModalShell";
 import ArtistBackdrop from "./ArtistBackdrop";
 
 interface SuccessModalProps {
@@ -21,45 +21,34 @@ interface SuccessModalProps {
 }
 
 export const SuccessModal = ({
+  isOpen,
   onClose,
   album,
   feelings,
 }: SuccessModalProps) => {
   const t = useTranslations("modal");
-  const { user } = useAuth();
   const router = useRouter();
   const { execute: removeFavorite, loading } = useFetch(undoFavorite);
 
   return (
-    <section
-      className="album-action-modal album-art-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="saved-album-title"
-    >
-      <header className="album-art-modal-hero">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      labelledBy="saved-album-title"
+      closeLabel={t("close")}
+      hero={
         <ArtistBackdrop
           artistId={album.artists[0]?.id}
           artistName={album.artists[0]?.name}
         />
-        <div className="album-art-modal-hero-content">
-          <div className="flex items-start justify-between gap-4">
-            <span className="relative z-10 rounded-full border border-white/25 bg-black/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-white/85 backdrop-blur">
-              En tu colección
-            </span>
-            <button
-              onClick={onClose}
-              aria-label="Cerrar"
-              className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/25 text-xl text-white/80 transition hover:bg-black/45 hover:text-white"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      </header>
+      }
+      heroBadge="En tu colección"
+    >
       <div className="album-art-modal-body">
-        <div className="album-modal-album-row border-b border-emerald-100/10 pb-5">
+        <div className="album-modal-album-row border-b border-[var(--collectify-line)] pb-5">
           <img
+            loading="lazy"
+            decoding="async"
             src={album.images[0]?.url}
             alt={album.name}
             className="album-art-modal-floating-cover"
@@ -92,7 +81,7 @@ export const SuccessModal = ({
           </div>
         </div>
         {feelings.length > 0 && (
-          <div className="mt-6 border-t border-emerald-100/10 pt-5">
+          <div className="mt-6 border-t border-[var(--collectify-line)] pt-5">
             <p className="text-sm font-semibold">{t("relatedEmotions")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {feelings.map((feeling: any) => (
@@ -102,30 +91,25 @@ export const SuccessModal = ({
           </div>
         )}
       </div>
-      <div className="album-art-modal-actions">
-        <button
-          className="album-action-modal-secondary px-4 py-3"
-          onClick={onClose}
-        >
+      <div className="modal-shell-actions">
+        <button className="modal-action-secondary" onClick={onClose}>
           {t("addAnother")}
         </button>
         <button
-          className="album-action-modal-primary px-4 py-3"
+          className="modal-action-primary"
           onClick={() => router.push("/favorites")}
         >
           {t("viewCollection")}
         </button>
       </div>
       <button
-        className="album-action-modal-danger mx-auto mb-5 flex items-center gap-2 rounded-full px-3 py-1.5 text-xs transition hover:bg-red-500/10 disabled:opacity-50"
+        className="modal-action-danger mx-auto my-4 w-auto px-4 py-2 text-xs"
         disabled={loading}
-        onClick={() =>
-          removeFavorite(album, user?.uid || "").then(() => onClose())
-        }
+        onClick={() => removeFavorite(album).then(() => onClose())}
       >
         <LuUndo2 />
         {loading ? "Quitando..." : t("undo")}
       </button>
-    </section>
+    </ModalShell>
   );
 };

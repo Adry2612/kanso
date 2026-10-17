@@ -11,6 +11,7 @@ import { addFavorite } from "@/lib/api/favorites";
 import { useTranslations } from "@/context/I18nContext";
 import { FavoriteFormat, FavoriteTag } from "@/types/favorites";
 import ArtistBackdrop from "./ArtistBackdrop";
+import ModalShell from "@/components/ModalShell";
 import { activityOptions } from "@/constants/activities";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -61,6 +62,9 @@ export const SaveAlbumModal = ({
     setTags(initialTags);
     setTagCategory("idioma");
     setTagValue("");
+    // Resetear con los valores initial* borraría las ediciones en curso del modal;
+    // solo debe re-inicializarse al abrirse o al cambiar de álbum.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, album.id]);
 
   const save = async () => {
@@ -84,41 +88,31 @@ export const SaveAlbumModal = ({
   };
 
   return (
-    <section
-      className="album-action-modal album-save-modal album-art-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="save-album-title"
-    >
-      <header className="album-art-modal-hero">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      labelledBy="save-album-title"
+      closeLabel={t("close")}
+      hero={
         <ArtistBackdrop
           artistId={album.artists[0]?.id}
           artistName={album.artists[0]?.name}
         />
-        <div className="album-art-modal-hero-content">
-          <div className="flex items-start justify-between gap-4">
-            <span className="relative z-10 rounded-full border border-white/25 bg-black/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-white/85 backdrop-blur">
-              Nueva incorporación
-            </span>
-            <button
-              onClick={onClose}
-              aria-label="Cerrar"
-              className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/25 text-xl text-white/80 hover:bg-black/45 hover:text-white"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      </header>
+      }
+      heroBadge="Nueva incorporación"
+    >
       <div className="album-art-modal-body !pb-0">
         <div className="album-modal-album-row">
           <img
+            loading="lazy"
+            decoding="async"
             src={album.images[0]?.url}
             alt={album.name}
             className="album-art-modal-floating-cover"
           />
           <div className="album-modal-album-meta">
-            <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#9be7a5]">
+            <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
               Álbum
             </p>
             <h2
@@ -132,11 +126,11 @@ export const SaveAlbumModal = ({
             </p>
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-2 border-emerald-100/10 pt-4">
+        <div className="mt-5 grid grid-cols-3 gap-2 border-[var(--collectify-line)] pt-4">
           {steps.map((label, index) => (
             <div
               key={label}
-              className={`pb-4 pt-2 text-[10px] font-bold uppercase tracking-[.12em] transition ${index <= step ? "border-t-2 border-[#9be7a5] text-[#9be7a5]" : "border-t-2 border-emerald-100/10 text-[#8f9f93]"}`}
+              className={`pb-4 pt-2 text-[10px] font-bold uppercase tracking-[.12em] transition ${index <= step ? "border-t-2 border-[var(--collectify-mint)] text-[var(--collectify-mint)]" : "border-t-2 border-[var(--collectify-line)] text-[var(--collectify-muted)]"}`}
             >
               <span className="mr-1">0{index + 1}</span>
               {label}
@@ -145,7 +139,7 @@ export const SaveAlbumModal = ({
         </div>
       </div>
 
-      <div className="album-action-modal-soft min-h-[300px] px-5 py-6 sm:px-7">
+      <div className="album-action-modal-soft min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={step}
@@ -156,7 +150,7 @@ export const SaveAlbumModal = ({
           >
             {step === 0 && (
               <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[#9be7a5]">
+                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
                   Paso 1
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
@@ -166,7 +160,7 @@ export const SaveAlbumModal = ({
                   Selecciona una o varias emociones para recordar por qué
                   guardas este disco.
                 </p>
-                <div className="mt-5 rounded-xl border border-emerald-100/10 p-2">
+                <div className="mt-5 rounded-xl border border-[var(--collectify-line)] p-2">
                   <MoodSelector
                     onChange={setFeelings}
                     compact
@@ -178,7 +172,7 @@ export const SaveAlbumModal = ({
                     ? `${feelings.length} sensación${feelings.length === 1 ? "" : "es"} seleccionada${feelings.length === 1 ? "" : "s"}`
                     : "Puedes continuar sin seleccionar ninguna."}
                 </p>
-                <div className="mt-6 border-t border-emerald-100/10 pt-5">
+                <div className="mt-6 border-t border-[var(--collectify-line)] pt-5">
                   <h4 className="text-sm font-semibold">
                     Etiquetas personales
                   </h4>
@@ -238,7 +232,7 @@ export const SaveAlbumModal = ({
                           setTagValue("");
                         }
                       }}
-                      className="rounded-xl border border-emerald-100/15 px-3 py-2 text-sm text-[#9be7a5] hover:border-[#9be7a5]/60"
+                      className="rounded-xl border border-[var(--collectify-line-strong)] px-3 py-2 text-sm text-[var(--collectify-mint)] hover:border-[var(--collectify-mint)]/60"
                     >
                       Añadir
                     </button>
@@ -258,7 +252,7 @@ export const SaveAlbumModal = ({
                               ),
                             )
                           }
-                          className="rounded-full bg-emerald-100/10 px-3 py-1.5 text-xs text-[#d6e5d8] hover:text-[#ffb292]"
+                          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)] hover:text-[var(--collectify-danger)]"
                         >
                           {tag.category}: {tag.value} ×
                         </button>
@@ -270,7 +264,7 @@ export const SaveAlbumModal = ({
             )}
             {step === 1 && (
               <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[#9be7a5]">
+                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
                   Paso 2
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
@@ -313,7 +307,7 @@ export const SaveAlbumModal = ({
             )}
             {step === 2 && (
               <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[#9be7a5]">
+                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
                   Paso 3
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
@@ -363,20 +357,24 @@ export const SaveAlbumModal = ({
             )}
           </motion.div>
         </AnimatePresence>
-        {error && (
-          <p className="mt-5 rounded-xl border border-[#ff9f76]/30 bg-[#ff9f76]/10 p-3 text-xs text-[#ffb292]">
-            {error}
-          </p>
-        )}
       </div>
 
-      <footer className="flex items-center justify-between gap-3 border-t border-emerald-100/10 px-5 py-4 sm:px-7">
+      {error && (
+        <p
+          role="alert"
+          className="border-t border-[var(--collectify-danger)]/20 bg-[var(--collectify-danger)]/10 px-5 py-3 text-xs text-[var(--collectify-danger)] sm:px-7"
+        >
+          {error}
+        </p>
+      )}
+
+      <footer className="modal-shell-actions">
         <button
           type="button"
           onClick={() =>
             step === 0 ? onClose() : setStep((current) => current - 1)
           }
-          className="rounded-xl px-3 py-2.5 text-sm text-[#8f9f93] transition hover:text-white"
+          className="modal-action-secondary"
         >
           {step === 0 ? t("cancel") : "← Atrás"}
         </button>
@@ -386,7 +384,7 @@ export const SaveAlbumModal = ({
             step < 2 ? setStep((current) => current + 1) : save()
           }
           disabled={loading || (step === 2 && format.length === 0)}
-          className="rounded-xl bg-[#9be7a5] px-5 py-2.5 text-sm font-semibold text-[#102117] transition hover:bg-[#d6f28d] disabled:cursor-not-allowed disabled:opacity-60"
+          className="modal-action-primary"
         >
           {loading
             ? "Guardando..."
@@ -395,6 +393,6 @@ export const SaveAlbumModal = ({
               : "Guardar álbum"}
         </button>
       </footer>
-    </section>
+    </ModalShell>
   );
 };

@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 import { Album } from "../../../../../../models/album";
-import { useAuth } from "@/context/AuthContext";
 import { useFetch } from "@/hooks/useFetch";
 import { undoFavorite } from "@/lib/api/favorites";
 import { IoTrash } from "react-icons/io5";
 import ArtistBackdrop from "./ArtistBackdrop";
 import MoodBubble from "@/components/MoodBubble";
+import ModalShell from "@/components/ModalShell";
 import { useTranslations } from "@/context/I18nContext";
 
 interface AlbumAlreadyFavoriteStepProps {
@@ -19,47 +19,35 @@ interface AlbumAlreadyFavoriteStepProps {
 }
 
 export const AlbumAlreadyFavoriteStep = ({
+  isOpen,
   onClose,
   album,
   feelings,
   activities,
   onEdit,
 }: AlbumAlreadyFavoriteStepProps) => {
-  const { user } = useAuth();
   const tActivities = useTranslations("activities");
   const { execute: removeFavorite, loading } = useFetch(undoFavorite);
   if (!album) return null;
 
   return (
-    <section
-      className="album-action-modal album-art-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="existing-album-title"
-    >
-      <header className="album-art-modal-hero">
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      labelledBy="existing-album-title"
+      hero={
         <ArtistBackdrop
           artistId={album.artists[0]?.id}
           artistName={album.artists[0]?.name}
         />
-        <div className="album-art-modal-hero-content">
-          <div className="flex justify-between">
-            <span className="relative z-10 rounded-full border border-white/25 bg-black/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-white/85">
-              Tu colección
-            </span>
-            <button
-              onClick={onClose}
-              aria-label="Cerrar"
-              className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/25 text-xl text-white/80"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      </header>
+      }
+      heroBadge="Tu colección"
+    >
       <div className="album-art-modal-body">
         <div className="album-modal-album-row">
           <img
+            loading="lazy"
+            decoding="async"
             src={album.images[0]?.url}
             alt={album.name}
             className="album-art-modal-floating-cover"
@@ -86,7 +74,7 @@ export const AlbumAlreadyFavoriteStep = ({
             álbum.
           </p>
         </div>
-        <div className="mt-6 grid gap-5 border-t border-emerald-100/10 pt-5">
+        <div className="mt-6 grid gap-5 border-t border-[var(--collectify-line)] pt-5">
           <div>
             <p className="album-action-modal-eyebrow">Emociones</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -108,7 +96,7 @@ export const AlbumAlreadyFavoriteStep = ({
                 activities.map((activity) => (
                   <span
                     key={activity}
-                    className="rounded-full border border-emerald-100/15 px-3 py-1.5 text-xs text-[#b4c2b6]"
+                    className="rounded-full border border-[var(--collectify-line-strong)] px-3 py-1.5 text-xs text-[var(--collectify-muted)]"
                   >
                     {tActivities(activity)}
                   </span>
@@ -122,24 +110,19 @@ export const AlbumAlreadyFavoriteStep = ({
           </div>
         </div>
       </div>
-      <div className="album-art-modal-actions">
-        <button
-          onClick={onEdit}
-          className="album-action-modal-primary px-4 py-3"
-        >
+      <div className="modal-shell-actions">
+        <button onClick={onEdit} className="modal-action-primary">
           Editar información
         </button>
         <button
           disabled={loading}
-          onClick={() =>
-            removeFavorite(album, user?.uid || "").then(() => onClose())
-          }
-          className="album-action-modal-danger flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm disabled:opacity-50"
+          onClick={() => removeFavorite(album).then(() => onClose())}
+          className="modal-action-danger"
         >
           <IoTrash />
           {loading ? "Eliminando..." : "Eliminar álbum"}
         </button>
       </div>
-    </section>
+    </ModalShell>
   );
 };

@@ -14,17 +14,18 @@ import FilterModal from "@/components/FilterModal";
 import { useFavoritesFilter } from "@/hooks/useFavoritesFilter";
 import { FilterOptions, SortMethod } from "@/types/favorites";
 import { Skeleton } from "@/components/Skeleton";
+import { authFetch } from "@/lib/api/authFetch";
 
 export default function UserFavorites() {
   const t = useTranslations("favorites");
-  const tCommon = useTranslations("common");
   const tModal = useTranslations("modal");
   const tMoods = useTranslations("moods");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useTransitionRouter();
   const [favorites, setFavorites] = useState([]);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showSortModal, setShowSortModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [sortBy, setSortBy] = useState<SortMethod>("");
@@ -35,12 +36,20 @@ export default function UserFavorites() {
     tags: [],
   });
 
-  const fetchFavorites = async (userId: string) => {
+  const fetchFavorites = async () => {
     setLoading(true);
-    const res = await fetch(`/api/userFavorites?userId=${userId}`);
-    const data = await res.json();
-    setFavorites(data.favorites);
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await authFetch("/api/userFavorites");
+      if (!res.ok) throw new Error(`Carga fallida (${res.status})`);
+      const data = await res.json();
+      setFavorites(data.favorites ?? []);
+    } catch (err) {
+      console.error("Error cargando la colección:", err);
+      setError("No pudimos cargar tu colección. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const { groupedFavorites } = useFavoritesFilter(favorites, sortBy, filters);
@@ -50,15 +59,19 @@ export default function UserFavorites() {
   }, []);
 
   useEffect(() => {
+    if (authLoading) return;
     if (user?.uid) {
-      fetchFavorites(user.uid);
+      fetchFavorites();
+    } else {
+      // Sin sesión no hay nada que cargar: no dejar el esqueleto indefinidamente.
+      setLoading(false);
     }
-  }, [user?.uid]);
+  }, [user?.uid, authLoading]);
 
   if (!mounted || loading) {
     return (
       <main className="collectify-main min-h-screen">
-        <div className="flex flex-row items-center justify-between text-white">
+        <div className="flex flex-row items-center justify-between text-[var(--foreground)]">
           <Skeleton className="w-56 h-8 mb-8" />
           <div className="flex gap-4">
             <Skeleton className="w-28 h-9 rounded-full" />
@@ -78,14 +91,39 @@ export default function UserFavorites() {
     );
   }
 
+  if (error) {
+    return (
+      <main className="collectify-main min-h-screen">
+        <section className="mt-20 max-w-xl rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-7">
+          <h1 className="text-xl font-semibold text-[var(--foreground)]">
+            No pudimos cargar tu colección
+          </h1>
+          <p
+            role="alert"
+            className="mt-2 text-sm leading-relaxed text-[var(--collectify-danger)]"
+          >
+            {error}
+          </p>
+          <button
+            type="button"
+            onClick={() => user?.uid && fetchFavorites()}
+            className="mt-5 rounded-xl bg-[var(--collectify-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)]"
+          >
+            Reintentar
+          </button>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="collectify-main min-h-screen">
-      <div className="mb-10 flex flex-col items-start justify-between gap-5 text-white md:flex-row md:items-end">
+      <div className="mb-10 flex flex-col items-start justify-between gap-5 text-[var(--foreground)] md:flex-row md:items-end">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#9be7a5]">
+          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
             Tu archivo personal
           </p>
-          <span className="mt-3 block text-5xl font-semibold tracking-tight text-white">
+          <span className="mt-3 block text-5xl font-semibold tracking-tight text-[var(--foreground)]">
             {t("title")}
           </span>
         </div>
@@ -93,7 +131,7 @@ export default function UserFavorites() {
         <div className="flex gap-4">
           <button
             onClick={() => setShowSortModal(true)}
-            className="relative flex flex-row items-center justify-center gap-2 rounded-xl border border-emerald-200/10 bg-[#17261c] px-4 py-2 text-[#9be7a5] transition hover:border-[#9be7a5]/50"
+            className="relative flex flex-row items-center justify-center gap-2 rounded-xl border border-[var(--collectify-line)] bg-[var(--surface-1)] px-4 py-2 text-[var(--collectify-mint)] transition hover:border-[var(--collectify-mint)]/50"
           >
             <BiSortAlt2 size={20} />
             {t("sort")}
@@ -103,14 +141,14 @@ export default function UserFavorites() {
           </button>
           <button
             onClick={() => setShowFilterModal(true)}
-            className="relative flex flex-row items-center justify-center gap-2 rounded-xl border border-emerald-200/10 bg-[#17261c] px-4 py-2 text-[#9be7a5] transition hover:border-[#9be7a5]/50"
+            className="relative flex flex-row items-center justify-center gap-2 rounded-xl border border-[var(--collectify-line)] bg-[var(--surface-1)] px-4 py-2 text-[var(--collectify-mint)] transition hover:border-[var(--collectify-mint)]/50"
           >
             <MdFilterList size={20} />
             {t("filter")}
             {(filters.moods.length > 0 ||
               filters.genres.length > 0 ||
               filters.formats.length > 0) && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full flex items-center justify-center text-emerald-950 text-xs font-bold">
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full flex items-center justify-center text-[var(--background)] text-xs font-bold">
                 {filters.moods.length +
                   filters.genres.length +
                   filters.formats.length}
@@ -179,7 +217,7 @@ export default function UserFavorites() {
           {filters.formats.map((format) => (
             <span
               key={format}
-              className="flex items-center gap-2 rounded-full border border-emerald-200/20 bg-emerald-300/10 px-3 py-1 text-sm text-[#9be7a5]"
+              className="flex items-center gap-2 rounded-full border border-[var(--collectify-line)] bg-[var(--surface-2)] px-3 py-1 text-sm text-[var(--collectify-mint)]"
             >
               {format === "vinyl"
                 ? "Vinilo"
@@ -195,7 +233,7 @@ export default function UserFavorites() {
                     formats: filters.formats.filter((item) => item !== format),
                   })
                 }
-                className="hover:text-[#ff9f76]"
+                className="hover:text-[var(--collectify-danger)]"
               >
                 ✕
               </button>
@@ -205,22 +243,22 @@ export default function UserFavorites() {
       )}
 
       {groupedFavorites.length === 0 ? (
-        <section className="mt-10 max-w-xl rounded-2xl border border-emerald-100/10 bg-[#17261c]/45 p-7 text-center">
-          <span className="text-3xl text-[#9be7a5]">◇</span>
-          <h2 className="mt-4 text-xl font-semibold text-white">
+        <section className="mt-10 max-w-xl rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-7 text-center">
+          <span className="text-3xl text-[var(--collectify-mint)]">◇</span>
+          <h2 className="mt-4 text-xl font-semibold text-[var(--foreground)]">
             {filters.moods.length ||
             filters.genres.length ||
             filters.formats.length
               ? "No hay discos con estos filtros"
               : t("noFavorites")}
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#8f9f93]">
+          <p className="mt-2 text-sm leading-relaxed text-[var(--collectify-muted)]">
             Ajusta los filtros o explora la búsqueda para empezar a construir tu
             colección.
           </p>
           <button
             onClick={() => router.push("/search")}
-            className="mt-5 rounded-xl bg-[#9be7a5] px-4 py-3 text-sm font-semibold text-[#102117]"
+            className="mt-5 rounded-xl bg-[var(--collectify-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)]"
           >
             Explorar discos
           </button>
@@ -228,18 +266,18 @@ export default function UserFavorites() {
       ) : (
         groupedFavorites.map((group, idx) => (
           <div key={idx} className="mb-12">
-            <h2 className="text-4xl font-bold text-white mb-6 border-b border-green-900/30 pb-2">
+            <h2 className="text-4xl font-bold text-[var(--foreground)] mb-6 border-b border-green-900/30 pb-2">
               {group.groupName}
             </h2>
             <Stagger
               className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6"
               stagger={0.04}
+              onMount
             >
               {group.items.map((favorite: any) => (
                 <StaggerItem key={favorite.album.id}>
                   <AlbumCard
                     album={favorite.album}
-                    tags={favorite.tags || []}
                     onClick={() => router.push(`/albums/${favorite.album.id}`)}
                   />
                 </StaggerItem>
