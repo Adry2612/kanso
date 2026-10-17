@@ -50,21 +50,31 @@ El sistema DEBE almacenar los datos de cada álbum en un catálogo global reutil
 
 ### Requirement: Listado de la colección
 
-El sistema DEBE listar los álbumes guardados del usuario con sus datos de álbum, emociones, actividades, formatos y etiquetas, ordenados del más reciente al más antiguo.
+El sistema DEBE listar los álbumes guardados del usuario con sus datos de álbum, emociones, actividades y formatos, ordenados del más reciente al más antiguo, sin mostrar las etiquetas personales en las tarjetas, y DEBE informar si la carga falla en lugar de quedarse cargando.
 
 #### Scenario: Colección con álbumes
 
 - **WHEN** el usuario abre su colección y tiene álbumes guardados
 - **THEN** el sistema los muestra del más reciente al más antiguo junto con los datos del álbum
 
+#### Scenario: Etiquetas ocultas en las tarjetas
+
+- **WHEN** la persona ve las tarjetas de su colección
+- **THEN** las tarjetas no muestran las etiquetas personales de cada álbum
+
 #### Scenario: Colección vacía
 
 - **WHEN** el usuario no tiene álbumes guardados
 - **THEN** el sistema muestra el estado vacío y un acceso a la búsqueda
 
+#### Scenario: Error al cargar la colección
+
+- **WHEN** la carga de la colección falla
+- **THEN** el sistema muestra un estado de error con la opción de reintentar, y no deja la pantalla cargando indefinidamente
+
 ### Requirement: Quitar un álbum de la colección
 
-El sistema DEBE permitir eliminar un álbum de la colección del usuario.
+El sistema DEBE permitir eliminar un álbum de la colección del usuario, y DEBE tratar como inofensivo el intento de quitar un álbum que no está (sin responder con error).
 
 #### Scenario: Eliminación correcta
 
@@ -74,7 +84,7 @@ El sistema DEBE permitir eliminar un álbum de la colección del usuario.
 #### Scenario: Álbum no presente
 
 - **WHEN** se intenta eliminar un álbum que no está en la colección
-- **THEN** el sistema responde indicando que el álbum no está en favoritos
+- **THEN** el sistema responde correctamente indicando que no estaba, y el cliente no lo trata como un fallo
 
 ### Requirement: Ordenación de la colección
 
@@ -174,3 +184,41 @@ El sistema DEBE mostrar un estado cuando el álbum ya está en la colección y o
 
 - **WHEN** la persona pulsa "Deshacer" en la confirmación de guardado
 - **THEN** el sistema elimina el álbum recién guardado de la colección
+
+### Requirement: Validación de la petición de colección
+
+El sistema DEBE validar toda petición de guardado o borrado antes de tocar los datos: `userId` y el identificador del álbum son obligatorios, y las listas de emociones, actividades y etiquetas DEBEN tratarse como arrays, ignorando los elementos inválidos.
+
+#### Scenario: Petición sin usuario
+
+- **WHEN** llega una petición de colección sin `userId`
+- **THEN** el sistema responde con un error de petición inválida y no escribe ni borra nada
+
+#### Scenario: Petición sin álbum
+
+- **WHEN** llega una petición de colección sin un álbum identificable
+- **THEN** el sistema responde con un error de petición inválida y no toca los datos
+
+#### Scenario: Listas con elementos inválidos
+
+- **WHEN** la petición incluye emociones o etiquetas con entradas que no son texto válido
+- **THEN** el sistema las descarta y guarda solo lo válido, sin fallar la operación
+
+### Requirement: Guardado fiable y reintentable
+
+El sistema DEBE completar el guardado de un álbum y confirmarlo sin depender de servicios externos innecesarios, y ante un fallo transitorio DEBE informar del error y permitir reintentar sin perder los datos del asistente.
+
+#### Scenario: Guardado completado
+
+- **WHEN** la persona completa el asistente y pulsa guardar
+- **THEN** el sistema completa el guardado y muestra la confirmación sin quedarse en el paso de formato
+
+#### Scenario: Fallo transitorio
+
+- **WHEN** el guardado falla por un error transitorio
+- **THEN** el sistema muestra el error y deja volver a intentarlo desde el mismo paso
+
+#### Scenario: Reintento tras registro parcial
+
+- **WHEN** un intento anterior ya creó el álbum en el catálogo global pero no completó el favorito
+- **THEN** un nuevo intento completa el favorito reutilizando el álbum sin duplicarlo

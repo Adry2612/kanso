@@ -8,7 +8,7 @@ Permite buscar álbumes y artistas en Spotify desde la aplicación y explorar lo
 
 ### Requirement: Búsqueda con retardo (debounce)
 
-El sistema DEBE buscar en Spotify tras un retardo de 500 ms desde la última pulsación, sin realizar búsquedas mientras la consulta está vacía.
+El sistema DEBE buscar en Spotify tras un retardo de 500 ms desde la última pulsación, sin realizar búsquedas mientras la consulta está vacía. Al iniciar una búsqueda nueva, el sistema DEBE cancelar la petición anterior que siga en curso para no mostrar resultados obsoletos.
 
 #### Scenario: Consulta efectiva
 
@@ -17,22 +17,42 @@ El sistema DEBE buscar en Spotify tras un retardo de 500 ms desde la última pul
 
 #### Scenario: Consulta vacía
 
-- **WHEN** la consulta está vacía
+- **WHEN** la consulta está vacía o solo contiene espacios
 - **THEN** el sistema no realiza ninguna búsqueda y limpia los resultados y errores
+
+#### Scenario: Escritura rápida sin resultados obsoletos
+
+- **WHEN** la consulta cambia antes de que llegue la respuesta de la búsqueda anterior
+- **THEN** el sistema descarta la respuesta anterior y muestra solo los resultados de la consulta más reciente
 
 ### Requirement: Resultados de la búsqueda
 
-El sistema DEBE mostrar los álbumes encontrados en una cuadrícula adaptable con portada, nombre y artistas.
+El sistema DEBE mostrar los álbumes encontrados en una cuadrícula adaptable con portada, nombre y artistas, y DEBE hacerlos visibles en cuanto aparecen, sin que la animación de entrada pueda dejarlos ocultos. El sistema DEBE tratar como error cualquier respuesta que no sea un resultado válido de Spotify, y DEBE distinguir ese error del estado sin resultados.
 
 #### Scenario: Resultados encontrados
 
 - **WHEN** Spotify devuelve uno o más álbumes
 - **THEN** el sistema muestra una cuadrícula de tarjetas de álbum con el título de resultados
 
+#### Scenario: Resultados visibles al aparecer
+
+- **WHEN** los resultados de una búsqueda aparecen en pantalla
+- **THEN** las tarjetas son visibles aunque la pestaña no esté en primer plano o el contenido ya estuviera en pantalla
+
 #### Scenario: Sin resultados
 
 - **WHEN** Spotify no devuelve álbumes para la consulta
-- **THEN** el sistema muestra el mensaje de que no se encontraron álbumes
+- **THEN** el sistema muestra un estado vacío que explica que no hay resultados para esa búsqueda, ofrece limpiar la búsqueda y sugiere explorar la colección por emociones o etiquetas cuando existan
+
+#### Scenario: Error de búsqueda frente a sin resultados
+
+- **WHEN** la petición de búsqueda responde con error
+- **THEN** el sistema muestra el mensaje de error y no el estado sin resultados
+
+#### Scenario: Respuesta inválida del proveedor
+
+- **WHEN** Spotify responde con un error (por ejemplo, límite de peticiones) y el sistema lo recibe
+- **THEN** el sistema responde con error y la búsqueda muestra un error en lugar del estado sin resultados
 
 ### Requirement: Identificación de favoritos en los resultados
 

@@ -8,12 +8,12 @@ Genera sugerencias de álbumes a partir de la colección del usuario según su e
 
 ### Requirement: Catálogo de emociones
 
-El sistema DEBE ofrecer un catálogo de 15 emociones con etiqueta, emoji y símbolo, y normalizar sinónimos y variantes a una clave canónica.
+El sistema DEBE ofrecer un catálogo de 15 emociones con etiqueta, emoji y símbolo, DEBE normalizar sinónimos y variantes a una clave canónica, y DEBE mostrarlas todas a la vez en el selector, sin paginar, con su emoji y una etiqueta legible en el tema activo.
 
 #### Scenario: Emociones disponibles
 
 - **WHEN** la persona abre el selector de emociones
-- **THEN** el sistema muestra las 15 emociones del catálogo
+- **THEN** el sistema muestra las 15 emociones del catálogo, todas visibles a la vez
 
 #### Scenario: Normalización de sinónimos
 
@@ -22,12 +22,12 @@ El sistema DEBE ofrecer un catálogo de 15 emociones con etiqueta, emoji y símb
 
 ### Requirement: Catálogo de actividades
 
-El sistema DEBE ofrecer un catálogo de 9 actividades: trabajar, estudiar, hacer ejercicio, cocinar, relajarse, jugar, desplazarse, tareas del hogar y fiesta.
+El sistema DEBE ofrecer un catálogo de 9 actividades —trabajar, estudiar, hacer ejercicio, cocinar, relajarse, jugar, desplazarse, tareas del hogar y fiesta— con etiqueta y emoji, y DEBE mostrarlas todas a la vez en el selector, sin paginar.
 
 #### Scenario: Actividades disponibles
 
 - **WHEN** la persona abre el selector de actividades
-- **THEN** el sistema muestra las 9 actividades del catálogo
+- **THEN** el sistema muestra las 9 actividades del catálogo, todas visibles a la vez
 
 ### Requirement: Recomendación por emoción
 
@@ -43,10 +43,20 @@ El sistema DEBE recomendar un álbum aleatorio de la colección del usuario que 
 - **WHEN** la persona limita el formato a vinilo, CD o casete
 - **THEN** el sistema solo tiene en cuenta álbumes con ese formato
 
+#### Scenario: Filtro por etiquetas
+
+- **WHEN** la persona activa una o más etiquetas de su colección
+- **THEN** el sistema solo tiene en cuenta álbumes que contienen alguna de esas etiquetas, sin distinguir mayúsculas de minúsculas
+
 #### Scenario: Sin coincidencias
 
-- **WHEN** ninguna entrada de la colección coincide con la selección
-- **THEN** el sistema muestra un mensaje de que no se encontraron álbumes
+- **WHEN** ninguna entrada de la colección coincide con la emoción elegida
+- **THEN** el sistema muestra un estado vacío que explica que no hay álbumes para esa emoción, muestra las emociones elegidas y ofrece una llamada a la acción que lleva a la búsqueda para añadir un álbum que te haga sentir así
+
+#### Scenario: Error técnico en la recomendación
+
+- **WHEN** la recomendación falla por un error técnico o de red
+- **THEN** el sistema muestra un mensaje de error diferenciado del estado sin coincidencias
 
 ### Requirement: Recomendación por actividad
 
@@ -111,3 +121,27 @@ El sistema DEBE permitir abrir el álbum recomendado y escucharlo en Spotify des
 
 - **WHEN** la persona pulsa sobre la recomendación
 - **THEN** el sistema la lleva al detalle del álbum con su lista de pistas
+
+#### Scenario: Escuchar en Spotify desde el resultado
+
+- **WHEN** la persona pulsa "Escuchar en Spotify" en el resultado de la recomendación
+- **THEN** el sistema abre el álbum en Spotify
+
+#### Scenario: Álbum sin enlace de Spotify
+
+- **WHEN** el álbum recomendado no tiene un enlace de Spotify disponible
+- **THEN** el sistema no lanza ningún error al intentar escucharlo
+
+### Requirement: Un único punto de entrada a la recomendación
+
+La pantalla de inicio DEBE presentar una sola decisión principal —emoción o actividad— como vía dominante, y la recomendación rápida DEBE quedar como vía secundaria y visualmente subordinada, sin dos llamadas a la acción del mismo peso.
+
+#### Scenario: Jerarquía clara
+
+- **WHEN** la persona abre el inicio
+- **THEN** ve un único panel principal para elegir emoción o actividad y, subordinada, la vía de recomendación rápida
+
+#### Scenario: Recomendación rápida secundaria
+
+- **WHEN** la persona elige la recomendación rápida
+- **THEN** el sistema le pide solo formato o etiqueta y genera la recomendación sin pedir emociones

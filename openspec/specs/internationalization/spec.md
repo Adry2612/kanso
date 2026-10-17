@@ -17,12 +17,17 @@ El sistema DEBE soportar español e inglés, con español como idioma por defect
 
 ### Requirement: Cambio de idioma
 
-El sistema DEBE permitir cambiar el idioma de la interfaz sin recargar la página.
+El sistema DEBE ofrecer en Ajustes un selector de idioma (Español / English) y, al cambiarlo, DEBE actualizar de inmediato todos los textos traducidos de la interfaz, incluida la propia página de Ajustes.
 
 #### Scenario: Cambio a inglés
 
-- **WHEN** la persona selecciona "EN"
-- **THEN** el sistema actualiza los textos traducidos al inglés de inmediato
+- **WHEN** la persona elige "English" en el selector de idioma de Ajustes
+- **THEN** el sistema actualiza al inglés los textos traducidos de toda la interfaz, incluidos los de Ajustes, sin recargar la página
+
+#### Scenario: Cambio a español
+
+- **WHEN** la persona elige "Español" tras haber elegido inglés
+- **THEN** la interfaz vuelve a mostrarse en español
 
 ### Requirement: Persistencia de la preferencia
 
@@ -46,3 +51,12 @@ El sistema DEBE resolver claves de traducción con espacios de nombres y claves 
 
 - **WHEN** se solicita una clave que no existe en el idioma activo
 - **THEN** el sistema devuelve la propia clave como texto
+
+### Requirement: Idioma del documento
+
+El sistema DEBE aplicar el idioma activo al atributo `lang` del documento, de modo que coincida con la interfaz mostrada.
+
+#### Scenario: Atributo lang del documento
+
+- **WHEN** la persona cambia el idioma de la interfaz
+- **THEN** el atributo `lang` del documento pasa a reflejar el idioma activo

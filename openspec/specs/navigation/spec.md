@@ -22,12 +22,17 @@ El sistema DEBE mostrar una página de bienvenida pública con acceso a registro
 
 ### Requirement: Panel lateral de navegación
 
-El sistema DEBE mostrar un panel lateral en las páginas privadas con accesos a Inicio, Búsqueda, Favoritos, Historial y Ajustes.
+El sistema DEBE mostrar un panel lateral en las páginas privadas con accesos a Inicio, Búsqueda, Artistas, Novedades, Favoritos, Historial y Ajustes.
 
 #### Scenario: Navegación entre secciones
 
 - **WHEN** el usuario pulsa una sección del panel
 - **THEN** el sistema lo lleva a la ruta correspondiente
+
+#### Scenario: Acceso a las novedades
+
+- **WHEN** el usuario pulsa "Novedades"
+- **THEN** el sistema lo lleva a `/releases`
 
 ### Requirement: Identidad del usuario
 
