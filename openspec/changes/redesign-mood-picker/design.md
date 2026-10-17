@@ -75,3 +75,18 @@ Dos direcciones, ambas con la misma estructura (rejilla agrupada, sin carrusel):
 ## Open Questions
 
 - **A o B** para el lenguaje visual de la marca de cada emoción (ver Decisión 4).
+
+## Feedback de la revisión (vuelta 1 — RECHAZADA)
+
+La primera implementación (pastillas + agrupación por familias) se revirtió
+(commit `08fb61b`). Motivos concretos del rechazo, a tener en cuenta en el
+siguiente intento:
+
+1. **El agrupado estorba** — los rótulos de familia (Energía/Calma/Afecto/Melancolía) añaden ruido y alargan el bloque sin ayudar a encontrar nada.
+2. **Se recorre peor** — la rejilla anterior de 3/5 columnas se leía de un vistazo mejor que las filas de pastillas.
+3. **Los emoji se pierden** — al pasar a pastillas pequeñas perdieron protagonismo.
+4. **Es demasiado largo** — obliga a hacer scroll.
+5. **Se quedó soso** — el resultado es más plano y con menos carácter que antes.
+6. **Las cajas, mejor** — prefiere las tarjetas (emoji grande + etiqueta centrada) a las pastillas.
+
+**Conclusión de dirección:** mantener las **cajas** y el **emoji con protagonismo**, **no** añadir rótulos de familia, y no crecer en altura. Lo que hay que arreglar es el **carácter visual** (que no parezca soso) sin cambiar la estructura que ya funcionaba. Reconsiderar la Decisión 2 (agrupación).
