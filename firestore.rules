@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// Collectify: el acceso a los datos se sirve EXCLUSIVAMENTE a través de la API
+// (Admin SDK, que no está sujeto a estas reglas). El cliente no accede a
+// Firestore directamente, así que se deniega todo.
+//
+// Si en el futuro algún flujo necesita leer del cliente, NO abras esto a ciegas:
+// diseña una regla por usuario concreta (por ejemplo, solo
+// `users/{uid}/**` para `request.auth.uid == uid`) y revísalo en un change.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
