@@ -87,3 +87,20 @@ export function getMood(key: unknown) {
     ? moodOptions.find((mood) => mood.key === normalized)
     : undefined;
 }
+
+/**
+ * Familias para presentar las emociones agrupadas en el selector. No cambia el
+ * catálogo ni las claves: solo agrupa las que ya existen. Cada emoción aparece
+ * en una única familia.
+ */
+export type MoodFamilyId = "energy" | "calm" | "warmth" | "melancholy";
+
+export const moodFamilies: { id: MoodFamilyId; keys: MoodKey[] }[] = [
+  {
+    id: "energy",
+    keys: ["energy", "ecstasy", "triumph", "challenge", "anger"],
+  },
+  { id: "calm", keys: ["calm", "relaxation", "sleep"] },
+  { id: "warmth", keys: ["joy", "love", "inspiration", "nostalgia"] },
+  { id: "melancholy", keys: ["sadness", "melancholy", "anxiety"] },
+];

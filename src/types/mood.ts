@@ -5,5 +5,5 @@ export interface Mood {
 }
 
 export interface MoodBubbleProps {
-  mood: Mood;
+  moodKey: string;
 }

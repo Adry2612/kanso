@@ -5,10 +5,8 @@ import { authFetch } from "@/lib/api/authFetch";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/Skeleton";
 import { useTransitionRouter } from "next-view-transitions";
-import { musicalFeelings } from "@/constants/feelings";
-import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
-import { moodLabelToKey } from "@/lib/activityRecommendations";
+import MoodSelector from "@/components/MoodSelector";
 import type { FavoriteFormat } from "@/types/favorites";
 import { Stagger, StaggerItem } from "@/components/motion";
 
@@ -114,14 +112,6 @@ export default function StartPage() {
       .catch(() => setCollectionTags([]));
   }, [user?.uid]);
 
-  const moods = musicalFeelings.map((feeling) => [
-    feeling.emoji,
-    moodLabelToKey[feeling.nombre]
-      ? tMoods(moodLabelToKey[feeling.nombre])
-      : feeling.nombre,
-    feeling.key,
-  ]);
-
   const handleRecommendation = () => {
     const params = new URLSearchParams({ format: selectedFormat });
     selectedMood.forEach((mood) => params.append("moods", mood));
@@ -139,23 +129,9 @@ export default function StartPage() {
   };
 
   const hasSelection = selectedMood.length > 0 || selectedActivity.length > 0;
-  const selectorItems =
-    recommendationType === "mood"
-      ? moods
-      : activityOptions.map(({ emoji, id }) => [emoji, tActivities(id), id]);
   const recentRecommendations = recomendationHistory
     .filter((item) => item.album?.id)
     .slice(0, 3);
-
-  const toggleSelection = (value: string) => {
-    const setter =
-      recommendationType === "mood" ? setSelectedMood : setSelectedActivity;
-    setter((current) =>
-      current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value],
-    );
-  };
 
   const selectedLabels =
     recommendationType === "mood"
@@ -226,34 +202,22 @@ export default function StartPage() {
                   })}
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                  {selectorItems.map(([emoji, label, value]) => {
-                    const isSelected =
-                      recommendationType === "mood"
-                        ? selectedMood.includes(value)
-                        : selectedActivity.includes(value);
-                    return (
-                      <button
-                        key={label}
-                        type="button"
-                        aria-pressed={isSelected}
-                        onClick={() => toggleSelection(value)}
-                        className={`flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-[var(--radius-sm)] border p-3 text-center transition ${
-                          isSelected
-                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                            : "border-[var(--collectify-line)] bg-[var(--collectify-panel)] text-[var(--foreground)] hover:-translate-y-0.5 hover:border-[var(--collectify-mint)]"
-                        }`}
-                      >
-                        <span className="text-2xl" aria-hidden="true">
-                          {emoji}
-                        </span>
-                        <span className="text-xs font-semibold leading-tight">
-                          {label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <MoodSelector
+                  mode={recommendationType}
+                  selected={
+                    recommendationType === "mood"
+                      ? selectedMood
+                      : selectedActivity
+                  }
+                  onChange={
+                    recommendationType === "mood"
+                      ? setSelectedMood
+                      : setSelectedActivity
+                  }
+                  label={
+                    recommendationType === "mood" ? "Emociones" : "Actividades"
+                  }
+                />
 
                 <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                   <p className="text-xs text-[var(--collectify-muted)]">
