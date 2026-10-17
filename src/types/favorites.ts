@@ -49,13 +49,23 @@ export interface FavoriteAlbum {
 /**
  * Respuesta de recomendaciones basadas en actividad
  */
+export interface RecommendedAlbumInfo {
+  external_urls?: { spotify?: string };
+  images: { url: string }[];
+  name: string;
+  artists: { name: string; id: string }[];
+  release_date?: string;
+  total_tracks?: number;
+  id?: string;
+}
+
 export interface ActivityRecommendation {
   id: string;
   albumId: string;
   labeledFeelings: string[];
   matchingMoods: string[]; // Moods del álbum que coinciden con la actividad
   compatibilityScore: number; // 0-1, qué tan compatible es con la actividad
-  albumInfo?: any;
+  albumInfo?: RecommendedAlbumInfo;
 }
 
 export interface ActivityRecommendationResponse {

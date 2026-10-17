@@ -30,9 +30,4 @@ export interface FilterModalProps {
   }) => void;
 }
 
-export interface HeartButtonProps {
-  isFavorite: boolean;
-  onClick: () => void;
-  size?: number;
-}
 import type { FavoriteFormat, FavoriteTag } from "./favorites";

@@ -27,7 +27,7 @@ export const TagList: React.FC<TagListProps> = ({
       {tags.map((tag) => (
         <span
           key={`${tag.category}-${tag.value}`}
-          className="rounded-full bg-emerald-100/10 px-3 py-1.5 text-xs text-[#d6e5d8]"
+          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
         >
           {showCategory && (
             <span className="mr-1 opacity-60">{capitalize(tag.category)}:</span>

@@ -66,11 +66,14 @@ export function Stagger({
   className,
   delay = 0,
   stagger = 0.06,
+  onMount = false,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
   stagger?: number;
+  /** Reproduce la entrada al montar en vez de al entrar en el viewport. */
+  onMount?: boolean;
 }) {
   const reduce = useReducedMotion();
   const variants: Variants = {
@@ -82,13 +85,15 @@ export function Stagger({
       },
     },
   };
+  const trigger = onMount
+    ? { animate: "show" as const }
+    : { whileInView: "show" as const, viewport: { once: true, amount: 0.12 } };
   return (
     <motion.div
       className={className}
       variants={variants}
       initial={reduce ? false : "hidden"}
-      whileInView="show"
-      viewport={{ once: true, amount: 0.12 }}
+      {...trigger}
     >
       {children}
     </motion.div>

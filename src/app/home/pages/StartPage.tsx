@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify; la optimización de imágenes se decide en improve-performance */
 import React, { useEffect, useState } from "react";
 import { getRecomendationHistory } from "@/lib/api/recomendation";
+import { authFetch } from "@/lib/api/authFetch";
 import { useAuth } from "@/context/AuthContext";
-import AlbumCard from "@/components/AlbumCard";
 import { Skeleton } from "@/components/Skeleton";
 import { useTransitionRouter } from "next-view-transitions";
 import { musicalFeelings } from "@/constants/feelings";
@@ -11,22 +12,40 @@ import { moodLabelToKey } from "@/lib/activityRecommendations";
 import type { FavoriteFormat } from "@/types/favorites";
 import { Stagger, StaggerItem } from "@/components/motion";
 
+type HistoryEntry = {
+  id: string;
+  album: {
+    id: string;
+    name: string;
+    images: { url: string }[];
+    artists: { name: string }[];
+  };
+};
+
+type FavoriteWithTags = {
+  tags?: { category: string; value: string }[];
+};
+
 export default function StartPage() {
   const router = useTransitionRouter();
   const { user } = useAuth();
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
+  const tQuick = useTranslations("quickRecommendation");
+
   const [mounted, setMounted] = useState(false);
+  const [today, setToday] = useState("");
   const [loading, setLoading] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
 
-  const [recomendationHistory, setRecomendationHistory] = useState<any[]>([]);
+  const [recomendationHistory, setRecomendationHistory] = useState<
+    HistoryEntry[]
+  >([]);
   const [selectedMood, setSelectedMood] = useState<string[]>([]);
   const [recommendationType, setRecommendationType] = useState<
     "mood" | "activity"
   >("mood");
   const [selectedActivity, setSelectedActivity] = useState<string[]>([]);
-  const [selectorPage, setSelectorPage] = useState(0);
   const [selectedFormat, setSelectedFormat] = useState<"all" | FavoriteFormat>(
     "all",
   );
@@ -35,9 +54,22 @@ export default function StartPage() {
     { category: string; value: string }[]
   >([]);
   const [recommendationStep, setRecommendationStep] = useState<0 | 1>(0);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickFormat, setQuickFormat] = useState<"all" | FavoriteFormat>("all");
+  const [quickTag, setQuickTag] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Fecha real del día, calculada tras montar para no desajustar la hidratación.
+  useEffect(() => {
+    const formatter = new Intl.DateTimeFormat(
+      document.documentElement.lang || "es",
+      { weekday: "long", day: "numeric", month: "long" },
+    );
+    const label = formatter.format(new Date());
+    setToday(label.charAt(0).toUpperCase() + label.slice(1));
   }, []);
 
   useEffect(() => {
@@ -51,7 +83,7 @@ export default function StartPage() {
       setLoading(true);
       setHistoryError(null);
       try {
-        const { history } = await getRecomendationHistory(user.uid);
+        const { history } = await getRecomendationHistory();
         setRecomendationHistory(history || []);
       } catch (error) {
         console.error("Error fetching history:", error);
@@ -68,12 +100,12 @@ export default function StartPage() {
 
   useEffect(() => {
     if (!user?.uid) return;
-    fetch(`/api/userFavorites?userId=${encodeURIComponent(user.uid)}`)
+    authFetch("/api/userFavorites")
       .then((response) => (response.ok ? response.json() : { favorites: [] }))
       .then((data) => {
         const unique = new Map<string, { category: string; value: string }>();
         (data.favorites || [])
-          .flatMap((favorite: any) => favorite.tags || [])
+          .flatMap((favorite: FavoriteWithTags) => favorite.tags || [])
           .forEach((tag: { category: string; value: string }) =>
             unique.set(`${tag.category}:${tag.value}`, tag),
           );
@@ -83,7 +115,7 @@ export default function StartPage() {
   }, [user?.uid]);
 
   const moods = musicalFeelings.map((feeling) => [
-    feeling.symbol,
+    feeling.emoji,
     moodLabelToKey[feeling.nombre]
       ? tMoods(moodLabelToKey[feeling.nombre])
       : feeling.nombre,
@@ -99,227 +131,339 @@ export default function StartPage() {
     router.push(`/recommendation?${params.toString()}`);
   };
 
+  const handleQuickRecommendation = () => {
+    const params = new URLSearchParams({ format: quickFormat });
+    if (quickTag) params.append("tag", quickTag);
+    params.set("type", "mood");
+    router.push(`/recommendation?${params.toString()}`);
+  };
+
   const hasSelection = selectedMood.length > 0 || selectedActivity.length > 0;
   const selectorItems =
     recommendationType === "mood"
       ? moods
-      : activityOptions.map(({ icon, id }) => [icon, tActivities(id), id]);
-  const selectorPageSize = 8;
-  const selectorPageCount = Math.ceil(selectorItems.length / selectorPageSize);
-  const visibleSelectorItems = selectorItems.slice(
-    selectorPage * selectorPageSize,
-    (selectorPage + 1) * selectorPageSize,
-  );
+      : activityOptions.map(({ emoji, id }) => [emoji, tActivities(id), id]);
   const recentRecommendations = recomendationHistory
     .filter((item) => item.album?.id)
     .slice(0, 3);
 
+  const toggleSelection = (value: string) => {
+    const setter =
+      recommendationType === "mood" ? setSelectedMood : setSelectedActivity;
+    setter((current) =>
+      current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value],
+    );
+  };
+
+  const selectedLabels =
+    recommendationType === "mood"
+      ? selectedMood.map((mood) => tMoods(mood)).join(", ")
+      : selectedActivity.map((activity) => tActivities(activity)).join(", ");
+
   return (
     <main className="collectify-main">
       <section className="mt-14 max-w-3xl md:mt-24">
-        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#9be7a5]">
-          Martes, 7 de septiembre
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+          {today || "\u00a0"}
         </p>
         <h1 className="collectify-page-title">
           ¿Qué quieres <em>escuchar</em> hoy?
         </h1>
-        <p className="mt-5 max-w-xl text-sm leading-relaxed text-[#8f9f93] md:text-base">
+        <p className="mt-5 max-w-xl text-sm leading-relaxed text-[var(--collectify-muted)] md:text-base">
           Cuéntame cómo estás y encontraré un disco que encaje con este momento.
         </p>
       </section>
+
       <div className="mt-12 grid gap-7 lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,.72fr)]">
-        <section className="collectify-panel relative pl-15 overflow-hidden p-6 md:p-9">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-white">
-                {recommendationStep === 1
-                  ? "Elige tu fuente"
-                  : recommendationType === "mood"
-                    ? "Elige una sensación"
-                    : "Elige una actividad"}
-              </h2>
-              <p className="mt-2 text-xs mb-5 text-[#8f9f93]">
-                No hay respuestas incorrectas.
-              </p>
-            </div>
-          </div>
-          {recommendationStep === 0 && (
-            <div className="mb-6 flex max-w-sm rounded-xl border border-emerald-100/10 bg-[#09140d]/25 p-1">
-              {[
-                ["Por emoción", "mood"],
-                ["Por actividad", "activity"],
-              ].map(([label, type]) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => (
-                    setRecommendationType(type as "mood" | "activity"),
-                    setRecommendationStep(0)
-                  )}
-                  className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition ${recommendationType === type ? "bg-[#9be7a5] text-[#102117]" : "text-[#8f9f93] hover:text-white"}`}
+        <div className="grid content-start gap-7">
+          <section className="collectify-panel p-6 md:p-9">
+            <h2 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+              {recommendationStep === 1
+                ? "Elige tu fuente"
+                : recommendationType === "mood"
+                  ? "Elige una sensación"
+                  : "Elige una actividad"}
+            </h2>
+            <p className="mt-2 text-xs text-[var(--collectify-muted)]">
+              {recommendationStep === 1
+                ? "Elige si quieres explorar toda tu colección o un formato físico concreto."
+                : "No hay respuestas incorrectas."}
+            </p>
+
+            {recommendationStep === 0 && (
+              <>
+                <div
+                  role="tablist"
+                  aria-label="Tipo de recomendación"
+                  className="mb-6 mt-5 flex max-w-sm rounded-[var(--radius-sm)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-1"
                 >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
-          {recommendationStep === 0 && (
-            <div className="relative z-10 mt-8 flex items-center gap-3">
-              <button
-                type="button"
-                aria-label="Página anterior"
-                onClick={() => setSelectorPage((page) => Math.max(0, page - 1))}
-                disabled={selectorPage === 0}
-                className="rounded-full border border-emerald-100/15 p-1 text-[#9be7a5] disabled:opacity-30"
-              >
-                ←
-              </button>
-              <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-4">
-                {visibleSelectorItems.map(([symbol, label, value]) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() =>
-                      recommendationType === "mood"
-                        ? setSelectedMood((current) =>
-                            current.includes(value)
-                              ? current.filter((item) => item !== value)
-                              : [...current, value],
-                          )
-                        : setSelectedActivity((current) =>
-                            current.includes(value)
-                              ? current.filter((item) => item !== value)
-                              : [...current, value],
-                          )
-                    }
-                    className={`flex min-h-[76px] flex-col justify-between rounded-xl border p-3 text-left transition ${(recommendationType === "mood" && selectedMood.includes(value)) || (recommendationType === "activity" && selectedActivity.includes(value)) ? "border-[#9be7a5] bg-[#9be7a5] text-[#102117]" : "border-emerald-100/10 bg-[#09140d]/25 text-[#b4c2b6] hover:-translate-y-0.5 hover:border-[#9be7a5]/60"}`}
-                  >
-                    <span className="text-xl">{symbol}</span>
-                    <span className="text-xs font-semibold">{label}</span>
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                aria-label="Página siguiente"
-                onClick={() =>
-                  setSelectorPage((page) =>
-                    Math.min(selectorPageCount - 1, page + 1),
-                  )
-                }
-                disabled={selectorPage >= selectorPageCount - 1}
-                className="rounded-full border border-emerald-100/15 p-1 text-[#9be7a5] disabled:opacity-30"
-              >
-                →
-              </button>
-            </div>
-          )}
-          {recommendationStep === 0 ? (
-            <div className="relative z-10 mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-              <p className="text-xs text-[#8f9f93]">
-                Has elegido:{" "}
-                <strong className="text-white">
-                  {recommendationType === "mood"
-                    ? selectedMood.map((mood) => tMoods(mood)).join(", ") ||
-                      "ninguna emoción"
-                    : selectedActivity
-                        .map((activity) => tActivities(activity))
-                        .join(", ") || "ninguna actividad"}
-                </strong>
-              </p>
-              <button
-                onClick={() => setRecommendationStep(1)}
-                disabled={!hasSelection}
-                className="rounded-xl bg-[#9be7a5] px-4 py-3 text-sm font-bold text-[#102117] transition hover:bg-[#d6f28d] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Siguiente <span aria-hidden="true">→</span>
-              </button>
-            </div>
-          ) : (
-            <div className="relative z-10 mt-8">
-              <p className="text-sm font-semibold text-white">
-                ¿De dónde quieres que salga?
-              </p>
-              <p className="mt-2 text-xs text-[#8f9f93]">
-                Elige si quieres explorar toda tu colección o un formato físico
-                concreto.
-              </p>
-              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {[
-                  ["Toda mi colección", "all"],
-                  ["Vinilos", "vinyl"],
-                  ["CDs", "cd"],
-                  ["Cassettes", "cassette"],
-                ].map(([label, value]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() =>
-                      setSelectedFormat(value as "all" | FavoriteFormat)
-                    }
-                    className={`rounded-xl border px-3 py-2.5 text-xs font-semibold transition ${selectedFormat === value ? "border-[#9be7a5] bg-[#9be7a5] text-[#102117]" : "border-emerald-100/10 text-[#8f9f93] hover:border-[#9be7a5]/60 hover:text-white"}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              {collectionTags.length > 0 && (
-                <div className="mt-6">
-                  <p className="text-sm font-semibold text-white">
-                    Recomendar también por etiquetas
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {collectionTags.map((tag) => {
-                      const value = `${tag.category}:${tag.value}`;
-                      const selected = selectedTags.includes(value);
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() =>
-                            setSelectedTags((current) =>
-                              selected
-                                ? current.filter((item) => item !== value)
-                                : [...current, value],
-                            )
-                          }
-                          className={`rounded-full border px-3 py-2 text-xs transition ${selected ? "border-[#9be7a5] bg-[#9be7a5] text-[#102117]" : "border-emerald-100/15 text-[#b4c2b6] hover:border-[#9be7a5]/60"}`}
-                        >
-                          {tag.category}: {tag.value}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {[
+                    ["Por emoción", "mood"],
+                    ["Por actividad", "activity"],
+                  ].map(([label, type]) => {
+                    const isActive = recommendationType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => {
+                          setRecommendationType(type as "mood" | "activity");
+                          setRecommendationStep(0);
+                        }}
+                        className={`flex-1 rounded-[var(--radius-xs)] px-3 py-2 text-xs font-semibold transition ${
+                          isActive
+                            ? "bg-[var(--collectify-mint)] text-[var(--background)]"
+                            : "text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
-              <div className="mt-7 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRecommendationStep(0)}
-                  className="rounded-xl px-3 py-2.5 text-sm text-[#8f9f93] hover:text-white"
-                >
-                  ← Atrás
-                </button>
-                <button
-                  type="button"
-                  onClick={handleRecommendation}
-                  className="rounded-xl bg-[#9be7a5] px-4 py-3 text-sm font-bold text-[#102117] transition hover:bg-[#d6f28d]"
-                >
-                  Encontrar mi disco <span aria-hidden="true">→</span>
-                </button>
+
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                  {selectorItems.map(([emoji, label, value]) => {
+                    const isSelected =
+                      recommendationType === "mood"
+                        ? selectedMood.includes(value)
+                        : selectedActivity.includes(value);
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() => toggleSelection(value)}
+                        className={`flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-[var(--radius-sm)] border p-3 text-center transition ${
+                          isSelected
+                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                            : "border-[var(--collectify-line)] bg-[var(--collectify-panel)] text-[var(--foreground)] hover:-translate-y-0.5 hover:border-[var(--collectify-mint)]"
+                        }`}
+                      >
+                        <span className="text-2xl" aria-hidden="true">
+                          {emoji}
+                        </span>
+                        <span className="text-xs font-semibold leading-tight">
+                          {label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                  <p className="text-xs text-[var(--collectify-muted)]">
+                    Has elegido:{" "}
+                    <strong className="text-[var(--foreground)]">
+                      {selectedLabels || "nada todavía"}
+                    </strong>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setRecommendationStep(1)}
+                    disabled={!hasSelection}
+                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Siguiente <span aria-hidden="true">→</span>
+                  </button>
+                </div>
+              </>
+            )}
+
+            {recommendationStep === 1 && (
+              <div className="mt-6">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    ["Toda mi colección", "all"],
+                    ["Vinilos", "vinyl"],
+                    ["CDs", "cd"],
+                    ["Cassettes", "cassette"],
+                  ].map(([label, value]) => {
+                    const isSelected = selectedFormat === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() =>
+                          setSelectedFormat(value as "all" | FavoriteFormat)
+                        }
+                        className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
+                          isSelected
+                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                            : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {collectionTags.length > 0 && (
+                  <div className="mt-6">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">
+                      Recomendar también por etiquetas
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {collectionTags.map((tag) => {
+                        const value = `${tag.category}:${tag.value}`;
+                        const isSelected = selectedTags.includes(value);
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={isSelected}
+                            onClick={() =>
+                              setSelectedTags((current) =>
+                                isSelected
+                                  ? current.filter((item) => item !== value)
+                                  : [...current, value],
+                              )
+                            }
+                            className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
+                              isSelected
+                                ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                                : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]"
+                            }`}
+                          >
+                            {tag.category}: {tag.value}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-7 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRecommendationStep(0)}
+                    className="rounded-[var(--radius-sm)] px-3 py-2.5 text-sm text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
+                  >
+                    ← Atrás
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRecommendation}
+                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
+                  >
+                    Encontrar mi disco <span aria-hidden="true">→</span>
+                  </button>
+                </div>
               </div>
+            )}
+          </section>
+
+          {/* Vía secundaria: la recomendación rápida queda subordinada al panel principal. */}
+          <section className="border-t border-[var(--collectify-line)] pt-5">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-[var(--foreground)]">
+                ¿Sin ganas de elegir?
+              </span>
+              <button
+                type="button"
+                onClick={() => setQuickOpen((open) => !open)}
+                aria-expanded={quickOpen}
+                className="w-fit text-sm font-semibold text-[var(--collectify-mint)] hover:underline"
+              >
+                ⚡ {tQuick("open")}
+              </button>
             </div>
-          )}
-        </section>
-        <aside className="grid gap-7">
+
+            {quickOpen && (
+              <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-5">
+                <p className="text-sm font-semibold text-[var(--foreground)]">
+                  {tQuick("title")}
+                </p>
+                <p className="mt-1 text-xs text-[var(--collectify-muted)]">
+                  {tQuick("subtitle")}
+                </p>
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    [tQuick("anyFormat"), "all"],
+                    [tQuick("vinyl"), "vinyl"],
+                    [tQuick("cd"), "cd"],
+                    [tQuick("cassette"), "cassette"],
+                  ].map(([label, value]) => {
+                    const isSelected = quickFormat === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() =>
+                          setQuickFormat(value as "all" | FavoriteFormat)
+                        }
+                        className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
+                          isSelected
+                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                            : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {collectionTags.length > 0 && (
+                  <div className="mt-5">
+                    <p className="text-xs font-semibold text-[var(--collectify-muted)]">
+                      {tQuick("tagsLabel")}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {collectionTags.map((tag) => {
+                        const value = `${tag.category}:${tag.value}`;
+                        const isSelected = quickTag === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={isSelected}
+                            onClick={() =>
+                              setQuickTag(isSelected ? null : value)
+                            }
+                            className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
+                              isSelected
+                                ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                                : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]"
+                            }`}
+                          >
+                            {tag.category}: {tag.value}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="mt-5 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleQuickRecommendation}
+                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
+                  >
+                    {tQuick("cta")} <span aria-hidden="true">→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+
+        <aside className="grid content-start gap-7">
           <section>
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="collectify-section-title">
                 Últimas recomendaciones
               </h2>
               <button
+                type="button"
                 onClick={() => router.push("/recomendationHistory")}
-                className="text-xs font-semibold text-[#9be7a5]"
+                className="text-xs font-semibold text-[var(--collectify-mint)]"
               >
                 Ver historial →
               </button>
@@ -329,26 +473,29 @@ export default function StartPage() {
                 {[...Array(3)].map((_, idx) => (
                   <Skeleton
                     key={idx}
-                    className="h-16 rounded-xl bg-[#17261c]"
+                    className="h-16 rounded-[var(--radius-sm)] bg-[var(--surface-2)]"
                   />
                 ))}
               </div>
             ) : historyError ? (
               <p
                 role="alert"
-                className="text-sm leading-relaxed text-[#ff9f76]"
+                className="text-sm leading-relaxed text-[var(--collectify-danger)]"
               >
                 {historyError}
               </p>
             ) : recentRecommendations.length > 0 ? (
-              <Stagger className="grid gap-2" stagger={0.05}>
+              <Stagger className="grid gap-2" stagger={0.05} onMount>
                 {recentRecommendations.map((item) => (
                   <StaggerItem key={item.id}>
                     <button
+                      type="button"
                       onClick={() => router.push(`/albums/${item.album.id}`)}
-                      className="flex w-full items-center gap-3 rounded-xl border border-transparent p-2 text-left transition hover:border-emerald-100/10 hover:bg-[#1d3023]"
+                      className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-transparent p-2 text-left transition hover:border-[var(--collectify-line)] hover:bg-[var(--surface-2)]"
                     >
                       <img
+                        loading="lazy"
+                        decoding="async"
                         src={item.album.images[0]?.url}
                         alt={item.album.name}
                         style={{
@@ -357,10 +504,10 @@ export default function StartPage() {
                         className="h-14 w-14 rounded-[var(--radius-xs)] object-cover"
                       />
                       <span className="min-w-0">
-                        <strong className="block truncate text-sm text-white">
+                        <strong className="block truncate text-sm text-[var(--foreground)]">
                           {item.album.name}
                         </strong>
-                        <small className="mt-1 block truncate text-xs text-[#8f9f93]">
+                        <small className="mt-1 block truncate text-xs text-[var(--collectify-muted)]">
                           {item.album.artists[0]?.name}
                         </small>
                       </span>
@@ -369,27 +516,21 @@ export default function StartPage() {
                 ))}
               </Stagger>
             ) : (
-              <div className="rounded-xl border border-emerald-100/10 bg-[#17261c]/45 p-4">
-                <p className="text-sm leading-relaxed text-[#8f9f93]">
+              <div className="rounded-[var(--radius-sm)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-4">
+                <p className="text-sm leading-relaxed text-[var(--collectify-muted)]">
                   Todavía no tienes recomendaciones. Busca álbumes para empezar
                   tu colección o elige un momento para recibir una.
                 </p>
                 <button
                   type="button"
                   onClick={() => router.push("/search")}
-                  className="mt-3 text-sm font-semibold text-[#9be7a5] underline"
+                  className="mt-3 text-sm font-semibold text-[var(--collectify-mint)] underline"
                 >
                   Explorar discos
                 </button>
               </div>
             )}
           </section>
-          <p className="border-t border-emerald-100/10 pt-5 text-sm leading-relaxed text-[#8f9f93]">
-            “La música es para el alma lo que las palabras son para la mente.”
-            <strong className="mt-2 block text-xs text-white">
-              — Modest Mouse
-            </strong>
-          </p>
         </aside>
       </div>
     </main>

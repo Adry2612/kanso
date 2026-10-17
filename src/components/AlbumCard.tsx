@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify; la optimización de imágenes se decide en improve-performance */
 import React from "react";
 import { useTransitionRouter } from "next-view-transitions";
 import { Check, Plus } from "lucide-react";
-import TagList from "./TagList";
 import { motion } from "./motion";
 
 interface AlbumCardProps {
@@ -14,7 +14,6 @@ interface AlbumCardProps {
   onClick?: () => void;
   onAdd?: () => void;
   isFavorite?: boolean;
-  tags?: { category: string; value: string }[];
 }
 
 const AlbumCard: React.FC<AlbumCardProps> = ({
@@ -22,7 +21,6 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
   onClick,
   onAdd,
   isFavorite = false,
-  tags = [],
 }) => {
   const router = useTransitionRouter();
 
@@ -38,6 +36,8 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
     >
       <div className="relative aspect-square overflow-hidden rounded-[var(--radius-xs)]">
         <img
+          loading="lazy"
+          decoding="async"
           src={album.images[0]?.url}
           alt={album.name}
           style={{ viewTransitionName: `album-cover-${album.id}` }}
@@ -46,13 +46,12 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
         <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       </div>
       <div className="px-2 pb-2 pt-3">
-        <span className="block truncate text-sm font-semibold text-[#f2f5ef]">
+        <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
           {album.name}
         </span>
-        <span className="mt-1 block truncate text-xs text-[#8f9f93]">
+        <span className="mt-1 block truncate text-xs text-[var(--collectify-muted)]">
           {album.artists[0]?.name}
         </span>
-        <TagList tags={tags} />
 
         {onAdd && (
           <button
@@ -63,8 +62,8 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
             }}
             className={`mt-3 flex w-full items-center justify-center gap-2 rounded-[var(--radius-xs)] border px-2 py-2 text-center text-xs font-semibold transition ${
               isFavorite
-                ? "border-[#9be7a5]/60 bg-[#9be7a5]/15 text-[#9be7a5] hover:bg-[#9be7a5]/25"
-                : "border-emerald-200/15 text-[#9be7a5] hover:border-[#9be7a5]/60 hover:bg-[#9be7a5]/10"
+                ? "border-[var(--collectify-mint)]/60 bg-[var(--collectify-mint)]/15 text-[var(--collectify-mint)] hover:bg-[var(--collectify-mint)]/25"
+                : "border-[var(--collectify-line)] text-[var(--collectify-mint)] hover:border-[var(--collectify-mint)]/60 hover:bg-[var(--collectify-mint)]/10"
             }`}
           >
             {isFavorite ? (

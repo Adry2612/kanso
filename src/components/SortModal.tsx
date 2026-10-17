@@ -28,7 +28,7 @@ export default function SortModal({
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title={t("sort.title")}>
-      <Stagger className="space-y-2" stagger={0.04}>
+      <Stagger className="space-y-2" stagger={0.04} onMount>
         {sortOptions.map((option) => (
           <StaggerItem key={option.value} y={10}>
             <button
@@ -36,7 +36,7 @@ export default function SortModal({
               className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
                 currentSort === option.value
                   ? "bg-green-900/50 text-green-400 border border-green-400"
-                  : "bg-emerald-900/30 text-gray-300 hover:bg-emerald-900/50 border border-transparent"
+                  : "bg-[var(--surface-3)] text-[var(--collectify-muted)] hover:bg-[var(--surface-3)] border border-transparent"
               }`}
             >
               <div className="flex items-center justify-between">

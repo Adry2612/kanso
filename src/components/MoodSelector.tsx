@@ -100,7 +100,7 @@ const MoodSelectorPaginated = ({
 
   return (
     <div
-      className={`relative mx-auto max-w-4xl rounded-2xl border border-emerald-100/10 bg-[#17261c]/50 ${compact ? "p-2" : "p-3 sm:p-4"}`}
+      className={`relative mx-auto max-w-4xl rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/50 ${compact ? "p-2" : "p-3 sm:p-4"}`}
     >
       {compact && (
         <div className="grid grid-cols-2 gap-2 p-1 sm:grid-cols-3">
@@ -114,7 +114,7 @@ const MoodSelectorPaginated = ({
                 type="button"
                 aria-pressed={isSelected}
                 onClick={() => toggleMood(mood)}
-                className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-xs font-semibold transition ${isSelected ? "border-[#9be7a5] bg-[#9be7a5] text-[#102117]" : "border-emerald-100/15 bg-[#101b14]/50 text-[#d6e5d8] hover:border-[#9be7a5]/60 hover:bg-[#203a29]"}`}
+                className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-xs font-semibold transition ${isSelected ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]" : "border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 text-[var(--foreground)] hover:border-[var(--collectify-mint)]/60 hover:bg-[var(--surface-3)]"}`}
               >
                 <span className="text-base" aria-hidden="true">
                   {mood.symbol}
@@ -130,7 +130,7 @@ const MoodSelectorPaginated = ({
           type="button"
           onClick={goToPrev}
           aria-label="Emociones anteriores"
-          className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border border-emerald-100/10 bg-[#17261c] text-sm text-[#9be7a5] transition hover:border-[#9be7a5]/60 hover:bg-[#9be7a5]/10 ${compact ? "top-3" : "mt-14"}`}
+          className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--collectify-line)] bg-[var(--surface-1)] text-sm text-[var(--collectify-mint)] transition hover:border-[var(--collectify-mint)]/60 hover:bg-[var(--collectify-mint)]/10 ${compact ? "top-3" : "mt-14"}`}
         >
           <FaChevronLeft />
         </button>
@@ -155,7 +155,7 @@ const MoodSelectorPaginated = ({
                   key={mood.label}
                   type="button"
                   onClick={() => toggleMood(mood)}
-                  className={`flex items-center justify-center gap-2 border text-center transition duration-300 ${compact ? "min-h-0 rounded-full px-3 py-2" : "min-h-[112px] flex-col rounded-2xl px-2 py-3"} ${isCenter ? "scale-100 border-[#9be7a5]/70 bg-[#203a29] text-white shadow-[0_10px_30px_rgba(0,0,0,.2)]" : "scale-90 border-emerald-100/10 bg-[#101b14]/45 text-[#8f9f93] opacity-75 hover:scale-95 hover:opacity-100"} ${isSelected ? "ring-2 ring-[#9be7a5] ring-offset-2 ring-offset-[#17261c]" : ""}`}
+                  className={`flex items-center justify-center gap-2 border text-center transition duration-300 ${compact ? "min-h-0 rounded-full px-3 py-2" : "min-h-[112px] flex-col rounded-2xl px-2 py-3"} ${isCenter ? "scale-100 border-[var(--collectify-mint)]/70 bg-[var(--surface-3)] text-[var(--foreground)] shadow-[0_10px_30px_rgba(0,0,0,.2)]" : "scale-90 border-[var(--collectify-line)] bg-[var(--surface-1)]/45 text-[var(--collectify-muted)] opacity-75 hover:scale-95 hover:opacity-100"} ${isSelected ? "ring-2 ring-[var(--collectify-mint)] ring-offset-2 ring-offset-[var(--surface-1)]" : ""}`}
                 >
                   <span
                     className={
@@ -177,7 +177,7 @@ const MoodSelectorPaginated = ({
           type="button"
           onClick={goToNext}
           aria-label="Siguientes emociones"
-          className={`absolute right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-emerald-100/10 bg-[#17261c] text-sm text-[#9be7a5] transition hover:border-[#9be7a5]/60 hover:bg-[#9be7a5]/10 ${compact ? "top-3" : "mt-14"}`}
+          className={`absolute right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--collectify-line)] bg-[var(--surface-1)] text-sm text-[var(--collectify-mint)] transition hover:border-[var(--collectify-mint)]/60 hover:bg-[var(--collectify-mint)]/10 ${compact ? "top-3" : "mt-14"}`}
         >
           <FaChevronRight />
         </button>
@@ -191,7 +191,7 @@ const MoodSelectorPaginated = ({
               type="button"
               aria-label={`Ir a ${mood.displayLabel}`}
               onClick={() => setActiveIndex(index)}
-              className={`h-1.5 rounded-full transition-all ${index === activeIndex ? "w-6 bg-[#9be7a5]" : "w-1.5 bg-emerald-100/20"}`}
+              className={`h-1.5 rounded-full transition-all ${index === activeIndex ? "w-6 bg-[var(--collectify-mint)]" : "w-1.5 bg-[var(--surface-3)]"}`}
             />
           ))}
         </div>

@@ -171,6 +171,8 @@ export function groupFavorites(
   favorites: any[],
   sortMethod: SortMethod,
 ): GroupedFavorites[] {
+  if (!favorites || favorites.length === 0) return [];
+
   if (!sortMethod) {
     return [{ groupName: "", items: favorites }];
   }

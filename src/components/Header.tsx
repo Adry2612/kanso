@@ -11,6 +11,8 @@ import {
   Home,
   Search,
   Settings,
+  Sparkles,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
@@ -27,7 +29,7 @@ export default function Header() {
   const profileName =
     user?.displayName?.trim() ||
     user?.email?.split("@")[0] ||
-    (user?.isAnonymous ? "Invitado" : "Perfil");
+    (user?.isAnonymous ? t("guest") : t("profile"));
   const profileInitials = profileName
     .split(/\s+/)
     .filter(Boolean)
@@ -37,11 +39,13 @@ export default function Header() {
     .toUpperCase();
 
   const navItems: { href: string; label: string; icon: LucideIcon }[] = [
-    { href: "/home", label: "Inicio", icon: Home },
+    { href: "/home", label: t("home"), icon: Home },
     { href: "/search", label: t("search"), icon: Search },
+    { href: "/artists", label: t("artists"), icon: Users },
+    { href: "/releases", label: t("releases"), icon: Sparkles },
     { href: "/favorites", label: t("favorites"), icon: Heart },
     { href: "/recomendationHistory", label: t("history"), icon: History },
-    { href: "/settings", label: "Ajustes", icon: Settings },
+    { href: "/settings", label: t("settings"), icon: Settings },
   ];
 
   useEffect(() => {
@@ -68,8 +72,8 @@ export default function Header() {
   return (
     <aside className="collectify-sidebar fixed inset-y-0 left-0 z-40 flex flex-col px-2 py-4 lg:px-5 lg:py-7">
       <button
-        aria-label="Collectify, ir al inicio"
-        className="collectify-brand flex items-center px-2 font-semibold tracking-tight text-emerald-100"
+        aria-label={t("brandHome")}
+        className="collectify-brand flex items-center px-2 font-semibold tracking-tight text-[var(--collectify-mint)]"
         onClick={() => router.push("/home")}
       >
         <span className="sidebar-label text-xl">collectify</span>
@@ -77,8 +81,8 @@ export default function Header() {
       <button
         type="button"
         onClick={toggleSidebar}
-        aria-label={sidebarCollapsed ? "Abrir menú" : "Cerrar menú"}
-        className="sidebar-toggle absolute right-3 top-7 flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-100/10 text-[#8f9f93] transition hover:border-[#9be7a5]/40 hover:text-[#9be7a5]"
+        aria-label={sidebarCollapsed ? t("openMenu") : t("closeMenu")}
+        className="sidebar-toggle absolute right-3 top-7 flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--collectify-line)] text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)]/40 hover:text-[var(--collectify-mint)]"
       >
         {sidebarCollapsed ? (
           <ChevronRight className="h-4 w-4" />
@@ -87,12 +91,9 @@ export default function Header() {
         )}
       </button>
 
-      <nav
-        className="mt-16 grid gap-2 text-sm"
-        aria-label="Navegación principal"
-      >
-        <span className="sidebar-label px-3 pb-2 text-[10px] uppercase tracking-[.18em] text-[#5e7162]">
-          Tu espacio
+      <nav className="mt-16 grid gap-2 text-sm" aria-label={t("mainNav")}>
+        <span className="sidebar-label px-3 pb-2 text-[10px] uppercase tracking-[.18em] text-[var(--collectify-muted)]">
+          {t("sectionLabel")}
         </span>
         {navItems.map((item) => {
           const isActive =
@@ -106,20 +107,24 @@ export default function Header() {
               whileHover={{ x: sidebarCollapsed ? 0 : 3 }}
               whileTap={{ scale: 0.97 }}
               className={`relative flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors ${
-                isActive ? "text-white" : "text-[#8f9f93] hover:text-white"
+                isActive
+                  ? "text-[var(--foreground)]"
+                  : "text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
               }`}
               onClick={() => router.push(item.href)}
             >
               {isActive && (
                 <motion.span
                   layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-xl border border-[#9be7a5]/30 bg-[#9be7a5]/10"
+                  className="absolute inset-0 rounded-xl border border-[var(--collectify-mint)]/30 bg-[var(--collectify-mint)]/10"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
               <Icon
                 className={`relative h-[18px] w-[18px] ${
-                  isActive ? "text-[#9be7a5]" : "text-[#9be7a5]/70"
+                  isActive
+                    ? "text-[var(--collectify-mint)]"
+                    : "text-[var(--collectify-mint)]/70"
                 }`}
                 strokeWidth={1.75}
               />
@@ -131,29 +136,31 @@ export default function Header() {
 
       <button
         type="button"
-        aria-label="Abrir perfil"
         onClick={() => router.push("/settings")}
-        className="mt-8 flex items-center gap-3 rounded-xl border-t border-emerald-100/10 px-2 pt-4 text-left text-[#8f9f93] transition hover:text-white"
+        className="mt-8 flex items-center gap-3 rounded-xl border-t border-[var(--collectify-line)] px-2 pt-4 text-left text-[var(--collectify-muted)] transition hover:text-[var(--foreground)]"
       >
-        <span className="h-9 w-9 shrink-0 rounded-full border-2 border-emerald-300/30 bg-[#d1a578] text-center text-[10px] font-bold leading-8 text-[#233321]">
+        <span
+          aria-hidden="true"
+          className="h-9 w-9 shrink-0 rounded-full border-2 border-[var(--collectify-line-strong)] bg-[#d1a578] text-center text-[10px] font-bold leading-8 text-[var(--foreground)]"
+        >
           {profileInitials}
         </span>
         <span className="sidebar-label min-w-0">
-          <strong className="block truncate text-sm text-[#b4c2b6]">
+          <strong className="block truncate text-sm text-[var(--collectify-muted)]">
             {profileName}
           </strong>
-          <small className="block truncate text-xs text-[#8f9f93]">
+          <small className="block truncate text-xs text-[var(--collectify-muted)]">
             {user?.isAnonymous
-              ? "Sesión de prueba"
-              : user?.email || "Tu perfil"}
+              ? t("testSession")
+              : user?.email || t("yourProfile")}
           </small>
         </span>
       </button>
-      <p className="sidebar-label mt-auto border-t border-emerald-100/10 px-2 pt-5 text-xs leading-relaxed text-[#8f9f93]">
-        <strong className="mb-1 block font-semibold text-[#9be7a5]">
-          Tu colección, a tu ritmo.
+      <p className="sidebar-label mt-auto border-t border-[var(--collectify-line)] px-2 pt-5 text-xs leading-relaxed text-[var(--collectify-muted)]">
+        <strong className="mb-1 block font-semibold text-[var(--collectify-mint)]">
+          {t("sidebarTagline")}
         </strong>
-        Guarda discos y vuelve a tus momentos favoritos.
+        {t("sidebarSubtitle")}
       </p>
     </aside>
   );

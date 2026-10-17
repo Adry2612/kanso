@@ -15,10 +15,18 @@ import { Trash2Icon } from "lucide-react";
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
 import { useAuth } from "@/context/AuthContext";
 import { undoFavorite } from "@/lib/api/favorites";
+import { authFetch } from "@/lib/api/authFetch";
 import { getMood, normalizeMoods } from "@/constants/moods";
 import { FavoriteFormat } from "@/types/favorites";
 import type { Album } from "../../../../models/album";
-import TagList from "@/components/TagList";
+import TagList, { type Tag } from "@/components/TagList";
+
+type FavoriteRecord = {
+  labeledFeelings?: string[];
+  format?: FavoriteFormat | FavoriteFormat[];
+  activities?: string[];
+  tags?: Tag[];
+};
 import { useTransitionRouter } from "next-view-transitions";
 import { EASE_OUT, motion, useReducedMotion } from "@/components/motion";
 
@@ -61,7 +69,7 @@ export default function AlbumDetail() {
   const [bgColor, setBgColor] = useState("rgba(6, 78, 59, 0.8)"); // emerald-950 por defecto con opacidad
   const imgRef = useRef<HTMLImageElement>(null);
   const { user } = useAuth();
-  const [favorite, setFavorite] = useState<any>(null);
+  const [favorite, setFavorite] = useState<FavoriteRecord | null>(null);
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -114,12 +122,13 @@ export default function AlbumDetail() {
     }
 
     setCollectionLoading(true);
-    fetch(`/api/userFavorites?userId=${encodeURIComponent(user.uid)}`)
+    authFetch("/api/userFavorites")
       .then((response) => (response.ok ? response.json() : { favorites: [] }))
       .then((data) => {
         setFavorite(
           (data.favorites || []).find(
-            (item: any) => (item.album?.id || item.albumId) === albumId,
+            (item: { album?: { id?: string }; albumId?: string }) =>
+              (item.album?.id || item.albumId) === albumId,
           ) || null,
         );
       })
@@ -146,21 +155,22 @@ export default function AlbumDetail() {
   }, [album, mounted]);
 
   if (isLoading || !mounted)
-    return <div className="text-white">{tCommon("loading")}</div>;
+    return <div className="text-[var(--foreground)]">{tCommon("loading")}</div>;
   if (error) return <div className="text-red-500">{t("error")}</div>;
   if (!album) return null;
 
   const savedMoods = normalizeMoods(favorite?.labeledFeelings || []);
-  const savedFormats: FavoriteFormat[] = Array.isArray(favorite?.format)
-    ? favorite.format
-    : favorite?.format
-      ? [favorite.format]
+  const favoriteFormat = favorite?.format;
+  const savedFormats: FavoriteFormat[] = Array.isArray(favoriteFormat)
+    ? favoriteFormat
+    : favoriteFormat
+      ? [favoriteFormat]
       : [];
   const removeFromCollection = async () => {
     if (!user?.uid) return;
     setRemoving(true);
     try {
-      await undoFavorite(album as Album, user.uid);
+      await undoFavorite(album as Album);
       setFavorite(null);
     } finally {
       setRemoving(false);
@@ -180,7 +190,7 @@ export default function AlbumDetail() {
       <div className="relative pt-12 md:pt-16">
         <button
           onClick={() => router.back()}
-          className="mb-6 inline-flex items-center gap-2 text-xs text-[#9be7a5] transition hover:text-white"
+          className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--collectify-mint)] transition hover:text-[var(--foreground)]"
         >
           ← Volver
         </button>
@@ -188,10 +198,12 @@ export default function AlbumDetail() {
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE_OUT }}
-          className="grid w-full items-start gap-8 border-b border-emerald-100/10 pb-10 md:grid-cols-[320px_1fr] md:gap-16"
+          className="grid w-full items-start gap-8 border-b border-[var(--collectify-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16"
         >
           <div className="flex w-full flex-col items-start">
             <img
+              fetchPriority="high"
+              decoding="async"
               ref={imgRef}
               src={album.images[0]?.url}
               alt={album.name}
@@ -201,23 +213,23 @@ export default function AlbumDetail() {
             />
           </div>
           <div className="flex min-w-0 flex-col pt-1">
-            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#9be7a5]">
+            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
               Álbum seleccionado
             </p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-tight text-white md:text-7xl">
+            <h1 className="mt-3 text-5xl font-semibold tracking-tight text-[var(--foreground)] md:text-7xl">
               {album.name}
             </h1>
-            <h2 className="mt-4 text-base text-[#9be7a5]">
+            <h2 className="mt-4 text-base text-[var(--collectify-mint)]">
               {album.artists[0].name}
             </h2>
-            <p className="mt-6 max-w-lg text-sm leading-relaxed text-[#8f9f93]">
+            <p className="mt-6 max-w-lg text-sm leading-relaxed text-[var(--collectify-muted)]">
               Un disco para volver a escuchar con calma. Explora su lista de
               canciones y guárdalo en tu colección.
             </p>
             <div className="mt-7 flex flex-wrap gap-2">
               <button
                 onClick={() => openSpotify(album.external_urls.spotify)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-[#9be7a5] px-4 py-3 text-sm font-semibold text-[#102117] transition hover:bg-[#d6f28d]"
+                className="flex items-center justify-center gap-2 rounded-xl bg-[var(--collectify-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--collectify-lime)]"
               >
                 <FaSpotify />
                 {tModal("listenOnSpotify")}
@@ -227,14 +239,14 @@ export default function AlbumDetail() {
                   <>
                     <button
                       onClick={() => setModalOpen(true)}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-emerald-200/15 px-4 py-3 text-sm text-[#b4c2b6] transition hover:border-[#9be7a5] hover:text-white"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-[var(--collectify-line)] px-4 py-3 text-sm text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
                     >
                       <MdEdit /> Editar colección
                     </button>
                     <button
                       onClick={removeFromCollection}
                       disabled={removing}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-[#ff9f76]/40 px-4 py-3 text-sm text-[#ffb292] transition hover:bg-[#ff9f76]/10 disabled:opacity-60"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-[var(--collectify-danger)]/40 px-4 py-3 text-sm text-[var(--collectify-danger)] transition hover:bg-[var(--collectify-danger)]/10 disabled:opacity-60"
                     >
                       <Trash2Icon size={17} />
                       {removing ? "Eliminando..." : "Eliminar de la colección"}
@@ -243,16 +255,16 @@ export default function AlbumDetail() {
                 ) : (
                   <button
                     onClick={() => setModalOpen(true)}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-emerald-200/15 px-4 py-3 text-sm text-[#b4c2b6] transition hover:border-[#9be7a5] hover:text-white"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-[var(--collectify-line)] px-4 py-3 text-sm text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
                   >
                     <MdEdit /> Añadir a la colección
                   </button>
                 ))}
             </div>
             {favorite && (
-              <div className="mt-7 grid gap-5 border-t grid-cols-[3fr_2fr] border-emerald-100/10 pt-5">
+              <div className="mt-7 grid gap-5 border-t grid-cols-[3fr_2fr] border-[var(--collectify-line)] pt-5">
                 <div>
-                  <p className="mb-2 text-xs font-semibold text-[#8f9f93]">
+                  <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
                     Emociones
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -262,14 +274,14 @@ export default function AlbumDetail() {
                         return (
                           <span
                             key={mood}
-                            className="rounded-full bg-[#9be7a5]/10 px-3 py-1.5 text-xs text-[#9be7a5]"
+                            className="rounded-full bg-[var(--collectify-mint)]/10 px-3 py-1.5 text-xs text-[var(--collectify-mint)]"
                           >
                             {item?.symbol} {tMoods(mood)}
                           </span>
                         );
                       })
                     ) : (
-                      <span className="text-sm text-[#8f9f93]">
+                      <span className="text-sm text-[var(--collectify-muted)]">
                         Sin emociones asociadas
                       </span>
                     )}
@@ -277,14 +289,14 @@ export default function AlbumDetail() {
                 </div>
 
                 <div>
-                  <p className="mb-2 text-xs font-semibold text-[#8f9f93]">
+                  <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
                     Formato
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {savedFormats.map((format) => (
                       <span
                         key={format}
-                        className="rounded-full bg-emerald-100/10 px-3 py-1.5 text-xs text-[#d6e5d8]"
+                        className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
                       >
                         {format === "vinyl"
                           ? "Vinilo"
@@ -298,7 +310,7 @@ export default function AlbumDetail() {
                   </div>
                 </div>
                 <div>
-                  <p className="mb-2 text-xs font-semibold text-[#8f9f93]">
+                  <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
                     Actividades
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -306,21 +318,21 @@ export default function AlbumDetail() {
                       favorite.activities.map((activity: string) => (
                         <span
                           key={activity}
-                          className="rounded-full bg-emerald-100/10 px-3 py-1.5 text-xs text-[#d6e5d8]"
+                          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
                         >
                           {tActivities(activity)}
                         </span>
                       ))
                     ) : (
-                      <span className="text-sm text-[#8f9f93]">
+                      <span className="text-sm text-[var(--collectify-muted)]">
                         Sin actividades asociadas
                       </span>
                     )}
                   </div>
                 </div>
-                {favorite.tags?.length > 0 && (
+                {(favorite.tags?.length ?? 0) > 0 && (
                   <div>
-                    <p className="mb-2 text-xs font-semibold text-[#8f9f93]">
+                    <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
                       Etiquetas
                     </p>
                     <TagList tags={favorite.tags} />
@@ -341,7 +353,7 @@ export default function AlbumDetail() {
           favoriteData={favorite}
           startEditing={Boolean(favorite)}
           onSaved={(savedFavorite) =>
-            setFavorite((current: any) => ({ ...current, ...savedFavorite }))
+            setFavorite((current) => ({ ...current, ...savedFavorite }))
           }
         />
       )}

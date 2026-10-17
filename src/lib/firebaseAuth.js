@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth, db } from "./firebase";
 import {
   GoogleAuthProvider,

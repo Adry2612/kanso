@@ -79,10 +79,7 @@ export default function FilterModal({
       title={t("filter.title")}
       footer={
         hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className="w-full rounded-xl border border-emerald-200/15 bg-transparent px-4 py-2.5 text-sm text-[#ff9f76] transition hover:border-[#ff9f76]/60"
-          >
+          <button onClick={clearFilters} className="modal-action-danger w-full">
             {t("filter.clearAll")}
           </button>
         )
@@ -91,7 +88,7 @@ export default function FilterModal({
       <div className="space-y-8">
         {/* Moods */}
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[#9be7a5]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
             {t("filter.moodsTitle")}
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -104,8 +101,8 @@ export default function FilterModal({
                   onClick={() => toggleMood(mood.value)}
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
                     isSelected
-                      ? "border-[#9be7a5] bg-[#9be7a5] text-[#102117]"
-                      : "border-emerald-100/10 bg-[#101b14]/35 text-[#b4c2b6] hover:border-[#9be7a5]/50"
+                      ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                      : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"
                   }`}
                 >
                   <span aria-hidden="true">{mood.symbol}</span>
@@ -119,7 +116,7 @@ export default function FilterModal({
 
         {/* Genres */}
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[#9be7a5]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
             {t("filter.genresTitle")}
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -132,8 +129,8 @@ export default function FilterModal({
                   onClick={() => toggleGenre(genre.value)}
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
                     isSelected
-                      ? "border-[#9be7a5] bg-[#9be7a5] text-[#102117]"
-                      : "border-emerald-100/10 bg-[#101b14]/35 text-[#b4c2b6] hover:border-[#9be7a5]/50"
+                      ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
+                      : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"
                   }`}
                 >
                   <MdMusicNote size={18} />
@@ -145,7 +142,7 @@ export default function FilterModal({
           </div>
         </div>
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[#9be7a5]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
             Formato de posesión
           </h3>
           <div className="grid grid-cols-2 gap-2">
@@ -155,7 +152,7 @@ export default function FilterModal({
                 <button
                   key={format.value}
                   onClick={() => toggleFormat(format.value)}
-                  className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${isSelected ? "border-[#9be7a5] bg-[#9be7a5] text-[#102117]" : "border-emerald-100/10 bg-[#101b14]/35 text-[#b4c2b6] hover:border-[#9be7a5]/50"}`}
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${isSelected ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]" : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"}`}
                 >
                   <span className="text-base">{format.icon}</span>
                   {format.label}
@@ -166,7 +163,7 @@ export default function FilterModal({
           </div>
         </div>
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[#9be7a5]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
             Etiquetas personales
           </h3>
           <div className="grid gap-2 sm:grid-cols-[140px_1fr_auto]">
@@ -201,7 +198,7 @@ export default function FilterModal({
                   setTagValue("");
                 }
               }}
-              className="rounded-xl border border-emerald-100/15 px-3 py-2 text-sm text-[#9be7a5] hover:border-[#9be7a5]/60"
+              className="rounded-xl border border-[var(--collectify-line-strong)] px-3 py-2 text-sm text-[var(--collectify-mint)] hover:border-[var(--collectify-mint)]/60"
             >
               Aplicar
             </button>
@@ -222,7 +219,7 @@ export default function FilterModal({
                       ),
                     })
                   }
-                  className="rounded-full bg-emerald-100/10 px-3 py-1.5 text-xs text-[#d6e5d8]"
+                  className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
                 >
                   {tag.category}: {tag.value} ×
                 </button>

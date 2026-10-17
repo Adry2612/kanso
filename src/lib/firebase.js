@@ -1,21 +1,24 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration.
+// Read from NEXT_PUBLIC_* env vars so the config is not hardcoded in the repo.
+// Note: NEXT_PUBLIC_* values are public (they ship in the client bundle).
+// Firebase access control comes from Firestore Security Rules and App Check,
+// not from hiding this config.
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyB6ntLqPOR2Vbr-RBPZ6EituHGwN6TjzUo",
-  authDomain: "collectify-2d503.firebaseapp.com",
-  projectId: "collectify-2d503",
-  storageBucket: "collectify-2d503.firebasestorage.app",
-  messagingSenderId: "707488772865",
-  appId: "1:707488772865:web:e74279462217f1ffada100",
-  measurementId: "G-4VXWYF9B02",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase

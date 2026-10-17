@@ -4,14 +4,18 @@ import { useFetch } from "@/hooks/useFetch";
 import { getAlbumTracklist } from "@/lib/api/albumInfo";
 import {
   getRecomendation,
+  getRecommendedAlbumByActivity,
   saveRecomendationHistory,
 } from "@/lib/api/recomendation";
 import {
-  getRecommendedAlbumByActivity,
   getActivityLabel,
+  moodLabelToKey,
   type RecommendedAlbum,
 } from "@/lib/activityRecommendations";
 import { useTranslations } from "@/context/I18nContext";
+import { useTransitionRouter } from "next-view-transitions";
+import { Reveal } from "@/components/motion";
+import { getMood } from "@/constants/moods";
 import { Skeleton } from "@/components/Skeleton";
 import { openSpotify } from "@/lib/spotifyUtils";
 import React, { useEffect, useState } from "react";
@@ -26,15 +30,6 @@ type Track = {
   name: string;
   track_number: number;
   artists: TrackArtist[];
-};
-
-type AlbumInfo = {
-  spotifyUrl: string;
-  images: { url: string }[];
-  name: string;
-  artists: { name: string; id: string }[];
-  release_date: string;
-  total_tracks: number;
 };
 
 type RecomendationsProps = {
@@ -54,6 +49,8 @@ export default function RecomendationPage({
 }: RecomendationsProps) {
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
+  const tRecomendation = useTranslations("recommendation");
+  const router = useTransitionRouter();
   const activityLabel = activity
     ? getActivityLabel(activity, tActivities)
     : null;
@@ -63,6 +60,7 @@ export default function RecomendationPage({
   const [mounted, setMounted] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
   const [activityError, setActivityError] = useState<string | null>(null);
+  const [noMatch, setNoMatch] = useState(false);
 
   const { execute: recomendation, error, loading } = useFetch(getRecomendation);
   const { execute: tracklist } = useFetch(getAlbumTracklist);
@@ -74,18 +72,12 @@ export default function RecomendationPage({
   useEffect(() => {
     if (!mounted) return;
 
+    setNoMatch(false);
+
     if (activity) {
       setActivityLoading(true);
       setActivityError(null);
-      getRecommendedAlbumByActivity(
-        userId,
-        activity,
-        tMoods,
-        tActivities,
-        format,
-        moods,
-        tags,
-      )
+      getRecommendedAlbumByActivity(activity, format, moods, tags)
         .then((result) => {
           if (result.recommendedAlbum) {
             setRecomendedAlbum(result.recommendedAlbum);
@@ -98,7 +90,6 @@ export default function RecomendationPage({
               saveRecomendationHistory(
                 historyMoods,
                 result.recommendedAlbum.albumId,
-                userId,
               ).catch((error: unknown) => {
                 console.error(
                   "Error guardando historial de recomendación:",
@@ -124,18 +115,23 @@ export default function RecomendationPage({
       return;
     }
 
-    recomendation(moods, userId, format, tags).then((data) => {
+    recomendation(moods, format, tags).then((data) => {
       if (data) {
         setRecomendedAlbum(data);
         const firebaseAlbumId = data.albumId;
 
-        saveRecomendationHistory(moods, firebaseAlbumId, userId).catch(
+        saveRecomendationHistory(moods, firebaseAlbumId).catch(
           (error: unknown) => {
             console.error("Error guardando historial de recomendación:", error);
           },
         );
+      } else {
+        setNoMatch(true);
       }
     });
+    // El efecto solo debe re-ejecutarse cuando cambian estos valores; incluir
+    // los traductores o `recomendation` (recreados en cada render) provocaría bucles.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activity, moods, userId, mounted, format, tags]);
 
   useEffect(() => {
@@ -168,7 +164,7 @@ export default function RecomendationPage({
       <main className="collectify-main min-h-screen">
         <div className="pt-12 md:pt-16">
           <Skeleton className="h-3 w-24" />
-          <div className="mt-8 grid gap-8 border-b border-emerald-100/10 pb-10 md:grid-cols-[320px_1fr] md:gap-16">
+          <div className="mt-8 grid gap-8 border-b border-[var(--collectify-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16">
             <Skeleton className="aspect-square w-full max-w-[320px] rounded-2xl" />
             <div className="space-y-4 pt-2">
               <Skeleton className="h-3 w-32" />
@@ -191,56 +187,112 @@ export default function RecomendationPage({
   if (activeError) {
     return (
       <main className="collectify-main min-h-screen">
-        <div className="pt-16">
+        <div className="pt-16" role="alert">
           <p className="text-[11px] font-bold uppercase tracking-[.2em] text-red-400">
-            No hemos encontrado un álbum
+            {tRecomendation("empty.errorTitle")}
           </p>
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-[#8f9f93]">
+          <p className="mt-4 max-w-lg text-sm leading-relaxed text-[var(--collectify-muted)]">
             {activeError}
           </p>
           <button
             onClick={() => window.history.back()}
-            className="mt-7 rounded-xl border border-emerald-200/15 px-4 py-3 text-sm text-[#b4c2b6] transition hover:border-[#9be7a5] hover:text-white"
+            className="mt-7 rounded-xl border border-[var(--collectify-line)] px-4 py-3 text-sm text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
           >
-            ← Volver a elegir
+            ← {tRecomendation("empty.back")}
           </button>
         </div>
       </main>
     );
   }
 
-  if (!recomendedAlbum) return null;
+  if (noMatch) {
+    return (
+      <main className="collectify-main min-h-screen">
+        <div className="pt-16">
+          <Reveal className="mx-auto max-w-xl text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+              {tRecomendation("empty.eyebrow")}
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--foreground)] md:text-4xl">
+              {tRecomendation("empty.title")}
+            </h1>
+            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-[var(--collectify-muted)]">
+              {tRecomendation("empty.description")}
+            </p>
+            {moods.length > 0 && (
+              <div className="mt-7 flex flex-wrap justify-center gap-2">
+                {moods.map((mood) => {
+                  const option = getMood(mood);
+                  return (
+                    <span
+                      key={mood}
+                      className="flex items-center gap-2 rounded-full border border-[var(--collectify-line)] px-3 py-1.5 text-xs text-[var(--collectify-muted)]"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="text-[var(--collectify-mint)]"
+                      >
+                        {option?.symbol ?? "✦"}
+                      </span>
+                      {option ? tMoods(option.key) : mood}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <button
+                onClick={() => router.push("/search")}
+                className="rounded-xl bg-[var(--collectify-mint)] px-5 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--collectify-lime)]"
+              >
+                {tRecomendation("empty.cta")}
+              </button>
+              <button
+                onClick={() => window.history.back()}
+                className="rounded-xl border border-[var(--collectify-line)] px-4 py-3 text-sm text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+              >
+                {tRecomendation("empty.back")}
+              </button>
+            </div>
+          </Reveal>
+        </div>
+      </main>
+    );
+  }
 
-  const albumInfo = recomendedAlbum.albumInfo;
+  const albumInfo = recomendedAlbum?.albumInfo;
+  if (!albumInfo) return null;
   return (
     <main className="collectify-main relative min-h-screen overflow-hidden">
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-emerald-950/40 to-transparent" />
       <div className="relative pt-12 md:pt-16">
         <button
           onClick={() => window.history.back()}
-          className="mb-6 inline-flex items-center gap-2 text-xs text-[#9be7a5] transition hover:text-white"
+          className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--collectify-mint)] transition hover:text-[var(--foreground)]"
         >
           ← Volver
         </button>
-        <section className="grid w-full items-start gap-8 border-b border-emerald-100/10 pb-10 md:grid-cols-[320px_1fr] md:gap-16">
+        <section className="grid w-full items-start gap-8 border-b border-[var(--collectify-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16">
           <img
+            loading="lazy"
+            decoding="async"
             src={albumInfo.images[0]?.url}
             alt={albumInfo.name}
             className="aspect-square w-full max-w-[320px] rounded-2xl object-cover shadow-2xl"
           />
           <div className="flex min-w-0 flex-col pt-1">
-            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[#9be7a5]">
+            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
               Recomendación para ti
             </p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-tight text-white md:text-7xl">
+            <h1 className="mt-3 text-5xl font-semibold tracking-tight text-[var(--foreground)] md:text-7xl">
               {albumInfo.name}
             </h1>
-            <h2 className="mt-4 text-base text-[#9be7a5]">
+            <h2 className="mt-4 text-base text-[var(--collectify-mint)]">
               {albumInfo.artists
                 .map((artist: { name: string }) => artist.name)
                 .join(", ")}
             </h2>
-            <p className="mt-6 max-w-lg text-sm leading-relaxed text-[#8f9f93]">
+            <p className="mt-6 max-w-lg text-sm leading-relaxed text-[var(--collectify-muted)]">
               Un álbum seleccionado a partir de tu{" "}
               {activity
                 ? `actividad: ${activityLabel || activity}`
@@ -249,8 +301,8 @@ export default function RecomendationPage({
             </p>
             <div className="mt-7 flex flex-wrap gap-2">
               <button
-                onClick={() => openSpotify(albumInfo.spotifyUrl)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-[#9be7a5] px-4 py-3 text-sm font-semibold text-[#102117] transition hover:bg-[#d6f28d]"
+                onClick={() => openSpotify(albumInfo.external_urls?.spotify)}
+                className="flex items-center justify-center gap-2 rounded-xl bg-[var(--collectify-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--collectify-lime)]"
               >
                 <FaSpotify />
                 Escuchar en Spotify
@@ -261,9 +313,10 @@ export default function RecomendationPage({
                 {recomendedAlbum.feelings.map((feeling) => (
                   <span
                     key={feeling.label}
-                    className="rounded-full border border-emerald-200/15 px-3 py-1.5 text-xs text-[#b4c2b6]"
+                    className="rounded-full border border-[var(--collectify-line)] px-3 py-1.5 text-xs text-[var(--collectify-muted)]"
                   >
-                    {feeling.emoji} {feeling.label}
+                    {feeling.emoji}{" "}
+                    {tMoods(moodLabelToKey[feeling.label] ?? feeling.label)}
                   </span>
                 ))}
               </div>
@@ -271,9 +324,9 @@ export default function RecomendationPage({
           </div>
         </section>
         <section className="mt-10 max-w-2xl">
-          <h2 className="mb-3 text-lg font-semibold tracking-tight text-white">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[var(--foreground)]">
             Tracklist{" "}
-            <span className="text-xs font-normal text-[#8f9f93]">
+            <span className="text-xs font-normal text-[var(--collectify-muted)]">
               {tracklistLoading
                 ? "· Cargando"
                 : albumTracklist
@@ -288,20 +341,20 @@ export default function RecomendationPage({
               ))}
             </div>
           ) : albumTracklist?.length ? (
-            <ul className="border-t border-emerald-100/10">
+            <ul className="border-t border-[var(--collectify-line)]">
               {albumTracklist.map((track, index) => (
                 <li
                   key={`${track.name}-${index}`}
-                  className="grid grid-cols-[30px_1fr] items-center gap-3 border-b border-emerald-100/10 px-1 py-3"
+                  className="grid grid-cols-[30px_1fr] items-center gap-3 border-b border-[var(--collectify-line)] px-1 py-3"
                 >
-                  <span className="text-xs text-[#8f9f93]">
+                  <span className="text-xs text-[var(--collectify-muted)]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <div className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm text-[#b4c2b6]">
+                    <span className="truncate text-sm text-[var(--collectify-muted)]">
                       {track.name}
                     </span>
-                    <span className="mt-1 truncate text-xs text-[#8f9f93]">
+                    <span className="mt-1 truncate text-xs text-[var(--collectify-muted)]">
                       {track.artists.map((artist) => artist.name).join(", ")}
                     </span>
                   </div>
@@ -309,7 +362,7 @@ export default function RecomendationPage({
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-[#8f9f93]">
+            <p className="text-sm text-[var(--collectify-muted)]">
               No hay canciones disponibles para este álbum.
             </p>
           )}

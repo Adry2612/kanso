@@ -1,4 +1,6 @@
-export const openSpotify = (spotifyUrl: string) => {
+export const openSpotify = (spotifyUrl?: string | null) => {
+  if (!spotifyUrl) return;
+
   const albumId = spotifyUrl.split("/album/")[1]?.split("?")[0];
 
   if (!albumId) {

@@ -263,7 +263,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[#9be7a5]">
+          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--collectify-mint)]">
             Cargando...
           </div>
         </div>

@@ -7,7 +7,7 @@ type SkeletonProps = {
 export function Skeleton({ className = "" }: SkeletonProps) {
   return (
     <div
-      className={`shimmer rounded-md bg-neutral-700/70 ${className}`}
+      className={`shimmer rounded-md bg-[var(--surface-3)] ${className}`}
       aria-hidden="true"
     />
   );

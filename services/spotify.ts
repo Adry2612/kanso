@@ -1,11 +1,11 @@
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
-async function getAccessToken() {
-  console.log("🔐 Getting Spotify access token...");
-  console.log("📋 Client ID:", client_id ? "Present" : "MISSING");
-  console.log("🔑 Client Secret:", client_secret ? "Present" : "MISSING");
+// Caché del token de aplicación: uno por instancia y por ventana de validez.
+let cachedToken: { value: string; expiresAt: number } | null = null;
+let tokenRequest: Promise<string> | null = null;
 
+async function requestAccessToken(): Promise<string> {
   if (!client_id || !client_secret) {
     throw new Error(
       "Missing Spotify credentials (SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET)",
@@ -23,11 +23,9 @@ async function getAccessToken() {
     body: "grant_type=client_credentials",
   });
 
-  console.log("🎫 Token response status:", response.status);
-
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("❌ Token error:", errorText);
+    console.error("❌ Spotify token error:", response.status, errorText);
     throw new Error(
       `Failed to get Spotify access token: ${response.status} - ${errorText}`,
     );
@@ -39,8 +37,29 @@ async function getAccessToken() {
     throw new Error("No access token in Spotify response");
   }
 
-  console.log("✅ Access token obtained successfully");
+  const ttlMs = (Number(data.expires_in) || 3600) * 1000;
+  cachedToken = {
+    value: data.access_token,
+    // Margen de 60 s antes de la caducidad real, con un mínimo de seguridad.
+    expiresAt: Date.now() + Math.max(ttlMs - 60_000, 30_000),
+  };
+
   return data.access_token;
+}
+
+async function getAccessToken(): Promise<string> {
+  if (cachedToken && cachedToken.expiresAt > Date.now()) {
+    return cachedToken.value;
+  }
+
+  // Deduplica ráfagas concurrentes: todas esperan a la misma petición.
+  if (!tokenRequest) {
+    tokenRequest = requestAccessToken().finally(() => {
+      tokenRequest = null;
+    });
+  }
+
+  return tokenRequest;
 }
 
 export async function getArtist(id: string) {
@@ -54,6 +73,125 @@ export async function getArtist(id: string) {
   const artistData = await res.json();
 
   return artistData;
+}
+
+export async function searchArtists(query: string) {
+  const token = await getAccessToken();
+
+  const res = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=12`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return res.json();
+}
+
+/**
+ * Discografía de un artista: solo álbumes y EPs.
+ * Spotify agrupa los EPs bajo `single`, así que se pide `album,single` y se
+ * conserva un single solo si tiene 3 o más pistas (heurística de EP).
+ * Se excluyen compilaciones y apariciones en trabajos de otros.
+ */
+export async function getArtistAlbums(id: string) {
+  const token = await getAccessToken();
+  const limit = 50;
+  const items: any[] = [];
+
+  for (let page = 0; page < 4; page += 1) {
+    const res = await fetch(
+      `https://api.spotify.com/v1/artists/${id}/albums?include_groups=album,single&limit=${limit}&offset=${page * limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!res.ok) {
+      if (page === 0) {
+        throw new Error(`Spotify API error: ${res.status}`);
+      }
+      break;
+    }
+
+    const data = await res.json();
+    items.push(...(data.items || []));
+    if (!data.next) break;
+  }
+
+  const seen = new Set<string>();
+  return items
+    .filter((album: any) => {
+      if (!album?.id || seen.has(album.id)) return false;
+      seen.add(album.id);
+      if (album.album_group === "appears_on") return false;
+      if (album.album_type === "compilation") return false;
+      if (album.album_type === "album") return true;
+      if (album.album_type === "single") {
+        return (album.total_tracks ?? 0) >= 3;
+      }
+      return false;
+    })
+    .sort((a: any, b: any) => (a.release_date < b.release_date ? 1 : -1));
+}
+
+/**
+ * Novedades de un artista: álbumes, EPs y singles publicados en los últimos
+ * `withinDays` días. A diferencia de la discografía, aquí sí se incluyen los
+ * singles (un single nuevo es noticia). Excluye compilaciones y apariciones en
+ * trabajos de otros, y descarta los lanzamientos sin precisión de mes/día.
+ */
+export async function getArtistReleases(id: string, withinDays = 60) {
+  const token = await getAccessToken();
+  const cutoff = Date.now() - withinDays * 24 * 60 * 60 * 1000;
+
+  const res = await fetch(
+    `https://api.spotify.com/v1/artists/${id}/albums?include_groups=album,single&limit=50`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`Spotify API error: ${res.status}`);
+  }
+
+  const data = await res.json();
+  const seen = new Set<string>();
+
+  return (data.items || [])
+    .filter((album: any) => {
+      if (!album?.id || seen.has(album.id)) return false;
+      seen.add(album.id);
+      if (album.album_group === "appears_on") return false;
+      if (album.album_type === "compilation") return false;
+      if (album.album_type !== "album" && album.album_type !== "single") {
+        return false;
+      }
+      if (album.release_date_precision === "year") return false;
+      const releasedAt = new Date(album.release_date).getTime();
+      if (Number.isNaN(releasedAt) || releasedAt < cutoff) return false;
+      return true;
+    })
+    .map((album: any) => ({
+      id: album.id,
+      name: album.name,
+      images: album.images ?? [],
+      artists: (album.artists ?? []).map((artist: any) => ({
+        id: artist.id,
+        name: artist.name,
+      })),
+      releaseDate: album.release_date,
+      albumType: album.album_type,
+      totalTracks: album.total_tracks ?? 0,
+    }))
+    .sort((a: any, b: any) => (a.releaseDate < b.releaseDate ? 1 : -1));
 }
 
 export async function getAlbum(id: string) {
