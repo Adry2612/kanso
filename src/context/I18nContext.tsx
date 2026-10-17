@@ -31,6 +31,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // El idioma activo debe declararse en el documento.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
     localStorage.setItem("locale", newLocale);
@@ -71,7 +76,7 @@ export function useI18n() {
 }
 
 export function useTranslations(namespace: string) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   return (key: string) => t(namespace, key);
 }
 

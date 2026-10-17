@@ -12,9 +12,57 @@
   },
   "header": {
     "search": "Search",
+    "artists": "Artists",
     "favorites": "Favorites",
     "history": "History",
-    "logout": "Logout"
+    "releases": "New releases",
+    "logout": "Logout",
+    "home": "Home",
+    "settings": "Settings",
+    "guest": "Guest",
+    "profile": "Profile",
+    "yourProfile": "Your profile",
+    "testSession": "Test session",
+    "sectionLabel": "Your space",
+    "brandHome": "Collectify, go home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation",
+    "sidebarTagline": "Your collection, at your pace.",
+    "sidebarSubtitle": "Save records and return to your favourite moments."
+  },
+  "settings": {
+    "back": "Back",
+    "eyebrow": "Your space",
+    "title": "General settings",
+    "subtitle": "Customise the appearance and preferences of your Collectify experience.",
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Choose how you want to see your collection.",
+      "light": "Light",
+      "dark": "Dark",
+      "lightTitle": "Light mode",
+      "lightDesc": "Bright surfaces and soft contrast.",
+      "darkTitle": "Dark mode",
+      "darkDesc": "Deep backgrounds and mint accent."
+    },
+    "preferences": {
+      "title": "Preferences"
+    },
+    "language": {
+      "title": "Language",
+      "subtitle": "Interface language",
+      "es": "Español",
+      "en": "English"
+    },
+    "account": {
+      "title": "Account",
+      "subtitle": "Sign out of Collectify on this device.",
+      "goHome": "Go home",
+      "logout": "Sign out",
+      "signingOut": "Signing out..."
+    },
+    "signOutError": "Couldn't sign out. Please try again."
   },
   "search": {
     "title": "Find new music",
@@ -36,7 +84,14 @@
     "addToFavorites": "Add to favorites",
     "removeFromFavorites": "Remove from favorites",
     "viewDetails": "View details",
-    "select": "Select"
+    "select": "Select",
+    "noResultsTitle": "We didn't find anything for that search",
+    "noResultsDescription": "Try another term or explore your collection by moods and tags.",
+    "clearSearch": "Clear search",
+    "tryCollection": "Explore your collection",
+    "communityTitle": "Community searches",
+    "communityAlbumsTitle": "Added by the community",
+    "communityAlbumsEmpty": "No albums added yet. Be the first to share one."
   },
   "favorites": {
     "title": "My favorites",
@@ -152,7 +207,15 @@
     "spotify": "Spotify",
     "saveToFavorites": "Save to favorites",
     "getAnother": "Get another recommendation",
-    "noRecommendation": "No recommendation found"
+    "noRecommendation": "No recommendation found",
+    "empty": {
+      "eyebrow": "No matches",
+      "title": "We don't have an album that makes you feel this way",
+      "description": "No album in your collection matches the moods you picked. Add one that makes you feel this way and try again.",
+      "cta": "Add an album to my collection",
+      "back": "Pick again",
+      "errorTitle": "We couldn't load your recommendation"
+    }
   },
   "moods": {
     "joy": "Joy",
@@ -181,5 +244,44 @@
     "commuting": "On the move",
     "chores": "House chores",
     "party": "Party"
+  },
+  "artists": {
+    "eyebrow": "Follow who moves you",
+    "title": "Artists",
+    "subtitle": "Search for an artist and explore their albums and EPs.",
+    "placeholder": "Search artists...",
+    "loading": "Loading artists...",
+    "noResults": "We couldn't find artists with that name.",
+    "yourArtists": "Your artists",
+    "empty": "You don't follow any artist yet. Search above and mark them as favorite.",
+    "discography": "Discography",
+    "noAlbums": "This artist has no albums or EPs (singles only).",
+    "back": "Back",
+    "addFavorite": "Follow",
+    "removeFavorite": "Unfollow",
+    "followers": "followers"
+  },
+  "quickRecommendation": {
+    "open": "Quick pick",
+    "title": "Quick pick",
+    "subtitle": "Just tell me if you want it in a physical format or from a specific tag.",
+    "anyFormat": "Any",
+    "vinyl": "Vinyl",
+    "cd": "CDs",
+    "cassette": "Cassettes",
+    "tagsLabel": "From a tag",
+    "cta": "Pick me an album"
+  },
+  "releases": {
+    "eyebrow": "New releases",
+    "title": "New from your artists",
+    "subtitle": "The latest from the artists you follow, from the last 60 days.",
+    "loading": "Loading releases...",
+    "error": "Could not load releases.",
+    "empty": "Follow artists to see their new releases. When they put something out, it will show up here.",
+    "typeAlbum": "Album",
+    "typeEp": "EP",
+    "typeSingle": "Single",
+    "typeRelease": "Release"
   }
 }

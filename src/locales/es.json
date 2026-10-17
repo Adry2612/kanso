@@ -12,9 +12,57 @@
   },
   "header": {
     "search": "Buscar",
+    "artists": "Artistas",
     "favorites": "Favoritos",
     "history": "Histórico",
-    "logout": "Cerrar sesión"
+    "releases": "Novedades",
+    "logout": "Cerrar sesión",
+    "home": "Inicio",
+    "settings": "Ajustes",
+    "guest": "Invitado",
+    "profile": "Perfil",
+    "yourProfile": "Tu perfil",
+    "testSession": "Sesión de prueba",
+    "sectionLabel": "Tu espacio",
+    "brandHome": "Collectify, ir al inicio",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "mainNav": "Navegación principal",
+    "sidebarTagline": "Tu colección, a tu ritmo.",
+    "sidebarSubtitle": "Guarda discos y vuelve a tus momentos favoritos."
+  },
+  "settings": {
+    "back": "Volver",
+    "eyebrow": "Tu espacio",
+    "title": "Ajustes generales",
+    "subtitle": "Personaliza la apariencia y las preferencias de tu experiencia en Collectify.",
+    "appearance": {
+      "title": "Apariencia",
+      "subtitle": "Elige cómo quieres ver tu colección.",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "lightTitle": "Modo claro",
+      "lightDesc": "Superficies luminosas y contraste suave.",
+      "darkTitle": "Modo oscuro",
+      "darkDesc": "Fondos profundos y acento mint."
+    },
+    "preferences": {
+      "title": "Preferencias"
+    },
+    "language": {
+      "title": "Idioma",
+      "subtitle": "Idioma de la interfaz",
+      "es": "Español",
+      "en": "English"
+    },
+    "account": {
+      "title": "Cuenta",
+      "subtitle": "Cierra la sesión de Collectify en este dispositivo.",
+      "goHome": "Ir al inicio",
+      "logout": "Cerrar sesión",
+      "signingOut": "Cerrando sesión..."
+    },
+    "signOutError": "No se pudo cerrar la sesión. Inténtalo de nuevo."
   },
   "search": {
     "title": "Encuentra nueva música",
@@ -36,7 +84,14 @@
     "addToFavorites": "Añadir a favoritos",
     "removeFromFavorites": "Quitar de favoritos",
     "viewDetails": "Ver detalles",
-    "select": "Seleccionar"
+    "select": "Seleccionar",
+    "noResultsTitle": "No encontramos nada para esa búsqueda",
+    "noResultsDescription": "Prueba con otro término o explora tu colección por emociones y etiquetas.",
+    "clearSearch": "Limpiar búsqueda",
+    "tryCollection": "Explora tu colección",
+    "communityTitle": "Búsquedas de la comunidad",
+    "communityAlbumsTitle": "Añadidos por la comunidad",
+    "communityAlbumsEmpty": "Todavía no hay discos añadidos. Sé el primero en compartir el tuyo."
   },
   "favorites": {
     "title": "Mis favoritos",
@@ -152,7 +207,15 @@
     "spotify": "Spotify",
     "saveToFavorites": "Guardar en favoritos",
     "getAnother": "Obtener otra recomendación",
-    "noRecommendation": "No se encontró ninguna recomendación"
+    "noRecommendation": "No se encontró ninguna recomendación",
+    "empty": {
+      "eyebrow": "Sin coincidencias",
+      "title": "No tenemos un disco que te haga sentir así",
+      "description": "Ningún álbum de tu colección encaja con las emociones que has elegido. Añade uno que te haga sentir así y vuelve a intentarlo.",
+      "cta": "Añadir un álbum a mi colección",
+      "back": "Volver a elegir",
+      "errorTitle": "No hemos podido cargar tu recomendación"
+    }
   },
   "moods": {
     "joy": "Alegría",
@@ -181,5 +244,44 @@
     "commuting": "En el camino",
     "chores": "Tareas del hogar",
     "party": "De fiesta"
+  },
+  "artists": {
+    "eyebrow": "Sigue a quien te mueve",
+    "title": "Artistas",
+    "subtitle": "Busca un artista y explora sus álbumes y EPs.",
+    "placeholder": "Buscar artistas...",
+    "loading": "Cargando artistas...",
+    "noResults": "No encontramos artistas con ese nombre.",
+    "yourArtists": "Tus artistas",
+    "empty": "Todavía no sigues a ningún artista. Búscalo arriba y márcalo como favorito.",
+    "discography": "Discografía",
+    "noAlbums": "Este artista no tiene álbumes ni EPs (solo singles).",
+    "back": "Volver",
+    "addFavorite": "Seguir",
+    "removeFavorite": "Dejar de seguir",
+    "followers": "seguidores"
+  },
+  "quickRecommendation": {
+    "open": "Recomendación rápida",
+    "title": "Recomendación rápida",
+    "subtitle": "Solo dime si la quieres en un formato físico o de una etiqueta concreta.",
+    "anyFormat": "Cualquiera",
+    "vinyl": "Vinilos",
+    "cd": "CDs",
+    "cassette": "Cassettes",
+    "tagsLabel": "De una etiqueta",
+    "cta": "Recomiéndame un disco"
+  },
+  "releases": {
+    "eyebrow": "Novedades",
+    "title": "Novedades de tus artistas",
+    "subtitle": "Lo último que han publicado los artistas que sigues en los últimos 60 días.",
+    "loading": "Cargando novedades...",
+    "error": "No se pudieron cargar las novedades.",
+    "empty": "Sigue a artistas para ver sus novedades. Cuando publiquen algo nuevo, aparecerá aquí.",
+    "typeAlbum": "Álbum",
+    "typeEp": "EP",
+    "typeSingle": "Single",
+    "typeRelease": "Lanzamiento"
   }
 }
