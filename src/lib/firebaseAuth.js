@@ -1,10 +1,9 @@
-import { auth, db } from "./firebase";
+import { auth } from "./firebase";
 import {
   GoogleAuthProvider,
   signInAnonymously,
   signInWithPopup,
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const provider = new GoogleAuthProvider();
 let isSigningIn = false;
@@ -27,10 +26,10 @@ export async function signInWithGoogle() {
   try {
     isSigningIn = true;
     const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    await saveUserToFirestore(user);
 
-    return user;
+    // El perfil no se escribe desde el cliente: las reglas de Firestore deniegan
+    // todo acceso directo y el documento users/{uid} no tiene consumidores.
+    return result.user;
   } catch (error) {
     // Ignorar error si el usuario cancela el popup
     if (
@@ -40,27 +39,18 @@ export async function signInWithGoogle() {
       console.log("Popup de autenticación cancelado por el usuario");
       return null;
     }
+    // El popup no llegó a abrirse (bloqueado o cerrado por el navegador): la
+    // sesión no cambia, así que se trata como cancelación y no como error.
+    if (
+      error.code === "auth/popup-blocked" ||
+      error.code === "auth/web-storage-unsupported"
+    ) {
+      console.warn("El popup de Google no pudo abrirse:", error.code);
+      return null;
+    }
     console.error("Error al iniciar sesión con Google:", error);
     throw error;
   } finally {
     isSigningIn = false;
-  }
-}
-
-export async function saveUserToFirestore(user) {
-  if (!user?.uid) return;
-
-  const userDocRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-
-  if (!userDoc.exists()) {
-    // Guardar solo si no existe
-    await setDoc(userDocRef, {
-      uid: user.uid,
-      email: user.email,
-      name: user.displayName || "",
-      photoURL: user.photoURL || "",
-      createdAt: new Date(),
-    });
   }
 }

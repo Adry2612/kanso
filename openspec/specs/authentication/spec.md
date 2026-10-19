@@ -8,12 +8,12 @@ Permite a las personas registrarse, iniciar sesión con correo/contraseña o Goo
 
 ### Requirement: Registro con correo y contraseña
 
-El sistema DEBE permitir crear una cuenta proporcionando un nombre, un correo y una contraseña, almacenar el nombre como nombre para mostrar y registrar al usuario.
+El sistema DEBE permitir crear una cuenta proporcionando un nombre, un correo y una contraseña, y DEBE almacenar el nombre como nombre para mostrar.
 
 #### Scenario: Registro correcto
 
 - **WHEN** la persona envía el formulario de registro con un nombre, correo y contraseña válidos
-- **THEN** el sistema crea la cuenta, guarda el nombre como nombre para mostrar, registra el usuario bajo `users/{uid}` si no existe y redirige a `/home`
+- **THEN** el sistema crea la cuenta, guarda el nombre como nombre para mostrar y redirige a `/home`
 
 #### Scenario: Nombre vacío
 
@@ -41,12 +41,12 @@ El sistema DEBE permitir iniciar sesión con un correo y una contraseña ya regi
 
 ### Requirement: Inicio de sesión con Google
 
-El sistema DEBE permitir iniciar sesión con una cuenta de Google mediante una ventana emergente y crear el perfil en Firestore si no existe.
+El sistema DEBE permitir iniciar sesión con una cuenta de Google mediante una ventana emergente.
 
 #### Scenario: Inicio de sesión con Google correcto
 
 - **WHEN** la persona completa el flujo emergente de Google
-- **THEN** el sistema registra al usuario bajo `users/{uid}` si no existe y la redirige a `/home`
+- **THEN** el sistema establece la sesión y la redirige a `/home`
 
 #### Scenario: El usuario cancela la ventana de Google
 
@@ -57,6 +57,11 @@ El sistema DEBE permitir iniciar sesión con una cuenta de Google mediante una v
 
 - **WHEN** ya hay un inicio de sesión con Google en curso y se intenta otro
 - **THEN** el sistema ignora el nuevo intento para evitar ventanas emergentes duplicadas
+
+#### Scenario: Sin acceso de escritura a Firestore
+
+- **WHEN** la persona inicia sesión con Google correctamente
+- **THEN** el sistema no intenta escribir en Firestore desde el cliente y la sesión queda establecida aunque las reglas denieguen ese acceso
 
 ### Requirement: Acceso como invitado
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
   OAuthProvider,
   createUserWithEmailAndPassword,
@@ -23,9 +23,20 @@ function LoginForm() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isStartingGuest, setIsStartingGuest] = useState(false);
+  const googleTimeoutRef = useRef<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegisterMode = searchParams.get("mode") !== "login";
+
+  // Si el popup se queda colgado (COOP, bloqueo del navegador), el botón no
+  // debe quedar deshabilitado para siempre.
+  useEffect(
+    () => () => {
+      if (googleTimeoutRef.current)
+        window.clearTimeout(googleTimeoutRef.current);
+    },
+    [],
+  );
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -58,13 +69,22 @@ function LoginForm() {
 
   const handleGoogleLogin = async () => {
     if (isLoggingIn) return;
+    setError(null);
     try {
       setIsLoggingIn(true);
+      // Red de seguridad: si el popup nunca resuelve, se libera el botón.
+      googleTimeoutRef.current = window.setTimeout(() => {
+        setIsLoggingIn(false);
+      }, 90_000);
       const user = await signInWithGoogle();
       if (user) router.replace("/home");
     } catch {
       setError("No hemos podido iniciar sesión con Google.");
     } finally {
+      if (googleTimeoutRef.current) {
+        window.clearTimeout(googleTimeoutRef.current);
+        googleTimeoutRef.current = null;
+      }
       setIsLoggingIn(false);
     }
   };
