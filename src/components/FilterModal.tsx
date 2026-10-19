@@ -1,4 +1,5 @@
 import BaseModal from "./BaseModal";
+import Medallion from "@/components/Medallion";
 import { useTranslations } from "@/context/I18nContext";
 import { MdMusicNote } from "react-icons/md";
 import { FilterModalProps } from "@/types/components";
@@ -20,7 +21,7 @@ export default function FilterModal({
   const moods = moodOptions.map((mood) => ({
     value: mood.key,
     label: tMoods(mood.key),
-    symbol: mood.symbol,
+    emoji: mood.emoji,
   }));
 
   const genres = [
@@ -98,6 +99,8 @@ export default function FilterModal({
               return (
                 <button
                   key={mood.value}
+                  type="button"
+                  aria-pressed={isSelected}
                   onClick={() => toggleMood(mood.value)}
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
                     isSelected
@@ -105,9 +108,12 @@ export default function FilterModal({
                       : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"
                   }`}
                 >
-                  <span aria-hidden="true">{mood.symbol}</span>
+                  <Medallion
+                    emoji={mood.emoji}
+                    size="sm"
+                    onAccent={isSelected}
+                  />
                   <span className="text-sm">{mood.label}</span>
-                  {isSelected && <span className="text-xs">✓</span>}
                 </button>
               );
             })}

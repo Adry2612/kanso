@@ -1087,6 +1087,372 @@ body::after {
   }
 }
 
+/* ==========================================================================
+   Marca compartida: medallón de emociones y actividades
+   (redesign-carrousel-feelings) El emoji del catálogo dentro de un contenedor
+   construido con tokens, para que una emoción se reconozca igual en el inicio,
+   en el filtro y en el modal de guardar álbum.
+   ========================================================================== */
+
+.medallion {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--collectify-line);
+  border-radius: var(--radius-pill);
+  background:
+    radial-gradient(
+      circle at 32% 26%,
+      rgba(255, 255, 255, 0.12),
+      transparent 62%
+    ),
+    linear-gradient(150deg, var(--surface-3), var(--surface-2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 24px -18px hsl(var(--shadow-tint) / 0.9);
+  color: var(--foreground);
+  line-height: 1;
+  /* Pila explícita de emoji: fija tamaño y aspecto entre sistemas. */
+  font-family:
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
+    "Twemoji Mozilla", "EmojiOne Color", sans-serif;
+  transition:
+    transform 0.28s var(--ease-out),
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.25s ease;
+}
+
+.theme-light .medallion {
+  background:
+    radial-gradient(
+      circle at 32% 26%,
+      rgba(255, 255, 255, 0.95),
+      transparent 62%
+    ),
+    linear-gradient(150deg, #ffffff, #e6f0e7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 26px -20px hsl(var(--shadow-tint) / 0.5);
+}
+
+.medallion--sm {
+  width: 1.9rem;
+  height: 1.9rem;
+  font-size: 0.95rem;
+}
+.medallion--md {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.4rem;
+}
+.medallion--lg {
+  width: 4.25rem;
+  height: 4.25rem;
+  font-size: 2.1rem;
+}
+
+.medallion__emoji {
+  font-size: inherit;
+}
+
+/* Relleno de acento: refuerza la selección más allá del color de la etiqueta. */
+.medallion[data-selected="true"] {
+  border-color: color-mix(
+    in srgb,
+    var(--collectify-mint) 80%,
+    var(--background)
+  );
+  background: var(--collectify-mint);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 0 3px color-mix(in srgb, var(--collectify-mint) 26%, transparent),
+    0 14px 26px -16px
+      color-mix(in srgb, var(--collectify-mint) 70%, transparent);
+}
+
+/* Variante para cuando el medallón vive sobre un fondo de acento (burbujas). */
+.medallion--on-accent {
+  border-color: color-mix(in srgb, var(--background) 28%, transparent);
+  background: color-mix(in srgb, var(--background) 16%, transparent);
+  box-shadow: none;
+}
+
+.medallion__badge {
+  position: absolute;
+  right: -0.15rem;
+  bottom: -0.15rem;
+  display: inline-flex;
+  width: 1.15rem;
+  height: 1.15rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--collectify-mint) 55%, transparent);
+  border-radius: var(--radius-pill);
+  background: var(--background);
+  color: var(--collectify-mint);
+  font-size: 0.6rem;
+}
+
+/* ==========================================================================
+   Carrusel de emociones y actividades
+   ========================================================================== */
+
+.feelings-carousel {
+  position: relative;
+  min-width: 0;
+}
+
+.feelings-rail {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 1rem;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.feelings-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.feelings-rail__track {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 1.75rem 0.5rem 0.75rem;
+}
+
+.feelings-rail__snap {
+  scroll-snap-align: center;
+}
+
+.feeling-option {
+  position: relative;
+  display: flex;
+  width: 6.25rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  padding: 0.4rem 0.25rem 0.5rem;
+  color: var(--collectify-muted);
+  cursor: pointer;
+  transition:
+    transform 0.25s var(--ease-out),
+    color 0.2s ease;
+}
+
+.feeling-option .medallion {
+  transform: scale(0.86);
+  opacity: 0.8;
+}
+
+.feeling-option[data-active] {
+  color: var(--foreground);
+}
+
+.feeling-option[data-active] .medallion {
+  transform: scale(1.08);
+  opacity: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 18px 34px -22px
+      color-mix(in srgb, var(--collectify-mint) 75%, transparent);
+}
+
+.feeling-option[data-selected] {
+  color: var(--collectify-mint);
+}
+
+.feeling-option__label {
+  display: -webkit-box;
+  min-height: 2.3em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  text-wrap: balance;
+  /* Reserva dos líneas siempre: los nombres cortos y largos comparten la misma
+     línea base, así los medallones no se desalinean. */
+}
+
+.feeling-option:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .feeling-option:hover .medallion {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+
+  .feeling-option:hover {
+    color: var(--foreground);
+  }
+}
+
+/* Pie del carrusel: las flechas van centradas bajo el carril, sin tapar las
+   opciones de los extremos. */
+.feelings-carousel__footer {
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0 0;
+}
+
+.feelings-carousel__nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.feelings-carousel__control {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--collectify-line);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  color: var(--collectify-mint);
+  font-size: 0.8rem;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.feelings-carousel__control:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--collectify-mint) 60%, transparent);
+  background: color-mix(in srgb, var(--collectify-mint) 14%, transparent);
+}
+
+.feelings-carousel__control:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.feelings-carousel__control[data-active] {
+  border-color: color-mix(in srgb, var(--collectify-mint) 60%, transparent);
+  background: color-mix(in srgb, var(--collectify-mint) 18%, transparent);
+  color: var(--foreground);
+}
+
+/* Cabecera del panel: título, conmutador y lupa en la misma fila. */
+.feelings-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+/* Acciones de cabecera (lupa y recomendación rápida): misma altura y alineadas. */
+.feelings-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feelings-carousel__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  border: 1px solid var(--collectify-line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  padding: 0 0.9rem;
+}
+
+.feelings-carousel__search[hidden] {
+  display: none;
+}
+
+.feelings-carousel__search:focus-within {
+  border-color: color-mix(in srgb, var(--collectify-mint) 60%, transparent);
+}
+
+.feelings-carousel__search-icon {
+  flex: none;
+  color: var(--collectify-muted);
+  font-size: 0.8rem;
+}
+
+.feelings-carousel__input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.7rem 0;
+  color: var(--foreground);
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.feelings-carousel__input::placeholder {
+  color: var(--collectify-muted);
+}
+
+/* Oculta la "x" nativa: usamos un botón propio, accesible y con estilo. */
+.feelings-carousel__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.feelings-carousel__count {
+  flex: none;
+  color: var(--collectify-muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.feelings-carousel__clear {
+  display: inline-flex;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  color: var(--collectify-muted);
+  font-size: 0.7rem;
+}
+
+.feelings-carousel__clear:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  color: var(--foreground);
+}
+
+.feelings-carousel__empty {
+  padding: 2rem 1rem;
+  border: 1px dashed var(--collectify-line);
+  border-radius: var(--radius-md);
+  color: var(--collectify-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medallion,
+  .feeling-option,
+  .feelings-carousel__control {
+    transition: none;
+  }
+}
+
 /* Scrollbar */
 * {
   scrollbar-width: thin;

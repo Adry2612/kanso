@@ -283,5 +283,17 @@
     "typeEp": "EP",
     "typeSingle": "Single",
     "typeRelease": "Release"
+  },
+  "feelingsCarousel": {
+    "search": "Search emotion or activity",
+    "searchPlaceholder": "Filter by name…",
+    "clear": "Clear search",
+    "closeSearch": "Close search",
+    "noResults": "No option matches your search.",
+    "resultOne": "result",
+    "results": "results",
+    "previous": "Previous options",
+    "next": "Next options",
+    "hint": "Use the arrow keys to move between options, Home and End to jump to the ends, and Space or Enter to choose. You can also drag or use the wheel."
   }
 }

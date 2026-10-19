@@ -283,5 +283,17 @@
     "typeEp": "EP",
     "typeSingle": "Single",
     "typeRelease": "Lanzamiento"
+  },
+  "feelingsCarousel": {
+    "search": "Buscar emoción o actividad",
+    "searchPlaceholder": "Filtra por nombre…",
+    "clear": "Borrar búsqueda",
+    "closeSearch": "Cerrar búsqueda",
+    "noResults": "No hay ninguna opción que coincida con tu búsqueda.",
+    "resultOne": "resultado",
+    "results": "resultados",
+    "previous": "Opciones anteriores",
+    "next": "Opciones siguientes",
+    "hint": "Usa las flechas para moverte entre las opciones, Inicio y Fin para ir a los extremos, y Espacio o Enter para elegir. También puedes arrastrar o usar la rueda."
   }
 }

@@ -12,6 +12,7 @@ import { useTranslations } from "@/context/I18nContext";
 import { FavoriteFormat, FavoriteTag } from "@/types/favorites";
 import ArtistBackdrop from "./ArtistBackdrop";
 import ModalShell from "@/components/ModalShell";
+import Medallion from "@/components/Medallion";
 import { activityOptions } from "@/constants/activities";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -163,7 +164,6 @@ export const SaveAlbumModal = ({
                 <div className="mt-5 rounded-xl border border-[var(--collectify-line)] p-2">
                   <MoodSelector
                     onChange={setFeelings}
-                    compact
                     initialSelectedMoods={initialFeelings}
                   />
                 </div>
@@ -274,13 +274,14 @@ export const SaveAlbumModal = ({
                   Añade actividades para encontrarlo más fácilmente después.
                 </p>
                 <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {activityOptions.map(({ icon, id: activity }) => {
+                  {activityOptions.map(({ emoji, id: activity }) => {
                     const selected = activities.includes(activity);
                     return (
                       <button
                         key={activity}
                         type="button"
                         data-selected={selected}
+                        aria-pressed={selected}
                         onClick={() =>
                           setActivities((current) =>
                             selected
@@ -288,10 +289,14 @@ export const SaveAlbumModal = ({
                               : [...current, activity],
                           )
                         }
-                        className="save-album-modal-option rounded-xl p-3 text-left transition"
+                        className="save-album-modal-option flex items-center gap-3 rounded-xl p-3 text-left transition"
                       >
-                        <span className="block text-lg">{icon}</span>
-                        <span className="mt-2 block text-xs font-semibold">
+                        <Medallion
+                          emoji={emoji}
+                          size="sm"
+                          onAccent={selected}
+                        />
+                        <span className="text-xs font-semibold">
                           {tActivities(activity)}
                         </span>
                       </button>
