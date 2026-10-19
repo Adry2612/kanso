@@ -3,23 +3,33 @@
 import { signOut } from "firebase/auth";
 import { useTheme } from "@/components/ThemeProvider";
 import { useI18n, useTranslations } from "@/context/I18nContext";
+import { useAuth } from "@/context/AuthContext";
+import { useProfile } from "@/context/ProfileContext";
 import { useTransitionRouter } from "next-view-transitions";
-import { useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
+import { Camera, Check, Loader2, Trash2 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { motion, Reveal } from "@/components/motion";
+import FriendAvatar from "@/components/FriendAvatar";
+import { removeAvatar, uploadAvatar } from "@/lib/api/profile";
+import { resizeImageToAvatarDataUrl } from "@/lib/avatarImage";
 
 const THEME_OPTIONS = [
   {
     value: "light",
-    labelKey: "appearance.light",
-    bg: "bg-[var(--kanso-mint)]",
-    text: "text-[var(--foreground)]",
+    titleKey: "appearance.lightTitle",
+    descKey: "appearance.lightDesc",
+    preview: { backgroundColor: "#f1f5ef", color: "#1b2b20" },
+    accent: { backgroundColor: "#2c7a45" },
+    muted: { backgroundColor: "#d9e6da" },
   },
   {
     value: "dark",
-    labelKey: "appearance.dark",
-    bg: "bg-[var(--kanso-mint)]",
-    text: "text-[var(--background)]",
+    titleKey: "appearance.darkTitle",
+    descKey: "appearance.darkDesc",
+    preview: { backgroundColor: "#101b14", color: "#f2f5ef" },
+    accent: { backgroundColor: "#9be7a5" },
+    muted: { backgroundColor: "#294331" },
   },
 ] as const;
 
@@ -30,11 +40,27 @@ const LANGUAGE_OPTIONS = [
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
+  const { profile, refreshProfile } = useProfile();
   const { locale, setLocale } = useI18n();
   const t = useTranslations("settings");
   const router = useTransitionRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutFailed, setSignOutFailed] = useState(false);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [avatarSuccess, setAvatarSuccess] = useState<string | null>(null);
+
+  const profileName =
+    profile?.displayName ||
+    user?.displayName ||
+    user?.email?.split("@")[0] ||
+    t("profile.fallbackName");
+  const avatarURL = profile?.photoURL ?? user?.photoURL ?? null;
+  const hasCustomAvatar = Boolean(
+    profile?.photoURL?.startsWith("/api/avatar/"),
+  );
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -47,6 +73,54 @@ export default function SettingsPage() {
       setSignOutFailed(true);
     } finally {
       setIsSigningOut(false);
+    }
+  };
+
+  const handleAvatarSelected = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setAvatarError(null);
+    setAvatarSuccess(null);
+    setAvatarBusy(true);
+
+    try {
+      const dataUrl = await resizeImageToAvatarDataUrl(file);
+      await uploadAvatar(dataUrl);
+      await refreshProfile();
+      setAvatarSuccess(t("profile.updated"));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      setAvatarError(
+        code === "unsupported-type"
+          ? t("profile.invalidType")
+          : code === "file-too-large"
+            ? t("profile.tooLarge")
+            : error instanceof Error
+              ? error.message
+              : t("profile.error"),
+      );
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setAvatarError(null);
+    setAvatarSuccess(null);
+    setAvatarBusy(true);
+
+    try {
+      await removeAvatar();
+      await refreshProfile();
+      setAvatarSuccess(t("profile.removed"));
+    } catch (error) {
+      setAvatarError(
+        error instanceof Error ? error.message : t("profile.error"),
+      );
+    } finally {
+      setAvatarBusy(false);
     }
   };
 
@@ -74,73 +148,155 @@ export default function SettingsPage() {
 
       <Reveal delay={0.05}>
         <section className="kanso-panel mt-12 max-w-3xl p-6 md:p-8">
-          <div className="flex flex-col gap-5 border-b border-[var(--kanso-line)] pb-7 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="kanso-section-title">{t("appearance.title")}</h2>
-              <p className="mt-2 text-sm text-[var(--kanso-muted)]">
-                {t("appearance.subtitle")}
-              </p>
-            </div>
-            <div className="relative grid grid-cols-2 gap-2 rounded-xl border border-[var(--kanso-line)] bg-[var(--surface-2)] p-1">
-              {THEME_OPTIONS.map((option) => {
-                const isActive = theme === option.value;
-                return (
-                  <motion.button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setTheme(option.value)}
-                    whileTap={{ scale: 0.97 }}
-                    className={`relative rounded-lg px-5 py-2.5 text-sm transition ${
-                      isActive
-                        ? option.text
-                        : "text-[var(--kanso-muted)] hover:text-[var(--foreground)]"
-                    }`}
+          <h2 className="kanso-section-title">{t("appearance.title")}</h2>
+          <p className="mt-2 text-sm text-[var(--kanso-muted)]">
+            {t("appearance.subtitle")}
+          </p>
+
+          <div
+            role="group"
+            aria-label={t("appearance.title")}
+            className="mt-6 grid gap-3 sm:grid-cols-2"
+          >
+            {THEME_OPTIONS.map((option) => {
+              const isActive = theme === option.value;
+              return (
+                <motion.button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setTheme(option.value)}
+                  aria-pressed={isActive}
+                  whileTap={{ scale: 0.99 }}
+                  className={`relative rounded-xl border p-4 text-left transition ${
+                    isActive
+                      ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)]/10 ring-1 ring-[var(--kanso-mint)]/30"
+                      : "border-[var(--kanso-line)] bg-[var(--surface-2)] hover:border-[var(--kanso-mint)]/40"
+                  }`}
+                >
+                  <div
+                    className="mb-4 h-20 rounded-lg p-3"
+                    style={option.preview}
                   >
-                    {isActive && (
-                      <motion.span
-                        layoutId="settings-theme-pill"
-                        className={`absolute inset-0 rounded-lg shadow-sm ${option.bg}`}
-                        transition={{
-                          type: "spring",
-                          stiffness: 420,
-                          damping: 34,
-                        }}
+                    <span
+                      className="block h-2 w-1/2 rounded"
+                      style={option.accent}
+                    />
+                    <span
+                      className="mt-2 block h-2 w-3/4 rounded"
+                      style={option.muted}
+                    />
+                    <span
+                      className="mt-2 block h-2 w-2/3 rounded"
+                      style={option.muted}
+                    />
+                  </div>
+                  <strong className="text-sm text-[var(--foreground)]">
+                    {t(option.titleKey)}
+                  </strong>
+                  <p className="mt-1 text-xs text-[var(--kanso-muted)]">
+                    {t(option.descKey)}
+                  </p>
+                  {isActive && (
+                    <span className="absolute right-3 top-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--kanso-mint)] text-[var(--background)]">
+                      <Check
+                        className="h-3.5 w-3.5"
+                        strokeWidth={3}
+                        aria-hidden="true"
                       />
-                    )}
-                    <span className="relative">{t(option.labelKey)}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="mt-7 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-[var(--kanso-line)] bg-[var(--surface-2)] p-4">
-              <div className="mb-4 h-16 rounded-lg bg-[var(--surface-1)] p-3 shadow-inner">
-                <span className="block h-2 w-1/2 rounded bg-[var(--kanso-mint)]" />
-                <span className="mt-2 block h-2 w-3/4 rounded bg-[var(--surface-3)]" />
-              </div>
-              <strong className="text-sm text-[var(--foreground)]">
-                {t("appearance.lightTitle")}
-              </strong>
-              <p className="mt-1 text-xs text-[var(--kanso-muted)]">
-                {t("appearance.lightDesc")}
-              </p>
-            </div>
-            <div className="rounded-xl border border-[var(--kanso-line)] bg-[var(--surface-1)] p-4">
-              <div className="mb-4 h-16 rounded-lg bg-[var(--surface-1)] p-3 shadow-inner">
-                <span className="block h-2 w-1/2 rounded bg-[var(--kanso-mint)]" />
-                <span className="mt-2 block h-2 w-3/4 rounded bg-[var(--surface-3)]" />
-              </div>
-              <strong className="text-sm text-[var(--foreground)]">
-                {t("appearance.darkTitle")}
-              </strong>
-              <p className="mt-1 text-xs text-[var(--kanso-muted)]">
-                {t("appearance.darkDesc")}
-              </p>
-            </div>
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
         </section>
       </Reveal>
+
+      {user && !user.isAnonymous && (
+        <Reveal delay={0.075}>
+          <section className="kanso-panel mt-5 max-w-3xl p-6 md:p-8">
+            <h2 className="kanso-section-title">{t("profile.title")}</h2>
+            <p className="mt-2 text-sm text-[var(--kanso-muted)]">
+              {t("profile.subtitle")}
+            </p>
+
+            <div className="mt-5 flex flex-col gap-5 border-t border-[var(--kanso-line)] pt-5 sm:flex-row sm:items-center">
+              <FriendAvatar
+                displayName={profileName}
+                photoURL={avatarURL}
+                size="lg"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-[var(--foreground)]">
+                  {profileName}
+                </p>
+                <p className="mt-1 truncate text-xs text-[var(--kanso-muted)]">
+                  {user.email}
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarBusy}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-2.5 text-xs font-bold text-[var(--background)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {avatarBusy ? (
+                      <Loader2
+                        className="h-3.5 w-3.5 animate-spin"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                    )}
+                    {avatarBusy
+                      ? t("profile.uploading")
+                      : avatarURL
+                        ? t("profile.change")
+                        : t("profile.add")}
+                  </button>
+                  {hasCustomAvatar && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveAvatar}
+                      disabled={avatarBusy}
+                      className="inline-flex items-center gap-2 rounded-xl border border-[var(--kanso-line)] px-4 py-2.5 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-danger)]/50 hover:text-[var(--kanso-danger)] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t("profile.remove")}
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleAvatarSelected}
+                />
+
+                {avatarError && (
+                  <p
+                    role="alert"
+                    className="mt-3 text-xs text-[var(--kanso-danger)]"
+                  >
+                    {avatarError}
+                  </p>
+                )}
+                {avatarSuccess && (
+                  <p
+                    role="status"
+                    className="mt-3 text-xs text-[var(--kanso-mint)]"
+                  >
+                    {avatarSuccess}
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+        </Reveal>
+      )}
 
       <Reveal delay={0.1}>
         <section className="kanso-panel mt-5 max-w-3xl p-6 md:p-8">

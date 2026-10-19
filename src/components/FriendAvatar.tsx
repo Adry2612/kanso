@@ -27,7 +27,11 @@ function initialsFor(name: string) {
 }
 
 function isSafeImageUrl(value: string) {
-  return value.startsWith("https://") || value.startsWith("http://");
+  return (
+    value.startsWith("https://") ||
+    value.startsWith("http://") ||
+    /^\/api\/avatar\/[A-Za-z0-9_-]+\?v=\d+$/.test(value)
+  );
 }
 
 export default function FriendAvatar({

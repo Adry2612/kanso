@@ -3,6 +3,7 @@
 import { authFetch } from "./authFetch";
 import type {
   FriendRequestAction,
+  FriendRequestNotificationsResponse,
   FriendRequestResult,
   FriendsResponse,
   PublicProfileResponse,
@@ -25,6 +26,19 @@ export async function getFriends(): Promise<FriendsResponse> {
     );
   }
   return (await response.json()) as FriendsResponse;
+}
+
+export async function getFriendRequestNotifications(): Promise<
+  FriendRequestNotificationsResponse["incoming"]
+> {
+  const response = await authFetch("/api/friends/notifications");
+  if (!response.ok) {
+    throw new Error(
+      await parseError(response, "No se pudieron cargar las solicitudes."),
+    );
+  }
+  const data = (await response.json()) as FriendRequestNotificationsResponse;
+  return data.incoming ?? [];
 }
 
 export async function sendFriendRequest(

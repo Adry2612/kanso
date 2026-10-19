@@ -135,8 +135,17 @@ export async function ensureUserProfile(uid: string): Promise<FriendProfile> {
       cleanDisplayName(authUser.displayName) ||
       cleanDisplayName(data.displayName) ||
       "Coleccionista";
+
+    // Una foto subida desde Ajustes manda sobre la de Google: si el usuario
+    // eligió una, no queremos que el siguiente inicio de sesión la borre.
+    const storedPhotoURL = cleanPhotoURL(data.photoURL);
+    const isCustomPhoto =
+      data.photoSource === "custom" ||
+      Boolean(storedPhotoURL?.startsWith("/api/avatar/"));
+    const customPhotoURL = isCustomPhoto ? storedPhotoURL : null;
     const photoURL =
-      cleanPhotoURL(authUser.photoURL) ?? cleanPhotoURL(data.photoURL);
+      customPhotoURL ?? cleanPhotoURL(authUser.photoURL) ?? storedPhotoURL;
+    const photoSource = customPhotoURL ? "custom" : photoURL ? "google" : null;
 
     let friendCode = typeof data.friendCode === "string" ? data.friendCode : "";
 
@@ -149,6 +158,7 @@ export async function ensureUserProfile(uid: string): Promise<FriendProfile> {
       {
         displayName,
         photoURL,
+        photoSource,
         friendCode,
         ...(snapshot.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
         updatedAt: FieldValue.serverTimestamp(),

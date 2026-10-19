@@ -20,6 +20,10 @@ export type FriendRequestEntry = {
   createdAt: string | null;
 };
 
+export type FriendRequestNotificationsResponse = {
+  incoming: FriendRequestEntry[];
+};
+
 export type FriendsResponse = {
   profile: FriendProfile;
   friends: FriendEntry[];

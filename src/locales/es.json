@@ -30,7 +30,8 @@
     "mainNav": "Navegación principal",
     "sidebarTagline": "Tu colección, a tu ritmo.",
     "sidebarSubtitle": "Guarda discos y vuelve a tus momentos favoritos.",
-    "friends": "Amigos"
+    "friends": "Amigos",
+    "profileSettings": "Ajustes de perfil"
   },
   "settings": {
     "back": "Volver",
@@ -46,6 +47,20 @@
       "lightDesc": "Superficies luminosas y contraste suave.",
       "darkTitle": "Modo oscuro",
       "darkDesc": "Fondos profundos y acento mint."
+    },
+    "profile": {
+      "title": "Foto de perfil",
+      "subtitle": "Usamos la foto de tu cuenta de Google. Si te registraste con correo, puedes añadir una aquí.",
+      "fallbackName": "Tu perfil",
+      "add": "Añadir foto",
+      "change": "Cambiar foto",
+      "remove": "Quitar foto",
+      "uploading": "Guardando...",
+      "updated": "Foto de perfil actualizada.",
+      "removed": "Foto de perfil eliminada.",
+      "invalidType": "Elige una imagen JPG, PNG o WebP.",
+      "tooLarge": "La imagen original no puede superar 8 MB.",
+      "error": "No se pudo actualizar la foto de perfil."
     },
     "preferences": {
       "title": "Preferencias"
@@ -395,6 +410,16 @@
       "register": "Crear cuenta",
       "error": "No se pudo enviar la solicitud."
     },
+    "notifications": {
+      "title": "Nueva solicitud de amistad",
+      "titleMultiple": "Nuevas solicitudes de amistad",
+      "single": "{name} quiere añadirte.",
+      "multiple": "{count} personas quieren añadirte.",
+      "view": "Ver solicitudes"
+    },
     "actionError": "No se pudo completar la acción."
+  },
+  "toast": {
+    "close": "Cerrar notificación"
   }
 }

@@ -30,7 +30,8 @@
     "mainNav": "Main navigation",
     "sidebarTagline": "Your collection, at your pace.",
     "sidebarSubtitle": "Save records and return to your favourite moments.",
-    "friends": "Friends"
+    "friends": "Friends",
+    "profileSettings": "Profile settings"
   },
   "settings": {
     "back": "Back",
@@ -46,6 +47,20 @@
       "lightDesc": "Bright surfaces and soft contrast.",
       "darkTitle": "Dark mode",
       "darkDesc": "Deep backgrounds and mint accent."
+    },
+    "profile": {
+      "title": "Profile photo",
+      "subtitle": "We use your Google account photo. If you signed up with email, you can add one here.",
+      "fallbackName": "Your profile",
+      "add": "Add photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "uploading": "Saving...",
+      "updated": "Profile photo updated.",
+      "removed": "Profile photo removed.",
+      "invalidType": "Choose a JPG, PNG, or WebP image.",
+      "tooLarge": "The original image cannot exceed 8 MB.",
+      "error": "The profile photo could not be updated."
     },
     "preferences": {
       "title": "Preferences"
@@ -395,6 +410,16 @@
       "register": "Create account",
       "error": "The request could not be sent."
     },
+    "notifications": {
+      "title": "New friend request",
+      "titleMultiple": "New friend requests",
+      "single": "{name} wants to add you.",
+      "multiple": "{count} people want to add you.",
+      "view": "View requests"
+    },
     "actionError": "The action could not be completed."
+  },
+  "toast": {
+    "close": "Close notification"
   }
 }

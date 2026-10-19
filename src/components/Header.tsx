@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
+import { useProfile } from "@/context/ProfileContext";
+import FriendAvatar from "@/components/FriendAvatar";
 import { motion } from "@/components/motion";
 
 export default function Header() {
@@ -28,6 +30,7 @@ export default function Header() {
   const pathname = usePathname();
   const t = useTranslations("header");
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -36,16 +39,11 @@ export default function Header() {
   const isPublicPage =
     pathname === "/" || pathname === "/login" || pathname.startsWith("/f/");
   const profileName =
+    profile?.displayName?.trim() ||
     user?.displayName?.trim() ||
     user?.email?.split("@")[0] ||
     (user?.isAnonymous ? t("guest") : t("profile"));
-  const profileInitials = profileName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0))
-    .join("")
-    .toUpperCase();
+  const profilePhotoURL = profile?.photoURL ?? user?.photoURL ?? null;
 
   const navItems: { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/home", label: t("home"), icon: Home },
@@ -296,14 +294,15 @@ export default function Header() {
         <button
           type="button"
           onClick={() => router.push("/settings")}
-          className="mt-8 flex items-center gap-3 rounded-xl border-t border-[var(--kanso-line)] px-2 pt-4 text-left text-[var(--kanso-muted)] transition hover:text-[var(--foreground)]"
+          aria-label={`${profileName} · ${t("profileSettings")}`}
+          title={profileName}
+          className="sidebar-profile mt-8 flex items-center gap-3 rounded-xl px-2 py-2 text-left text-[var(--kanso-muted)] transition hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--kanso-mint)]/50"
         >
-          <span
-            aria-hidden="true"
-            className="h-9 w-9 shrink-0 rounded-full border-2 border-[var(--kanso-line-strong)] bg-[#d1a578] text-center text-[10px] font-bold leading-8 text-[var(--foreground)]"
-          >
-            {profileInitials}
-          </span>
+          <FriendAvatar
+            displayName={profileName}
+            photoURL={profilePhotoURL}
+            size="md"
+          />
           <span className="sidebar-label min-w-0">
             <strong className="block truncate text-sm text-[var(--kanso-muted)]">
               {profileName}

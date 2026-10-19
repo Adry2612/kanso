@@ -12,7 +12,9 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  // Kanso nace en oscuro. La preferencia guardada solo cambia a claro si la
+  // persona lo eligió explícitamente.
+  const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("kanso-theme");
@@ -25,7 +27,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (!saved && storedTheme) {
       window.localStorage.setItem("kanso-theme", storedTheme);
     }
-    const nextTheme: Theme = storedTheme === "dark" ? "dark" : "light";
+    const nextTheme: Theme = storedTheme === "light" ? "light" : "dark";
     setThemeState(nextTheme);
     document.body.classList.toggle("theme-light", nextTheme === "light");
     document.body.classList.toggle("theme-dark", nextTheme === "dark");

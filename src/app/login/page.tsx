@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "../../lib/firebase";
 import { signInAsGuest, signInWithGoogle } from "../../lib/firebaseAuth";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
+import { AppleIcon, GoogleIcon } from "@/components/BrandIcons";
 
 function LoginForm() {
   const [name, setName] = useState("");
@@ -249,18 +250,21 @@ function LoginForm() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <button
+              type="button"
               onClick={handleGoogleLogin}
               disabled={isLoggingIn}
-              className="public-button-secondary px-3 py-3 text-sm disabled:opacity-60"
+              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm disabled:opacity-60"
             >
-              <span className="public-accent mr-2 font-bold">G</span>
+              <GoogleIcon className="h-[18px] w-[18px] shrink-0" />
               {isLoggingIn ? "Cargando..." : "Google"}
             </button>
             <button
+              type="button"
               onClick={handleAppleLogin}
-              className="public-button-secondary px-3 py-3 text-sm"
+              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm"
             >
-              <span className="mr-2">●</span>Apple
+              <AppleIcon className="h-[19px] w-[19px] shrink-0" />
+              Apple
             </button>
           </div>
           <button

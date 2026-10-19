@@ -127,8 +127,14 @@ button:active {
   }
 
   .sidebar-collapsed .kanso-sidebar .kanso-brand,
-  .sidebar-collapsed .kanso-sidebar nav button {
+  .sidebar-collapsed .kanso-sidebar nav button,
+  .sidebar-collapsed .kanso-sidebar .sidebar-profile {
     justify-content: center;
+  }
+
+  .sidebar-collapsed .kanso-sidebar .sidebar-profile {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .sidebar-collapsed .kanso-sidebar .sidebar-toggle {
