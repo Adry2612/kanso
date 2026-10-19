@@ -76,7 +76,7 @@ export default function Header() {
         className="collectify-brand flex items-center px-2 font-semibold tracking-tight text-[var(--collectify-mint)]"
         onClick={() => router.push("/home")}
       >
-        <span className="sidebar-label text-xl">collectify</span>
+        <span className="sidebar-label text-xl">kanso.</span>
       </button>
       <button
         type="button"
