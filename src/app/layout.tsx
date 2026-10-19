@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import { I18nProvider } from "@/context/I18nContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/motion";
+import ViewTransitionGuard from "@/components/ViewTransitionGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased theme-light`}
           suppressHydrationWarning
         >
+          <ViewTransitionGuard />
           <I18nProvider>
             <ThemeProvider>
               <AuthProvider>
