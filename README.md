@@ -154,6 +154,14 @@ npm start
 
 La forma más sencilla de desplegar es usar [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
 
+> **Inicio de sesión con Google en producción:** añade el dominio de Vercel
+> (`tu-proyecto.vercel.app`) y, si lo hay, tu dominio propio en
+> **Firebase Console → Authentication → Settings → Authorized domains**.
+> Sin ese paso, `signInWithPopup` falla con `auth/unauthorized-domain`.
+> Los dominios de preview de Vercel cambian en cada despliegue y no admiten
+> comodines: para probar el login en un preview hay que autorizar ese dominio
+> concreto o usar el de producción.
+
 Consulta la [documentación de despliegue de Next.js](https://nextjs.org/docs/app/building-your-application/deploying) para más detalles.
 
 ## 📝 Scripts Disponibles
