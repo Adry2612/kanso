@@ -69,16 +69,12 @@ button:active {
 }
 
 .kanso-sidebar {
+  z-index: 40;
   width: 230px;
   border-right: 1px solid var(--kanso-line);
   background: rgba(12, 23, 16, 0.68);
-  transition: width 0.25s ease;
-}
-
-.kanso-header {
-  margin-left: 230px;
   transition:
-    margin-left 0.25s ease,
+    width 0.25s ease,
     transform 0.3s ease;
 }
 
@@ -87,27 +83,86 @@ button:active {
   transition: margin-left 0.25s ease;
 }
 
-.sidebar-collapsed .kanso-sidebar {
-  width: 76px;
+/* El colapso es una preferencia de escritorio: si se aplicara en móvil, el
+   cajón mediría 76 px y el contenido quedaría desplazado 76 px. */
+@media (min-width: 1024px) {
+  .sidebar-collapsed .kanso-sidebar {
+    width: 76px;
+  }
+
+  .sidebar-collapsed .app-content {
+    margin-left: 76px;
+  }
+
+  .sidebar-collapsed .kanso-sidebar .sidebar-label {
+    display: none;
+  }
+
+  .sidebar-collapsed .kanso-sidebar .kanso-brand,
+  .sidebar-collapsed .kanso-sidebar nav button {
+    justify-content: center;
+  }
+
+  .sidebar-collapsed .kanso-sidebar .sidebar-toggle {
+    right: 50%;
+    transform: translateX(50%);
+  }
 }
 
-.sidebar-collapsed .kanso-header,
-.sidebar-collapsed .app-content {
-  margin-left: 76px;
+/* Capa que cierra el cajón y deja el fondo inerte. */
+.kanso-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  border: 0;
+  background: rgba(4, 10, 6, 0.62);
+  backdrop-filter: blur(2px);
 }
 
-.sidebar-collapsed .kanso-sidebar .sidebar-label {
-  display: none;
+/* Cajón de pantallas estrechas. `visibility` —y no solo el desplazamiento— deja
+   el panel fuera del orden de tabulación mientras está cerrado; se retrasa para
+   que la salida se vea. */
+@media (max-width: 1023px) {
+  /* Barra superior: va en el flujo (sticky), así que ocupa su altura real y no
+     hace falta compensarla con un padding inventado. El CSS propio no está en
+     una capa de Tailwind, así que se acota aquí: si no, ganaría a `lg:hidden`. */
+  .kanso-mobile-bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--kanso-line);
+    background: color-mix(in srgb, var(--background) 88%, transparent);
+    padding: 0.55rem 1rem;
+    backdrop-filter: blur(14px);
+  }
+
+  .kanso-sidebar {
+    z-index: 50;
+    visibility: hidden;
+    transform: translateX(-100%);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.45);
+    transition:
+      transform 0.3s ease,
+      visibility 0s linear 0.3s;
+  }
+
+  .kanso-sidebar[data-open="true"] {
+    visibility: visible;
+    transform: translateX(0);
+    transition:
+      transform 0.3s ease,
+      visibility 0s;
+  }
 }
 
-.sidebar-collapsed .kanso-sidebar .kanso-brand,
-.sidebar-collapsed .kanso-sidebar nav button {
-  justify-content: center;
-}
-
-.sidebar-collapsed .kanso-sidebar .sidebar-toggle {
-  right: 50%;
-  transform: translateX(50%);
+@media (prefers-reduced-motion: reduce) {
+  .kanso-sidebar {
+    transition: none;
+  }
 }
 
 .kanso-page-title {
@@ -183,16 +238,14 @@ button:active {
   box-shadow: 0 0 0 3px rgba(155, 231, 165, 0.1);
 }
 
-@media (max-width: 900px) {
-  .kanso-sidebar {
-    width: 230px;
-  }
-
+@media (max-width: 1023px) {
   .app-content,
   .sidebar-collapsed .app-content {
-    margin-left: 230px;
+    margin-left: 0;
   }
+}
 
+@media (max-width: 900px) {
   .kanso-main {
     padding: 20px 24px 40px;
   }
