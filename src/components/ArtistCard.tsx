@@ -20,12 +20,12 @@ export default function ArtistCard({
   const t = useTranslations("artists");
 
   return (
-    <article className="collectify-card group flex h-full w-full flex-col items-center gap-3 p-4 text-center">
+    <article className="kanso-card group flex h-full w-full flex-col items-center gap-3 p-4 text-center">
       <Link
         href={`/artists/${artist.id}`}
         className="flex w-full flex-col items-center gap-3"
       >
-        <span className="relative block h-28 w-28 overflow-hidden rounded-full border border-[var(--collectify-line)]">
+        <span className="relative block h-28 w-28 overflow-hidden rounded-full border border-[var(--kanso-line)]">
           {artist.images?.[0]?.url ? (
             <img
               loading="lazy"
@@ -35,7 +35,7 @@ export default function ArtistCard({
               className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center bg-[var(--surface-3)] text-2xl font-semibold text-[var(--collectify-mint)]">
+            <span className="flex h-full w-full items-center justify-center bg-[var(--surface-3)] text-2xl font-semibold text-[var(--kanso-mint)]">
               {artist.name.charAt(0).toUpperCase()}
             </span>
           )}
@@ -45,7 +45,7 @@ export default function ArtistCard({
         </span>
       </Link>
 
-      <span className="min-h-[1rem] w-full truncate text-xs text-[var(--collectify-muted)]">
+      <span className="min-h-[1rem] w-full truncate text-xs text-[var(--kanso-muted)]">
         {artist.genres && artist.genres.length > 0
           ? artist.genres.slice(0, 2).join(" · ")
           : "\u00A0"}
@@ -59,8 +59,8 @@ export default function ArtistCard({
           aria-label={isFavorite ? t("removeFavorite") : t("addFavorite")}
           className={`mt-auto flex items-center justify-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
             isFavorite
-              ? "border-[var(--collectify-mint)]/60 bg-[var(--collectify-mint)]/15 text-[var(--collectify-mint)]"
-              : "border-[var(--collectify-line)] text-[var(--collectify-mint)] hover:border-[var(--collectify-mint)]/60 hover:bg-[var(--collectify-mint)]/10"
+              ? "border-[var(--kanso-mint)]/60 bg-[var(--kanso-mint)]/15 text-[var(--kanso-mint)]"
+              : "border-[var(--kanso-line)] text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60 hover:bg-[var(--kanso-mint)]/10"
           }`}
         >
           <Heart

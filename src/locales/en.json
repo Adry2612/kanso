@@ -24,7 +24,7 @@
     "yourProfile": "Your profile",
     "testSession": "Test session",
     "sectionLabel": "Your space",
-    "brandHome": "Collectify, go home",
+    "brandHome": "Kanso, go home",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "mainNav": "Main navigation",
@@ -35,7 +35,7 @@
     "back": "Back",
     "eyebrow": "Your space",
     "title": "General settings",
-    "subtitle": "Customise the appearance and preferences of your Collectify experience.",
+    "subtitle": "Customise the appearance and preferences of your Kanso experience.",
     "appearance": {
       "title": "Appearance",
       "subtitle": "Choose how you want to see your collection.",
@@ -57,7 +57,7 @@
     },
     "account": {
       "title": "Account",
-      "subtitle": "Sign out of Collectify on this device.",
+      "subtitle": "Sign out of Kanso on this device.",
       "goHome": "Go home",
       "logout": "Sign out",
       "signingOut": "Signing out..."
@@ -174,7 +174,7 @@
     }
   },
   "init": {
-    "welcome": "Welcome to Collectify",
+    "welcome": "Welcome to Kanso",
     "start": "Start",
     "selectMood": "How are you feeling today?",
     "getRecommendation": "Get recommendation",

@@ -74,8 +74,8 @@ const MoodSelector = ({
             onClick={() => toggleMood(mood)}
             className={`flex items-center gap-3 rounded-[var(--radius-sm)] border px-3 py-2.5 text-left text-xs font-semibold transition ${
               isSelected
-                ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                : "border-[var(--collectify-line)] bg-[var(--surface-1)]/50 text-[var(--foreground)] hover:border-[var(--collectify-mint)]/60"
+                ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                : "border-[var(--kanso-line)] bg-[var(--surface-1)]/50 text-[var(--foreground)] hover:border-[var(--kanso-mint)]/60"
             }`}
           >
             <Medallion emoji={mood.emoji} size="sm" onAccent={isSelected} />

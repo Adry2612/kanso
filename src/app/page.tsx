@@ -1,6 +1,7 @@
 "use client";
 
 import { Link, useTransitionRouter } from "next-view-transitions";
+import Image from "next/image";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { signInAsGuest } from "@/lib/firebaseAuth";
@@ -29,7 +30,7 @@ const albums = [
   {
     title: "Soft focus",
     detail: "Calma · Concentración",
-    color: "var(--collectify-mint)",
+    color: "var(--kanso-mint)",
   },
   {
     title: "Late afternoon",
@@ -67,7 +68,15 @@ export default function Home() {
             href="/"
             className="flex items-center gap-3 font-semibold tracking-tight"
           >
-            <span className="text-lg">Collectify</span>
+            <Image
+              src="/kanso-logo.png"
+              alt=""
+              width={28}
+              height={28}
+              priority
+              className="h-7 w-7 max-w-none shrink-0"
+            />
+            <span className="text-lg">Kanso</span>
           </Link>
           <nav className="flex items-center gap-3 sm:gap-6">
             <Link
@@ -85,7 +94,7 @@ export default function Home() {
           </nav>
         </header>
 
-        <section className="grid items-center gap-14 border-b border-[var(--collectify-line)] py-16 lg:min-h-[610px] lg:grid-cols-[.95fr_1.05fr] lg:gap-24 lg:py-20">
+        <section className="grid items-center gap-14 border-b border-[var(--kanso-line)] py-16 lg:min-h-[610px] lg:grid-cols-[.95fr_1.05fr] lg:gap-24 lg:py-20">
           <div className="max-w-xl">
             <Reveal delay={0.02}>
               <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
@@ -100,8 +109,8 @@ export default function Home() {
             </Reveal>
             <Reveal delay={0.16}>
               <p className="public-muted mt-7 max-w-md text-base leading-7 sm:text-lg">
-                Collectify entiende lo que escuchas para recomendarte álbumes
-                que encajan con lo que estás viviendo.
+                Kanso entiende lo que escuchas para recomendarte álbumes que
+                encajan con lo que estás viviendo.
               </p>
             </Reveal>
             <Reveal delay={0.24}>
@@ -149,7 +158,7 @@ export default function Home() {
           </div>
           <Reveal delay={0.18} y={30}>
             <div className="surface-raised public-card overflow-hidden p-5 sm:p-7">
-              <div className="flex items-start justify-between border-b border-[var(--collectify-line)] pb-5">
+              <div className="flex items-start justify-between border-b border-[var(--kanso-line)] pb-5">
                 <div>
                   <p className="public-accent text-xs font-bold uppercase tracking-[.18em]">
                     Una muestra de tu espacio
@@ -159,7 +168,7 @@ export default function Home() {
                 <span className="public-muted text-xs">03 álbumes</span>
               </div>
               <Stagger
-                className="divide-y divide-[var(--collectify-line)]"
+                className="divide-y divide-[var(--kanso-line)]"
                 stagger={0.09}
               >
                 {albums.map((album, index) => (
@@ -191,7 +200,7 @@ export default function Home() {
                   </StaggerItem>
                 ))}
               </Stagger>
-              <div className="public-muted flex items-center justify-between border-t border-[var(--collectify-line)] pt-5 text-xs">
+              <div className="public-muted flex items-center justify-between border-t border-[var(--kanso-line)] pt-5 text-xs">
                 <span>Basado en tu colección</span>
                 <span className="public-accent">Personalizado</span>
               </div>
@@ -204,13 +213,13 @@ export default function Home() {
             <Reveal>
               <div>
                 <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
-                  Cómo funciona Collectify
+                  Cómo funciona Kanso
                 </p>
                 <h2 className="display mt-3 max-w-sm text-3xl">
                   Tu forma de escuchar es el punto de partida.
                 </h2>
                 <p className="public-muted mt-5 max-w-sm text-sm leading-6">
-                  Collectify combina tu estado de ánimo, tus actividades y los
+                  Kanso combina tu estado de ánimo, tus actividades y los
                   álbumes que guardas para ayudarte a descubrir música nueva sin
                   perder tu identidad.
                 </p>
@@ -222,12 +231,12 @@ export default function Home() {
                   <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.99 }}>
                     <Link
                       href={startHref}
-                      className="group block border-t border-[var(--collectify-line)] pt-4"
+                      className="group block border-t border-[var(--kanso-line)] pt-4"
                     >
                       <span className="public-accent text-xs font-bold">
                         {point.number}
                       </span>
-                      <h3 className="mt-8 text-base font-semibold leading-5 tracking-[-.02em] transition group-hover:text-[var(--collectify-mint)]">
+                      <h3 className="mt-8 text-base font-semibold leading-5 tracking-[-.02em] transition group-hover:text-[var(--kanso-mint)]">
                         {point.title}
                       </h3>
                       <p className="public-muted mt-3 text-sm leading-6">

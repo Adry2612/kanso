@@ -36,7 +36,7 @@ export default function SortModal({
               className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
                 currentSort === option.value
                   ? "bg-green-900/50 text-green-400 border border-green-400"
-                  : "bg-[var(--surface-3)] text-[var(--collectify-muted)] hover:bg-[var(--surface-3)] border border-transparent"
+                  : "bg-[var(--surface-3)] text-[var(--kanso-muted)] hover:bg-[var(--surface-3)] border border-transparent"
               }`}
             >
               <div className="flex items-center justify-between">

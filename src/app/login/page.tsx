@@ -9,6 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "../../lib/firebase";
 import { signInAsGuest, signInWithGoogle } from "../../lib/firebaseAuth";
@@ -118,7 +119,15 @@ function LoginForm() {
             href="/"
             className="flex items-center gap-3 font-semibold tracking-tight"
           >
-            <span className="text-lg">Collectify</span>
+            <Image
+              src="/kanso-logo.png"
+              alt=""
+              width={28}
+              height={28}
+              priority
+              className="h-7 w-7 max-w-none shrink-0"
+            />
+            <span className="text-lg">Kanso</span>
           </Link>
           <p className="mt-20 max-w-md text-5xl font-semibold leading-[.98] tracking-[-.065em]">
             Tu música, tus momentos,{" "}
@@ -135,9 +144,17 @@ function LoginForm() {
             href="/"
             className="flex items-center gap-3 font-semibold tracking-tight lg:hidden"
           >
-            <span className="text-lg">Collectify</span>
+            <Image
+              src="/kanso-logo.png"
+              alt=""
+              width={28}
+              height={28}
+              priority
+              className="h-7 w-7 max-w-none shrink-0"
+            />
+            <span className="text-lg">Kanso</span>
           </Link>
-          <div className="mt-8 border-b border-[var(--collectify-line)] pb-6 lg:mt-0">
+          <div className="mt-8 border-b border-[var(--kanso-line)] pb-6 lg:mt-0">
             <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
               Tu espacio musical
             </p>
@@ -215,11 +232,11 @@ function LoginForm() {
             </button>
           </form>
           <div className="my-6 flex items-center gap-3">
-            <span className="h-px flex-1 bg-[var(--collectify-line)]" />
+            <span className="h-px flex-1 bg-[var(--kanso-line)]" />
             <span className="public-muted text-[10px] uppercase tracking-[.18em]">
               o continúa con
             </span>
-            <span className="h-px flex-1 bg-[var(--collectify-line)]" />
+            <span className="h-px flex-1 bg-[var(--kanso-line)]" />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <button
@@ -283,7 +300,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--collectify-mint)]">
+          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--kanso-mint)]">
             Cargando...
           </div>
         </div>

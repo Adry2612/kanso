@@ -26,7 +26,7 @@ export default function AlbumTracklist({
 
   if (loading) {
     return (
-      <div className="mt-8 text-sm text-[var(--collectify-muted)]">
+      <div className="mt-8 text-sm text-[var(--kanso-muted)]">
         {t("loading")}
       </div>
     );
@@ -38,7 +38,7 @@ export default function AlbumTracklist({
 
   if (tracks.length === 0) {
     return (
-      <div className="mt-8 text-sm text-[var(--collectify-muted)]">
+      <div className="mt-8 text-sm text-[var(--kanso-muted)]">
         {t("noTracks")}
       </div>
     );
@@ -48,26 +48,26 @@ export default function AlbumTracklist({
     <div className="mt-10 max-w-2xl">
       <h2 className="mb-3 text-lg font-semibold tracking-tight text-[var(--foreground)]">
         {t("tracklist")}{" "}
-        <span className="text-xs font-normal text-[var(--collectify-muted)]">
+        <span className="text-xs font-normal text-[var(--kanso-muted)]">
           · {tracks.length} pistas
         </span>
       </h2>
       <Stagger
-        className="border-t border-[var(--collectify-line)]"
+        className="border-t border-[var(--kanso-line)]"
         stagger={0.03}
         onMount
       >
         {tracks.map((track, index) => (
           <StaggerItem key={index} y={12}>
-            <div className="grid grid-cols-[30px_1fr] items-center gap-3 border-b border-[var(--collectify-line)] px-1 py-3 transition-colors hover:bg-[var(--surface-2)]">
-              <span className="text-xs text-[var(--collectify-muted)]">
+            <div className="grid grid-cols-[30px_1fr] items-center gap-3 border-b border-[var(--kanso-line)] px-1 py-3 transition-colors hover:bg-[var(--surface-2)]">
+              <span className="text-xs text-[var(--kanso-muted)]">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm text-[var(--collectify-muted)]">
+                <span className="truncate text-sm text-[var(--kanso-muted)]">
                   {track.name}
                 </span>
-                <span className="mt-1 truncate text-xs text-[var(--collectify-muted)]">
+                <span className="mt-1 truncate text-xs text-[var(--kanso-muted)]">
                   {track.artists.map((artist) => artist.name).join(", ")}
                 </span>
               </div>

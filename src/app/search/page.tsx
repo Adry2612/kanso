@@ -189,17 +189,17 @@ export default function SearchPage() {
   }, [debouncedQuery]);
 
   return (
-    <main className="collectify-main min-h-screen">
+    <main className="kanso-main min-h-screen">
       <section className="mt-12 flex max-w-5xl flex-col justify-between gap-7 md:mt-20 md:flex-row md:items-end">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
             Explora tu próxima escucha
           </p>
-          <h1 className="collectify-page-title !mt-3 !text-5xl md:!text-6xl">
+          <h1 className="kanso-page-title !mt-3 !text-5xl md:!text-6xl">
             {t("title")}
           </h1>
         </div>
-        <p className="max-w-md text-sm leading-relaxed text-[var(--collectify-muted)]">
+        <p className="max-w-md text-sm leading-relaxed text-[var(--kanso-muted)]">
           {t("subtitle")}
         </p>
       </section>
@@ -208,24 +208,20 @@ export default function SearchPage() {
         placeholder={t("placeholder")}
         value={query}
         onChange={handleInputChange}
-        className="collectify-input mt-9 mb-12 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--collectify-muted)]"
+        className="kanso-input mt-9 mb-12 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--kanso-muted)]"
       />
 
       {loading && (
-        <p className="text-sm text-[var(--collectify-muted)]">{t("loading")}</p>
+        <p className="text-sm text-[var(--kanso-muted)]">{t("loading")}</p>
       )}
-      {error && (
-        <p className="text-sm text-[var(--collectify-danger)]">{error}</p>
-      )}
+      {error && <p className="text-sm text-[var(--kanso-danger)]">{error}</p>}
 
       <div className="w-full max-w-6xl pb-16">
         {mounted && result && (
           <>
             <h2 className="mb-5 text-lg font-semibold tracking-tight text-[var(--foreground)]">
               {t("resultsTitle")}:{" "}
-              <span className="text-[var(--collectify-mint)]">
-                {debouncedQuery}
-              </span>
+              <span className="text-[var(--kanso-mint)]">{debouncedQuery}</span>
             </h2>
 
             {result.albums?.items?.length > 0 ? (
@@ -245,25 +241,25 @@ export default function SearchPage() {
                 ))}
               </Stagger>
             ) : (
-              <section className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
-                <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+              <section className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
+                <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
                   {t("noResults")}
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
                   {t("noResultsTitle")}
                 </h2>
-                <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--collectify-muted)]">
+                <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--kanso-muted)]">
                   {t("noResultsDescription")}
                 </p>
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="mt-6 rounded-xl bg-[var(--collectify-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--collectify-lime)]"
+                  className="mt-6 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)]"
                 >
                   {t("clearSearch")}
                 </button>
                 {(collectionMoods.length > 0 || collectionTags.length > 0) && (
-                  <div className="mt-8 border-t border-[var(--collectify-line)] pt-6">
+                  <div className="mt-8 border-t border-[var(--kanso-line)] pt-6">
                     <h3 className="text-sm font-semibold text-[var(--foreground)]">
                       {t("tryCollection")}
                     </h3>
@@ -275,7 +271,7 @@ export default function SearchPage() {
                             key={mood}
                             type="button"
                             onClick={() => setQuery(item?.label || mood)}
-                            className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                            className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                           >
                             {item?.symbol} {item?.label}
                           </button>
@@ -286,7 +282,7 @@ export default function SearchPage() {
                           key={`${tag.category}-${tag.value}`}
                           type="button"
                           onClick={() => setQuery(tag.value)}
-                          className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                          className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                         >
                           {tag.category}: {tag.value}
                         </button>
@@ -322,7 +318,7 @@ export default function SearchPage() {
         )}
         {mounted && !result && !loading && !error && (
           <section className="mt-2 space-y-10">
-            <div className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
+            <div className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
               <h2 className="text-base font-semibold text-[var(--foreground)]">
                 {t("communityAlbumsTitle")}
               </h2>
@@ -339,13 +335,13 @@ export default function SearchPage() {
                   ))}
                 </Stagger>
               ) : (
-                <p className="mt-3 text-sm leading-relaxed text-[var(--collectify-muted)]">
+                <p className="mt-3 text-sm leading-relaxed text-[var(--kanso-muted)]">
                   {t("communityAlbumsEmpty")}
                 </p>
               )}
             </div>
             {communitySearches.length > 0 && (
-              <div className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
+              <div className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
                 <h2 className="text-base font-semibold text-[var(--foreground)]">
                   {t("communityTitle")}
                 </h2>
@@ -355,7 +351,7 @@ export default function SearchPage() {
                       key={term}
                       type="button"
                       onClick={() => setQuery(term)}
-                      className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                      className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                     >
                       {term}
                     </button>
@@ -363,8 +359,8 @@ export default function SearchPage() {
                 </div>
               </div>
             )}
-            <div className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
-              <p className="text-sm leading-relaxed text-[var(--collectify-muted)]">
+            <div className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
+              <p className="text-sm leading-relaxed text-[var(--kanso-muted)]">
                 {t("emptySearchPrompt")}
               </p>
               {collectionMoods.length > 0 && (
@@ -380,7 +376,7 @@ export default function SearchPage() {
                           key={mood}
                           type="button"
                           onClick={() => setQuery(item?.label || mood)}
-                          className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                          className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                         >
                           {item?.symbol} {item?.label}
                         </button>
@@ -400,7 +396,7 @@ export default function SearchPage() {
                         key={`${tag.category}-${tag.value}`}
                         type="button"
                         onClick={() => setQuery(tag.value)}
-                        className="rounded-full border border-[var(--collectify-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--collectify-mint)]/60 hover:text-[var(--collectify-mint)]"
+                        className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                       >
                         {tag.category}: {tag.value}
                       </button>
@@ -409,14 +405,14 @@ export default function SearchPage() {
                 </div>
               )}
               {!favoritesLoaded && (
-                <p className="mt-5 text-sm text-[var(--collectify-muted)]">
+                <p className="mt-5 text-sm text-[var(--kanso-muted)]">
                   {t("loadingCollection")}
                 </p>
               )}
               {favoritesError && (
                 <p
                   role="alert"
-                  className="mt-5 text-sm text-[var(--collectify-danger)]"
+                  className="mt-5 text-sm text-[var(--kanso-danger)]"
                 >
                   {t("collectionLoadError")}
                 </p>
@@ -425,13 +421,13 @@ export default function SearchPage() {
                 !favoritesError &&
                 collectionMoods.length === 0 &&
                 collectionTags.length === 0 && (
-                  <p className="mt-5 text-sm leading-relaxed text-[var(--collectify-muted)]">
+                  <p className="mt-5 text-sm leading-relaxed text-[var(--kanso-muted)]">
                     {favoritesByAlbum.size === 0 ? (
                       <>
                         {t("emptyCollection")}{" "}
                         <Link
                           href="/favorites"
-                          className="font-semibold text-[var(--collectify-mint)] underline"
+                          className="font-semibold text-[var(--kanso-mint)] underline"
                         >
                           {t("exploreDiscs")}
                         </Link>

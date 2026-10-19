@@ -173,22 +173,22 @@ export default function StartPage() {
       : selectedActivity.map((activity) => tActivities(activity)).join(", ");
 
   return (
-    <main className="collectify-main">
+    <main className="kanso-main">
       <section className="mt-14 max-w-3xl md:mt-24">
-        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {today || "\u00a0"}
         </p>
-        <h1 className="collectify-page-title">
+        <h1 className="kanso-page-title">
           ¿Qué quieres <em>escuchar</em> hoy?
         </h1>
-        <p className="mt-5 max-w-xl text-sm leading-relaxed text-[var(--collectify-muted)] md:text-base">
+        <p className="mt-5 max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)] md:text-base">
           Cuéntame cómo estás y encontraré un disco que encaje con este momento.
         </p>
       </section>
 
       <div className="mt-12 grid gap-7 lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,.72fr)]">
         <div className="grid min-w-0 content-start gap-7">
-          <section className="collectify-panel min-w-0 p-6 md:p-9">
+          <section className="kanso-panel min-w-0 p-6 md:p-9">
             <div className="feelings-head">
               <div className="min-w-0">
                 <h2 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
@@ -198,7 +198,7 @@ export default function StartPage() {
                       ? "Elige una sensación"
                       : "Elige una actividad"}
                 </h2>
-                <p className="mt-2 text-xs text-[var(--collectify-muted)]">
+                <p className="mt-2 text-xs text-[var(--kanso-muted)]">
                   {recommendationStep === 1
                     ? "Elige si quieres explorar toda tu colección o un formato físico concreto."
                     : "No hay respuestas incorrectas."}
@@ -212,7 +212,7 @@ export default function StartPage() {
                     onClick={() => setQuickOpen((open) => !open)}
                     aria-expanded={quickOpen}
                     aria-controls="quick-recommendation"
-                    className="flex items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--collectify-line)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                    className="flex items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--kanso-line)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
                   >
                     <span aria-hidden="true">⚡</span>
                     {tQuick("open")}
@@ -224,12 +224,12 @@ export default function StartPage() {
             {recommendationStep === 0 && quickOpen && (
               <div
                 id="quick-recommendation"
-                className="mt-4 rounded-[var(--radius-md)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-5"
+                className="mt-4 rounded-[var(--radius-md)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-5"
               >
                 <p className="text-sm font-semibold text-[var(--foreground)]">
                   {tQuick("title")}
                 </p>
-                <p className="mt-1 text-xs text-[var(--collectify-muted)]">
+                <p className="mt-1 text-xs text-[var(--kanso-muted)]">
                   {tQuick("subtitle")}
                 </p>
                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -250,8 +250,8 @@ export default function StartPage() {
                         }
                         className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
                           isSelected
-                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                            : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                            ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                            : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
                         }`}
                       >
                         {label}
@@ -261,7 +261,7 @@ export default function StartPage() {
                 </div>
                 {collectionTags.length > 0 && (
                   <div className="mt-5">
-                    <p className="text-xs font-semibold text-[var(--collectify-muted)]">
+                    <p className="text-xs font-semibold text-[var(--kanso-muted)]">
                       {tQuick("tagsLabel")}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -278,8 +278,8 @@ export default function StartPage() {
                             }
                             className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
                               isSelected
-                                ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                                : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]"
+                                ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                                : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                             }`}
                           >
                             {tag.category}: {tag.value}
@@ -293,7 +293,7 @@ export default function StartPage() {
                   <button
                     type="button"
                     onClick={handleQuickRecommendation}
-                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
+                    className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
                   >
                     {tQuick("cta")} <span aria-hidden="true">→</span>
                   </button>
@@ -307,7 +307,7 @@ export default function StartPage() {
                   <div
                     role="group"
                     aria-label="Tipo de recomendación"
-                    className="flex max-w-sm flex-1 rounded-[var(--radius-sm)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-1"
+                    className="flex max-w-sm flex-1 rounded-[var(--radius-sm)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-1"
                   >
                     {[
                       ["Por emoción", "mood"],
@@ -325,8 +325,8 @@ export default function StartPage() {
                           }}
                           className={`flex-1 rounded-[var(--radius-xs)] px-3 py-2 text-xs font-semibold transition ${
                             isActive
-                              ? "bg-[var(--collectify-mint)] text-[var(--background)]"
-                              : "text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
+                              ? "bg-[var(--kanso-mint)] text-[var(--background)]"
+                              : "text-[var(--kanso-muted)] hover:text-[var(--foreground)]"
                           }`}
                         >
                           {label}
@@ -374,7 +374,7 @@ export default function StartPage() {
                 />
 
                 <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                  <p className="text-xs text-[var(--collectify-muted)]">
+                  <p className="text-xs text-[var(--kanso-muted)]">
                     Has elegido:{" "}
                     <strong className="text-[var(--foreground)]">
                       {selectedLabels || "nada todavía"}
@@ -384,7 +384,7 @@ export default function StartPage() {
                     type="button"
                     onClick={() => setRecommendationStep(1)}
                     disabled={!hasSelection}
-                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Siguiente <span aria-hidden="true">→</span>
                   </button>
@@ -412,8 +412,8 @@ export default function StartPage() {
                         }
                         className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
                           isSelected
-                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                            : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                            ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                            : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
                         }`}
                       >
                         {label}
@@ -445,8 +445,8 @@ export default function StartPage() {
                             }
                             className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
                               isSelected
-                                ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                                : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]"
+                                ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                                : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                             }`}
                           >
                             {tag.category}: {tag.value}
@@ -461,14 +461,14 @@ export default function StartPage() {
                   <button
                     type="button"
                     onClick={() => setRecommendationStep(0)}
-                    className="rounded-[var(--radius-sm)] px-3 py-2.5 text-sm text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
+                    className="rounded-[var(--radius-sm)] px-3 py-2.5 text-sm text-[var(--kanso-muted)] hover:text-[var(--foreground)]"
                   >
                     ← Atrás
                   </button>
                   <button
                     type="button"
                     onClick={handleRecommendation}
-                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
+                    className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
                   >
                     Encontrar mi disco <span aria-hidden="true">→</span>
                   </button>
@@ -481,13 +481,11 @@ export default function StartPage() {
         <aside className="grid min-w-0 content-start gap-7">
           <section>
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="collectify-section-title">
-                Últimas recomendaciones
-              </h2>
+              <h2 className="kanso-section-title">Últimas recomendaciones</h2>
               <button
                 type="button"
                 onClick={() => router.push("/recomendationHistory")}
-                className="text-xs font-semibold text-[var(--collectify-mint)]"
+                className="text-xs font-semibold text-[var(--kanso-mint)]"
               >
                 Ver historial →
               </button>
@@ -504,7 +502,7 @@ export default function StartPage() {
             ) : historyError ? (
               <p
                 role="alert"
-                className="text-sm leading-relaxed text-[var(--collectify-danger)]"
+                className="text-sm leading-relaxed text-[var(--kanso-danger)]"
               >
                 {historyError}
               </p>
@@ -515,7 +513,7 @@ export default function StartPage() {
                     <button
                       type="button"
                       onClick={() => router.push(`/albums/${item.album.id}`)}
-                      className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-transparent p-2 text-left transition hover:border-[var(--collectify-line)] hover:bg-[var(--surface-2)]"
+                      className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-transparent p-2 text-left transition hover:border-[var(--kanso-line)] hover:bg-[var(--surface-2)]"
                     >
                       <img
                         loading="lazy"
@@ -531,7 +529,7 @@ export default function StartPage() {
                         <strong className="block truncate text-sm text-[var(--foreground)]">
                           {item.album.name}
                         </strong>
-                        <small className="mt-1 block truncate text-xs text-[var(--collectify-muted)]">
+                        <small className="mt-1 block truncate text-xs text-[var(--kanso-muted)]">
                           {item.album.artists[0]?.name}
                         </small>
                       </span>
@@ -540,15 +538,15 @@ export default function StartPage() {
                 ))}
               </Stagger>
             ) : (
-              <div className="rounded-[var(--radius-sm)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-4">
-                <p className="text-sm leading-relaxed text-[var(--collectify-muted)]">
+              <div className="rounded-[var(--radius-sm)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-4">
+                <p className="text-sm leading-relaxed text-[var(--kanso-muted)]">
                   Todavía no tienes recomendaciones. Busca álbumes para empezar
                   tu colección o elige un momento para recibir una.
                 </p>
                 <button
                   type="button"
                   onClick={() => router.push("/search")}
-                  className="mt-3 text-sm font-semibold text-[var(--collectify-mint)] underline"
+                  className="mt-3 text-sm font-semibold text-[var(--kanso-mint)] underline"
                 >
                   Explorar discos
                 </button>

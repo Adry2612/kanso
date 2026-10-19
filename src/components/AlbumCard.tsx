@@ -32,7 +32,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
       whileTap={{ scale: 0.99 }}
       transition={{ type: "spring", stiffness: 320, damping: 26 }}
       style={{ transition: "border-color .2s ease, box-shadow .2s ease" }}
-      className="collectify-card group w-full cursor-pointer p-2"
+      className="kanso-card group w-full cursor-pointer p-2"
     >
       <div className="relative aspect-square overflow-hidden rounded-[var(--radius-xs)]">
         <img
@@ -49,7 +49,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
         <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
           {album.name}
         </span>
-        <span className="mt-1 block truncate text-xs text-[var(--collectify-muted)]">
+        <span className="mt-1 block truncate text-xs text-[var(--kanso-muted)]">
           {album.artists[0]?.name}
         </span>
 
@@ -62,8 +62,8 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
             }}
             className={`mt-3 flex w-full items-center justify-center gap-2 rounded-[var(--radius-xs)] border px-2 py-2 text-center text-xs font-semibold transition ${
               isFavorite
-                ? "border-[var(--collectify-mint)]/60 bg-[var(--collectify-mint)]/15 text-[var(--collectify-mint)] hover:bg-[var(--collectify-mint)]/25"
-                : "border-[var(--collectify-line)] text-[var(--collectify-mint)] hover:border-[var(--collectify-mint)]/60 hover:bg-[var(--collectify-mint)]/10"
+                ? "border-[var(--kanso-mint)]/60 bg-[var(--kanso-mint)]/15 text-[var(--kanso-mint)] hover:bg-[var(--kanso-mint)]/25"
+                : "border-[var(--kanso-line)] text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60 hover:bg-[var(--kanso-mint)]/10"
             }`}
           >
             {isFavorite ? (

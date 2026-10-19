@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { useTransitionRouter } from "next-view-transitions";
 import { useEffect, useState } from "react";
 import {
@@ -54,8 +55,17 @@ export default function Header() {
       return;
     }
 
-    const collapsed =
-      window.localStorage.getItem("collectify-sidebar-collapsed") === "true";
+    const saved = window.localStorage.getItem("kanso-sidebar-collapsed");
+    const stored =
+      saved ??
+      // Clave anterior, de cuando la aplicación se llamaba Collectify: se lee
+      // una sola vez para no perder la preferencia de quien ya la tenía.
+      window.localStorage.getItem("collectify-sidebar-collapsed");
+    // Migrada la preferencia, a partir de aquí solo se lee la clave nueva.
+    if (!saved && stored) {
+      window.localStorage.setItem("kanso-sidebar-collapsed", stored);
+    }
+    const collapsed = stored === "true";
     setSidebarCollapsed(collapsed);
     document.body.classList.toggle("sidebar-collapsed", collapsed);
   }, [isPublicPage]);
@@ -63,26 +73,34 @@ export default function Header() {
   const toggleSidebar = () => {
     const next = !sidebarCollapsed;
     setSidebarCollapsed(next);
-    window.localStorage.setItem("collectify-sidebar-collapsed", String(next));
+    window.localStorage.setItem("kanso-sidebar-collapsed", String(next));
     document.body.classList.toggle("sidebar-collapsed", next);
   };
 
   if (isPublicPage) return null;
 
   return (
-    <aside className="collectify-sidebar fixed inset-y-0 left-0 z-40 flex flex-col px-2 py-4 lg:px-5 lg:py-7">
+    <aside className="kanso-sidebar fixed inset-y-0 left-0 z-40 flex flex-col px-2 py-4 lg:px-5 lg:py-7">
       <button
         aria-label={t("brandHome")}
-        className="collectify-brand flex items-center px-2 font-semibold tracking-tight text-[var(--collectify-mint)]"
+        className="kanso-brand flex items-center gap-2 px-2 font-semibold tracking-tight text-[var(--kanso-mint)]"
         onClick={() => router.push("/home")}
       >
+        <Image
+          src="/kanso-logo.png"
+          alt=""
+          width={28}
+          height={28}
+          priority
+          className="h-7 w-7 max-w-none shrink-0"
+        />
         <span className="sidebar-label text-xl">kanso.</span>
       </button>
       <button
         type="button"
         onClick={toggleSidebar}
         aria-label={sidebarCollapsed ? t("openMenu") : t("closeMenu")}
-        className="sidebar-toggle absolute right-3 top-7 flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--collectify-line)] text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)]/40 hover:text-[var(--collectify-mint)]"
+        className="sidebar-toggle absolute right-3 top-7 flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--kanso-line)] text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)]/40 hover:text-[var(--kanso-mint)]"
       >
         {sidebarCollapsed ? (
           <ChevronRight className="h-4 w-4" />
@@ -92,7 +110,7 @@ export default function Header() {
       </button>
 
       <nav className="mt-16 grid gap-2 text-sm" aria-label={t("mainNav")}>
-        <span className="sidebar-label px-3 pb-2 text-[10px] uppercase tracking-[.18em] text-[var(--collectify-muted)]">
+        <span className="sidebar-label px-3 pb-2 text-[10px] uppercase tracking-[.18em] text-[var(--kanso-muted)]">
           {t("sectionLabel")}
         </span>
         {navItems.map((item) => {
@@ -109,22 +127,22 @@ export default function Header() {
               className={`relative flex items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors ${
                 isActive
                   ? "text-[var(--foreground)]"
-                  : "text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
+                  : "text-[var(--kanso-muted)] hover:text-[var(--foreground)]"
               }`}
               onClick={() => router.push(item.href)}
             >
               {isActive && (
                 <motion.span
                   layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-xl border border-[var(--collectify-mint)]/30 bg-[var(--collectify-mint)]/10"
+                  className="absolute inset-0 rounded-xl border border-[var(--kanso-mint)]/30 bg-[var(--kanso-mint)]/10"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
               <Icon
                 className={`relative h-[18px] w-[18px] ${
                   isActive
-                    ? "text-[var(--collectify-mint)]"
-                    : "text-[var(--collectify-mint)]/70"
+                    ? "text-[var(--kanso-mint)]"
+                    : "text-[var(--kanso-mint)]/70"
                 }`}
                 strokeWidth={1.75}
               />
@@ -137,27 +155,27 @@ export default function Header() {
       <button
         type="button"
         onClick={() => router.push("/settings")}
-        className="mt-8 flex items-center gap-3 rounded-xl border-t border-[var(--collectify-line)] px-2 pt-4 text-left text-[var(--collectify-muted)] transition hover:text-[var(--foreground)]"
+        className="mt-8 flex items-center gap-3 rounded-xl border-t border-[var(--kanso-line)] px-2 pt-4 text-left text-[var(--kanso-muted)] transition hover:text-[var(--foreground)]"
       >
         <span
           aria-hidden="true"
-          className="h-9 w-9 shrink-0 rounded-full border-2 border-[var(--collectify-line-strong)] bg-[#d1a578] text-center text-[10px] font-bold leading-8 text-[var(--foreground)]"
+          className="h-9 w-9 shrink-0 rounded-full border-2 border-[var(--kanso-line-strong)] bg-[#d1a578] text-center text-[10px] font-bold leading-8 text-[var(--foreground)]"
         >
           {profileInitials}
         </span>
         <span className="sidebar-label min-w-0">
-          <strong className="block truncate text-sm text-[var(--collectify-muted)]">
+          <strong className="block truncate text-sm text-[var(--kanso-muted)]">
             {profileName}
           </strong>
-          <small className="block truncate text-xs text-[var(--collectify-muted)]">
+          <small className="block truncate text-xs text-[var(--kanso-muted)]">
             {user?.isAnonymous
               ? t("testSession")
               : user?.email || t("yourProfile")}
           </small>
         </span>
       </button>
-      <p className="sidebar-label mt-auto border-t border-[var(--collectify-line)] px-2 pt-5 text-xs leading-relaxed text-[var(--collectify-muted)]">
-        <strong className="mb-1 block font-semibold text-[var(--collectify-mint)]">
+      <p className="sidebar-label mt-auto border-t border-[var(--kanso-line)] px-2 pt-5 text-xs leading-relaxed text-[var(--kanso-muted)]">
+        <strong className="mb-1 block font-semibold text-[var(--kanso-mint)]">
           {t("sidebarTagline")}
         </strong>
         {t("sidebarSubtitle")}

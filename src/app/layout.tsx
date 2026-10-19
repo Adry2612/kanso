@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Collectify",
+  title: "Kanso",
   description: "Your music collection manager",
 };
 

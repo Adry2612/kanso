@@ -85,15 +85,15 @@ export default function ArtistsPage() {
   };
 
   return (
-    <main className="collectify-main min-h-screen">
+    <main className="kanso-main min-h-screen">
       <section className="mt-12 max-w-3xl md:mt-20">
-        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {t("eyebrow")}
         </p>
-        <h1 className="collectify-page-title !mt-3 !text-5xl md:!text-6xl">
+        <h1 className="kanso-page-title !mt-3 !text-5xl md:!text-6xl">
           {t("title")}
         </h1>
-        <p className="mt-4 max-w-md text-sm leading-relaxed text-[var(--collectify-muted)]">
+        <p className="mt-4 max-w-md text-sm leading-relaxed text-[var(--kanso-muted)]">
           {t("subtitle")}
         </p>
       </section>
@@ -103,23 +103,21 @@ export default function ArtistsPage() {
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={t("placeholder")}
-        className="collectify-input mt-9 mb-12 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--collectify-muted)]"
+        className="kanso-input mt-9 mb-12 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--kanso-muted)]"
       />
 
       {hasQuery ? (
         <section className="w-full max-w-6xl pb-16">
           {searching && (
-            <p className="text-sm text-[var(--collectify-muted)]">
-              {t("loading")}
-            </p>
+            <p className="text-sm text-[var(--kanso-muted)]">{t("loading")}</p>
           )}
           {error && (
-            <p role="alert" className="text-sm text-[var(--collectify-danger)]">
+            <p role="alert" className="text-sm text-[var(--kanso-danger)]">
               {error}
             </p>
           )}
           {!searching && !error && results.length === 0 && (
-            <p className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--collectify-muted)]">
+            <p className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">
               {t("noResults")}
             </p>
           )}
@@ -147,12 +145,10 @@ export default function ArtistsPage() {
             {t("yourArtists")}
           </h2>
           {!favoritesLoaded && (
-            <p className="text-sm text-[var(--collectify-muted)]">
-              {t("loading")}
-            </p>
+            <p className="text-sm text-[var(--kanso-muted)]">{t("loading")}</p>
           )}
           {favoritesLoaded && favorites.length === 0 && (
-            <p className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--collectify-muted)]">
+            <p className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">
               {t("empty")}
             </p>
           )}

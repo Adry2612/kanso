@@ -89,7 +89,7 @@ export default function FilterModal({
       <div className="space-y-8">
         {/* Moods */}
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
             {t("filter.moodsTitle")}
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -104,8 +104,8 @@ export default function FilterModal({
                   onClick={() => toggleMood(mood.value)}
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
                     isSelected
-                      ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                      : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"
+                      ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                      : "border-[var(--kanso-line)] bg-[var(--surface-1)]/35 text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]/50"
                   }`}
                 >
                   <Medallion
@@ -122,7 +122,7 @@ export default function FilterModal({
 
         {/* Genres */}
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
             {t("filter.genresTitle")}
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -135,8 +135,8 @@ export default function FilterModal({
                   onClick={() => toggleGenre(genre.value)}
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
                     isSelected
-                      ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                      : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"
+                      ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                      : "border-[var(--kanso-line)] bg-[var(--surface-1)]/35 text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]/50"
                   }`}
                 >
                   <MdMusicNote size={18} />
@@ -148,7 +148,7 @@ export default function FilterModal({
           </div>
         </div>
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
             Formato de posesión
           </h3>
           <div className="grid grid-cols-2 gap-2">
@@ -158,7 +158,7 @@ export default function FilterModal({
                 <button
                   key={format.value}
                   onClick={() => toggleFormat(format.value)}
-                  className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${isSelected ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]" : "border-[var(--collectify-line)] bg-[var(--surface-1)]/35 text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]/50"}`}
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm transition ${isSelected ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]" : "border-[var(--kanso-line)] bg-[var(--surface-1)]/35 text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]/50"}`}
                 >
                   <span className="text-base">{format.icon}</span>
                   {format.label}
@@ -169,7 +169,7 @@ export default function FilterModal({
           </div>
         </div>
         <div>
-          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
+          <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
             Etiquetas personales
           </h3>
           <div className="grid gap-2 sm:grid-cols-[140px_1fr_auto]">
@@ -177,13 +177,13 @@ export default function FilterModal({
               value={tagCategory}
               onChange={(event) => setTagCategory(event.target.value)}
               placeholder="Tag principal"
-              className="collectify-input px-3 py-2 text-sm"
+              className="kanso-input px-3 py-2 text-sm"
             />
             <input
               value={tagValue}
               onChange={(event) => setTagValue(event.target.value)}
               placeholder="Buscar subtag"
-              className="collectify-input px-3 py-2 text-sm"
+              className="kanso-input px-3 py-2 text-sm"
             />
             <button
               type="button"
@@ -204,7 +204,7 @@ export default function FilterModal({
                   setTagValue("");
                 }
               }}
-              className="rounded-xl border border-[var(--collectify-line-strong)] px-3 py-2 text-sm text-[var(--collectify-mint)] hover:border-[var(--collectify-mint)]/60"
+              className="rounded-xl border border-[var(--kanso-line-strong)] px-3 py-2 text-sm text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60"
             >
               Aplicar
             </button>
