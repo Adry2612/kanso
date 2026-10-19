@@ -181,7 +181,7 @@ export default function StartPage() {
       : selectedActivity.map((activity) => tActivities(activity)).join(", ");
 
   return (
-    <main className="kanso-main min-h-screen">
+    <main className="kanso-main home-main min-h-screen">
       <section className="max-w-3xl">
         <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {today || "\u00a0"}
@@ -398,7 +398,7 @@ export default function StartPage() {
                   }}
                 />
 
-                <div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                   <p className="text-xs text-[var(--kanso-muted)]">
                     Has elegido:{" "}
                     <strong className="text-[var(--foreground)]">
