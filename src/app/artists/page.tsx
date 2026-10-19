@@ -86,7 +86,7 @@ export default function ArtistsPage() {
 
   return (
     <main className="kanso-main min-h-screen">
-      <section className="mt-12 max-w-3xl md:mt-20">
+      <section className="max-w-3xl">
         <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {t("eyebrow")}
         </p>
@@ -103,7 +103,7 @@ export default function ArtistsPage() {
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={t("placeholder")}
-        className="kanso-input mt-9 mb-12 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--kanso-muted)]"
+        className="kanso-input mt-8 mb-10 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--kanso-muted)]"
       />
 
       {hasQuery ? (

@@ -71,7 +71,7 @@ export default function ReleasesPage() {
 
   return (
     <main className="kanso-main min-h-screen">
-      <section className="mt-12 max-w-3xl md:mt-20">
+      <section className="max-w-3xl">
         <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {t("eyebrow")}
         </p>
