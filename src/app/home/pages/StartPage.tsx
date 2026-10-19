@@ -181,7 +181,7 @@ export default function StartPage() {
       : selectedActivity.map((activity) => tActivities(activity)).join(", ");
 
   return (
-    <main className="kanso-main">
+    <main className="kanso-main min-h-screen">
       <section className="max-w-3xl">
         <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {today || "\u00a0"}
