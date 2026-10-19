@@ -40,6 +40,28 @@ export async function GET() {
   }
 
   try {
+    await import("firebase-admin/auth");
+    result.auth = "ok";
+  } catch (error) {
+    result.auth = describe(error);
+  }
+
+  try {
+    const { authenticate } = await import("@/lib/apiAuth");
+    const response = await authenticate(
+      new Request("https://example.com", {
+        headers: { authorization: "Bearer abc.def.ghi" },
+      }),
+    );
+    result.authenticate =
+      response instanceof Response
+        ? { status: response.status, body: await response.text() }
+        : response;
+  } catch (error) {
+    result.authenticate = describe(error);
+  }
+
+  try {
     const mod = await import("@/lib/firebaseAdmin");
     result.configured = mod.isAdminConfigured();
     mod.getAdminApp();
