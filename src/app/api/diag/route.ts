@@ -21,9 +21,30 @@ export async function GET() {
     node: process.version,
     env: {
       inline: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT),
+      base64: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64),
       path: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_PATH),
     },
   };
+
+  const inline = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (inline) {
+    try {
+      JSON.parse(inline);
+      result.inlineJson = "ok";
+    } catch (error) {
+      result.inlineJson = (error as Error).message;
+    }
+  }
+
+  const base64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  if (base64) {
+    try {
+      JSON.parse(Buffer.from(base64, "base64").toString("utf8"));
+      result.base64Json = "ok";
+    } catch (error) {
+      result.base64Json = (error as Error).message;
+    }
+  }
 
   try {
     await import("firebase-admin/app");
