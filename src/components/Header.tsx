@@ -15,6 +15,7 @@ import {
   Settings,
   Sparkles,
   Users,
+  UsersRound,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -32,7 +33,8 @@ export default function Header() {
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const isPublicPage = pathname === "/" || pathname === "/login";
+  const isPublicPage =
+    pathname === "/" || pathname === "/login" || pathname.startsWith("/f/");
   const profileName =
     user?.displayName?.trim() ||
     user?.email?.split("@")[0] ||
@@ -50,12 +52,16 @@ export default function Header() {
     { href: "/search", label: t("search"), icon: Search },
     { href: "/artists", label: t("artists"), icon: Users },
     { href: "/releases", label: t("releases"), icon: Sparkles },
+    { href: "/friends", label: t("friends"), icon: UsersRound },
     { href: "/favorites", label: t("favorites"), icon: Heart },
     { href: "/recomendationHistory", label: t("history"), icon: History },
     { href: "/settings", label: t("settings"), icon: Settings },
   ];
 
   useEffect(() => {
+    // En las páginas públicas no hay panel: el contenido ocupa todo el ancho.
+    document.body.classList.toggle("public-shell", isPublicPage);
+
     if (isPublicPage) {
       document.body.classList.remove("sidebar-collapsed");
       return;

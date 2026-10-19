@@ -28,6 +28,15 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegisterMode = searchParams.get("mode") !== "login";
+  const requestedNext = searchParams.get("next");
+  const destination =
+    requestedNext &&
+    requestedNext.startsWith("/") &&
+    !requestedNext.startsWith("//")
+      ? requestedNext
+      : "/home";
+  const nextQuery =
+    destination !== "/home" ? `&next=${encodeURIComponent(destination)}` : "";
 
   // Si el popup se queda colgado (COOP, bloqueo del navegador), el botón no
   // debe quedar deshabilitado para siempre.
@@ -60,7 +69,7 @@ function LoginForm() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.replace("/home");
+      router.replace(destination);
     } catch (err: any) {
       setError(err?.message || "No hemos podido completar la operación.");
     } finally {
@@ -78,7 +87,7 @@ function LoginForm() {
         setIsLoggingIn(false);
       }, 90_000);
       const user = await signInWithGoogle();
-      if (user) router.replace("/home");
+      if (user) router.replace(destination);
     } catch {
       setError("No hemos podido iniciar sesión con Google.");
     } finally {
@@ -103,7 +112,7 @@ function LoginForm() {
     setIsStartingGuest(true);
     try {
       await signInAsGuest();
-      router.replace("/home");
+      router.replace(destination);
     } catch (error: unknown) {
       setGuestError(getGuestSignInErrorMessage(error));
     } finally {
@@ -271,7 +280,7 @@ function LoginForm() {
             >
               <p>{guestError}</p>
               <Link
-                href="/login?mode=register"
+                href={`/login?mode=register${nextQuery}`}
                 className="mt-1 inline-block font-semibold underline"
               >
                 Crear una cuenta
@@ -282,7 +291,9 @@ function LoginForm() {
             {isRegisterMode ? "¿Ya tienes cuenta?" : "¿Aún no tienes cuenta?"}{" "}
             <a
               href={
-                isRegisterMode ? "/login?mode=login" : "/login?mode=register"
+                isRegisterMode
+                  ? `/login?mode=login${nextQuery}`
+                  : `/login?mode=register${nextQuery}`
               }
               className="public-accent font-medium hover:underline"
             >

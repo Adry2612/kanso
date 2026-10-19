@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
 import { getAdminApp, isAdminConfigured } from "./firebaseAdmin";
 
-export type AuthenticatedUser = { uid: string };
+export type AuthenticatedUser = {
+  uid: string;
+  /** La sesión se creó con `signInAnonymously` y no es una cuenta real. */
+  isAnonymous: boolean;
+};
 
 /**
  * Verifica el ID token de la petición y devuelve el usuario autenticado.
@@ -35,13 +39,34 @@ export async function authenticate(
 
   try {
     const decoded = await getAuth(getAdminApp()).verifyIdToken(match[1]);
-    return { uid: decoded.uid };
+    return {
+      uid: decoded.uid,
+      isAnonymous: decoded.firebase?.sign_in_provider === "anonymous",
+    };
   } catch {
     return NextResponse.json(
       { error: "Token de autenticación inválido." },
       { status: 401 },
     );
   }
+}
+
+/**
+ * Restringe una ruta a cuentas registradas.
+ *
+ * Devuelve `null` si la sesión es válida y una respuesta 403 si es anónima.
+ * Se usa después de `authenticate()` para que la comprobación no se pueda
+ * saltar llamando directamente a la API.
+ */
+export function requireRegistered(
+  user: AuthenticatedUser,
+): NextResponse | null {
+  if (!user.isAnonymous) return null;
+
+  return NextResponse.json(
+    { error: "Necesitas una cuenta para usar Amigos." },
+    { status: 403 },
+  );
 }
 
 /** Devuelve true si el valor es el resultado de error de `authenticate`. */

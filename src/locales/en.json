@@ -29,7 +29,8 @@
     "closeMenu": "Close menu",
     "mainNav": "Main navigation",
     "sidebarTagline": "Your collection, at your pace.",
-    "sidebarSubtitle": "Save records and return to your favourite moments."
+    "sidebarSubtitle": "Save records and return to your favourite moments.",
+    "friends": "Friends"
   },
   "settings": {
     "back": "Back",
@@ -295,5 +296,105 @@
     "previous": "Previous options",
     "next": "Next options",
     "hint": "Use the arrow keys to move between options, Home and End to jump to the ends, and Space or Enter to choose. You can also drag or use the wheel."
+  },
+  "friends": {
+    "eyebrow": "Your circle",
+    "title": "Friends",
+    "subtitle": "Share your profile and see who the people you care about are listening to. You will only see their name and avatar.",
+    "shareProfile": "Share profile",
+    "loading": "Loading your friends...",
+    "loadError": "We could not load your friends.",
+    "retry": "Try again",
+    "guest": {
+      "eyebrow": "Accounts only",
+      "title": "Friends need an account",
+      "description": "Guest sessions are temporary. Create an account to save your profile, share your QR and keep your friendships.",
+      "createAccount": "Create account",
+      "signIn": "Sign in"
+    },
+    "noSession": {
+      "title": "Sign in to see your friends",
+      "description": "Sign in or create an account to share your profile and connect with other people.",
+      "signIn": "Sign in",
+      "createAccount": "Create account"
+    },
+    "add": {
+      "title": "Add by code",
+      "description": "Paste the 8-character code someone shared with you.",
+      "label": "Invitation code",
+      "placeholder": "ABCD2345",
+      "submit": "Send request",
+      "submitting": "Sending...",
+      "invalidCode": "The code must have 8 characters.",
+      "sent": "Request sent.",
+      "accepted": "You are now friends.",
+      "error": "The request could not be sent."
+    },
+    "incoming": {
+      "title": "Received requests",
+      "empty": "You have no pending requests.",
+      "accept": "Accept",
+      "reject": "Reject",
+      "accepting": "Accepting...",
+      "rejecting": "Rejecting...",
+      "from": "Wants to add you"
+    },
+    "outgoing": {
+      "title": "Sent requests",
+      "empty": "You have not sent any requests.",
+      "pending": "Pending",
+      "to": "Waiting for a reply"
+    },
+    "list": {
+      "title": "Your friends",
+      "emptyTitle": "You do not have any friends yet",
+      "emptyDescription": "Share your profile by QR or ask someone for their code to get started.",
+      "emptyCta": "Share my profile",
+      "remove": "Remove",
+      "removeConfirm": "Remove friendship with {name}?",
+      "cancel": "Cancel",
+      "confirmRemove": "Remove",
+      "removing": "Removing...",
+      "removeError": "The friendship could not be removed.",
+      "friendLabel": "Friend"
+    },
+    "share": {
+      "eyebrow": "Your profile",
+      "title": "Share your profile",
+      "description": "Anyone who scans this QR can see your name and avatar, and send you a request. They will never see your collection.",
+      "qrLabel": "QR code with the link to your profile",
+      "codeLabel": "Your code",
+      "linkLabel": "Short link",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "share": "Share",
+      "copyError": "The link could not be copied.",
+      "shareError": "The link could not be shared.",
+      "nativeText": "My Kanso profile",
+      "close": "Close"
+    },
+    "public": {
+      "eyebrow": "Kanso profile",
+      "title": "A shared music moment",
+      "loading": "Loading profile...",
+      "notFoundTitle": "Profile not found",
+      "notFoundDescription": "The code is invalid or the profile is no longer available.",
+      "backHome": "Go to Kanso",
+      "add": "Add friend",
+      "adding": "Sending request...",
+      "requestSent": "Request sent",
+      "accepted": "You are already friends",
+      "pendingIncoming": "You have a request from this person",
+      "goToFriends": "Go to Friends",
+      "self": "This is your profile",
+      "guestTitle": "Create an account to add this person",
+      "guestDescription": "Guest sessions are temporary. Create an account to send and receive requests.",
+      "loginTitle": "Sign in to add this person",
+      "loginDescription": "Sign in or create an account to send them a request.",
+      "login": "Sign in",
+      "register": "Create account",
+      "error": "The request could not be sent."
+    },
+    "actionError": "The action could not be completed."
   }
 }

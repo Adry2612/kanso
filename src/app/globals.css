@@ -95,6 +95,11 @@ button:active {
   transition: margin-left 0.25s ease;
 }
 
+/* Las páginas públicas no tienen panel: el contenido ocupa todo el ancho. */
+.public-shell .app-content {
+  margin-left: 0;
+}
+
 /* El control de colapso flota sobre el borde: con el panel abierto queda dentro
    y, al colapsarlo, sale fuera para no quedar encajado en la franja de 76 px. */
 .sidebar-toggle {
