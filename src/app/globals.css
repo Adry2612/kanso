@@ -83,6 +83,17 @@ button:active {
   transition: margin-left 0.25s ease;
 }
 
+/* El control de colapso flota sobre el borde: con el panel abierto queda dentro
+   y, al colapsarlo, sale fuera para no quedar encajado en la franja de 76 px. */
+.sidebar-toggle {
+  background: color-mix(in srgb, var(--surface-2) 94%, transparent);
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.6);
+  transition:
+    right 0.25s var(--ease-out),
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
 /* El colapso es una preferencia de escritorio: si se aplicara en móvil, el
    cajón mediría 76 px y el contenido quedaría desplazado 76 px. */
 @media (min-width: 1024px) {
@@ -104,8 +115,8 @@ button:active {
   }
 
   .sidebar-collapsed .kanso-sidebar .sidebar-toggle {
-    right: 50%;
-    transform: translateX(50%);
+    right: -2.25rem;
+    transform: none;
   }
 }
 
@@ -1414,10 +1425,6 @@ body::after {
   border-radius: var(--radius-pill);
   background: var(--surface-2);
   padding: 0 0.9rem;
-}
-
-.feelings-carousel__search[hidden] {
-  display: none;
 }
 
 .feelings-carousel__search:focus-within {

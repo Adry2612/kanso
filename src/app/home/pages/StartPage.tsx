@@ -9,7 +9,14 @@ import { moodOptions } from "@/constants/moods";
 import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
 import type { FavoriteFormat } from "@/types/favorites";
-import { Stagger, StaggerItem } from "@/components/motion";
+import {
+  AnimatePresence,
+  EASE_OUT,
+  motion,
+  Stagger,
+  StaggerItem,
+  useReducedMotion,
+} from "@/components/motion";
 import { FaSearch } from "react-icons/fa";
 import FeelingsCarousel, {
   type CarouselOption,
@@ -36,6 +43,7 @@ export default function StartPage() {
   const tActivities = useTranslations("activities");
   const tQuick = useTranslations("quickRecommendation");
   const tFeelings = useTranslations("feelingsCarousel");
+  const reduce = useReducedMotion();
 
   const [mounted, setMounted] = useState(false);
   const [today, setToday] = useState("");
@@ -221,85 +229,102 @@ export default function StartPage() {
               )}
             </div>
 
-            {recommendationStep === 0 && quickOpen && (
-              <div
-                id="quick-recommendation"
-                className="mt-4 rounded-[var(--radius-md)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-5"
-              >
-                <p className="text-sm font-semibold text-[var(--foreground)]">
-                  {tQuick("title")}
-                </p>
-                <p className="mt-1 text-xs text-[var(--kanso-muted)]">
-                  {tQuick("subtitle")}
-                </p>
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    [tQuick("anyFormat"), "all"],
-                    [tQuick("vinyl"), "vinyl"],
-                    [tQuick("cd"), "cd"],
-                    [tQuick("cassette"), "cassette"],
-                  ].map(([label, value]) => {
-                    const isSelected = quickFormat === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        aria-pressed={isSelected}
-                        onClick={() =>
-                          setQuickFormat(value as "all" | FavoriteFormat)
-                        }
-                        className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
-                          isSelected
-                            ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
-                            : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {collectionTags.length > 0 && (
-                  <div className="mt-5">
-                    <p className="text-xs font-semibold text-[var(--kanso-muted)]">
-                      {tQuick("tagsLabel")}
+            <AnimatePresence initial={false}>
+              {recommendationStep === 0 && quickOpen && (
+                <motion.div
+                  key="quick-recommendation"
+                  id="quick-recommendation"
+                  initial={
+                    reduce ? { opacity: 0 } : { opacity: 0, height: 0, y: -6 }
+                  }
+                  animate={
+                    reduce
+                      ? { opacity: 1 }
+                      : { opacity: 1, height: "auto", y: 0 }
+                  }
+                  exit={
+                    reduce ? { opacity: 0 } : { opacity: 0, height: 0, y: -6 }
+                  }
+                  transition={{ duration: 0.26, ease: EASE_OUT }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-5">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">
+                      {tQuick("title")}
                     </p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {collectionTags.map((tag) => {
-                        const value = `${tag.category}:${tag.value}`;
-                        const isSelected = quickTag === value;
+                    <p className="mt-1 text-xs text-[var(--kanso-muted)]">
+                      {tQuick("subtitle")}
+                    </p>
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {[
+                        [tQuick("anyFormat"), "all"],
+                        [tQuick("vinyl"), "vinyl"],
+                        [tQuick("cd"), "cd"],
+                        [tQuick("cassette"), "cassette"],
+                      ].map(([label, value]) => {
+                        const isSelected = quickFormat === value;
                         return (
                           <button
                             key={value}
                             type="button"
                             aria-pressed={isSelected}
                             onClick={() =>
-                              setQuickTag(isSelected ? null : value)
+                              setQuickFormat(value as "all" | FavoriteFormat)
                             }
-                            className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
+                            className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
                               isSelected
                                 ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
-                                : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
+                                : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
                             }`}
                           >
-                            {tag.category}: {tag.value}
+                            {label}
                           </button>
                         );
                       })}
                     </div>
+                    {collectionTags.length > 0 && (
+                      <div className="mt-5">
+                        <p className="text-xs font-semibold text-[var(--kanso-muted)]">
+                          {tQuick("tagsLabel")}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {collectionTags.map((tag) => {
+                            const value = `${tag.category}:${tag.value}`;
+                            const isSelected = quickTag === value;
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                aria-pressed={isSelected}
+                                onClick={() =>
+                                  setQuickTag(isSelected ? null : value)
+                                }
+                                className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
+                                  isSelected
+                                    ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                                    : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
+                                }`}
+                              >
+                                {tag.category}: {tag.value}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-5 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleQuickRecommendation}
+                        className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
+                      >
+                        {tQuick("cta")} <span aria-hidden="true">→</span>
+                      </button>
+                    </div>
                   </div>
-                )}
-                <div className="mt-5 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleQuickRecommendation}
-                    className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
-                  >
-                    {tQuick("cta")} <span aria-hidden="true">→</span>
-                  </button>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {recommendationStep === 0 && (
               <>

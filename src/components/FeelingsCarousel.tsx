@@ -17,7 +17,14 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import Medallion from "@/components/Medallion";
-import { Stagger, StaggerItem, useReducedMotion } from "@/components/motion";
+import {
+  AnimatePresence,
+  EASE_OUT,
+  motion,
+  Stagger,
+  StaggerItem,
+  useReducedMotion,
+} from "@/components/motion";
 import { useTranslations } from "@/context/I18nContext";
 
 export type CarouselOption = {
@@ -259,48 +266,65 @@ const FeelingsCarousel = ({
   return (
     <div className="feelings-carousel">
       {search && (
-        <div
-          id="feelings-search"
-          className="feelings-carousel__search"
-          hidden={!searchOpen}
-        >
-          <FaSearch
-            aria-hidden="true"
-            className="feelings-carousel__search-icon"
-          />
-          <input
-            ref={inputRef}
-            type="search"
-            value={query}
-            onChange={(event) => handleQueryChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== "Escape") return;
-              event.preventDefault();
-              if (query) handleQueryChange("");
-              else search.onOpenChange(false);
-            }}
-            placeholder={t("searchPlaceholder")}
-            aria-label={t("search")}
-            autoComplete="off"
-            spellCheck={false}
-            className="feelings-carousel__input"
-          />
-          {query && (
-            <>
-              <span aria-hidden="true" className="feelings-carousel__count">
-                {visible.length}
-              </span>
-              <button
-                type="button"
-                onClick={() => handleQueryChange("")}
-                aria-label={t("clear")}
-                className="feelings-carousel__clear"
-              >
-                <FaTimes aria-hidden="true" />
-              </button>
-            </>
+        <AnimatePresence initial={false}>
+          {searchOpen && (
+            <motion.div
+              key="feelings-search"
+              id="feelings-search"
+              initial={
+                reduce ? { opacity: 0 } : { opacity: 0, height: 0, y: -6 }
+              }
+              animate={
+                reduce ? { opacity: 1 } : { opacity: 1, height: "auto", y: 0 }
+              }
+              exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0, y: -6 }}
+              transition={{ duration: 0.24, ease: EASE_OUT }}
+              className="overflow-hidden"
+            >
+              <div className="feelings-carousel__search">
+                <FaSearch
+                  aria-hidden="true"
+                  className="feelings-carousel__search-icon"
+                />
+                <input
+                  ref={inputRef}
+                  type="search"
+                  value={query}
+                  onChange={(event) => handleQueryChange(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Escape") return;
+                    event.preventDefault();
+                    if (query) handleQueryChange("");
+                    else search.onOpenChange(false);
+                  }}
+                  placeholder={t("searchPlaceholder")}
+                  aria-label={t("search")}
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="feelings-carousel__input"
+                />
+                {query && (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="feelings-carousel__count"
+                    >
+                      {visible.length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleQueryChange("")}
+                      aria-label={t("clear")}
+                      className="feelings-carousel__clear"
+                    >
+                      <FaTimes aria-hidden="true" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       )}
 
       {visible.length > 0 ? (
