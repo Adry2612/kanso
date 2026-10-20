@@ -5,12 +5,22 @@ import { authFetch } from "@/lib/api/authFetch";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/Skeleton";
 import { useTransitionRouter } from "next-view-transitions";
-import { musicalFeelings } from "@/constants/feelings";
+import { moodOptions } from "@/constants/moods";
 import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
-import { moodLabelToKey } from "@/lib/activityRecommendations";
 import type { FavoriteFormat } from "@/types/favorites";
-import { Stagger, StaggerItem } from "@/components/motion";
+import {
+  AnimatePresence,
+  EASE_OUT,
+  motion,
+  Stagger,
+  StaggerItem,
+  useReducedMotion,
+} from "@/components/motion";
+import { FaSearch } from "react-icons/fa";
+import FeelingsCarousel, {
+  type CarouselOption,
+} from "@/components/FeelingsCarousel";
 
 type HistoryEntry = {
   id: string;
@@ -32,6 +42,8 @@ export default function StartPage() {
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tQuick = useTranslations("quickRecommendation");
+  const tFeelings = useTranslations("feelingsCarousel");
+  const reduce = useReducedMotion();
 
   const [mounted, setMounted] = useState(false);
   const [today, setToday] = useState("");
@@ -55,6 +67,7 @@ export default function StartPage() {
   >([]);
   const [recommendationStep, setRecommendationStep] = useState<0 | 1>(0);
   const [quickOpen, setQuickOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [quickFormat, setQuickFormat] = useState<"all" | FavoriteFormat>("all");
   const [quickTag, setQuickTag] = useState<string | null>(null);
 
@@ -114,13 +127,18 @@ export default function StartPage() {
       .catch(() => setCollectionTags([]));
   }, [user?.uid]);
 
-  const moods = musicalFeelings.map((feeling) => [
-    feeling.emoji,
-    moodLabelToKey[feeling.nombre]
-      ? tMoods(moodLabelToKey[feeling.nombre])
-      : feeling.nombre,
-    feeling.key,
-  ]);
+  const carouselOptions: CarouselOption[] =
+    recommendationType === "mood"
+      ? moodOptions.map((mood) => ({
+          key: mood.key,
+          emoji: mood.emoji,
+          label: tMoods(mood.key),
+        }))
+      : activityOptions.map((activity) => ({
+          key: activity.id,
+          emoji: activity.emoji,
+          label: tActivities(activity.id),
+        }));
 
   const handleRecommendation = () => {
     const params = new URLSearchParams({ format: selectedFormat });
@@ -139,22 +157,22 @@ export default function StartPage() {
   };
 
   const hasSelection = selectedMood.length > 0 || selectedActivity.length > 0;
-  const selectorItems =
-    recommendationType === "mood"
-      ? moods
-      : activityOptions.map(({ emoji, id }) => [emoji, tActivities(id), id]);
   const recentRecommendations = recomendationHistory
     .filter((item) => item.album?.id)
     .slice(0, 3);
 
-  const toggleSelection = (value: string) => {
-    const setter =
-      recommendationType === "mood" ? setSelectedMood : setSelectedActivity;
-    setter((current) =>
-      current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value],
-    );
+  // Emoción: alterna varias. Actividad: elige una (la spec habla de "la
+  // actividad elegida"); volver a pulsarla la quita.
+  const handleSelect = (key: string) => {
+    if (recommendationType === "mood") {
+      setSelectedMood((current) =>
+        current.includes(key)
+          ? current.filter((item) => item !== key)
+          : [...current, key],
+      );
+      return;
+    }
+    setSelectedActivity((current) => (current.includes(key) ? [] : [key]));
   };
 
   const selectedLabels =
@@ -163,100 +181,225 @@ export default function StartPage() {
       : selectedActivity.map((activity) => tActivities(activity)).join(", ");
 
   return (
-    <main className="collectify-main">
-      <section className="mt-14 max-w-3xl md:mt-24">
-        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+    <main className="kanso-main home-main min-h-screen">
+      <section className="max-w-3xl">
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {today || "\u00a0"}
         </p>
-        <h1 className="collectify-page-title">
+        <h1 className="kanso-page-title">
           ¿Qué quieres <em>escuchar</em> hoy?
         </h1>
-        <p className="mt-5 max-w-xl text-sm leading-relaxed text-[var(--collectify-muted)] md:text-base">
+        <p className="mt-5 max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)] md:text-base">
           Cuéntame cómo estás y encontraré un disco que encaje con este momento.
         </p>
       </section>
 
-      <div className="mt-12 grid gap-7 lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,.72fr)]">
-        <div className="grid content-start gap-7">
-          <section className="collectify-panel p-6 md:p-9">
-            <h2 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
-              {recommendationStep === 1
-                ? "Elige tu fuente"
-                : recommendationType === "mood"
-                  ? "Elige una sensación"
-                  : "Elige una actividad"}
-            </h2>
-            <p className="mt-2 text-xs text-[var(--collectify-muted)]">
-              {recommendationStep === 1
-                ? "Elige si quieres explorar toda tu colección o un formato físico concreto."
-                : "No hay respuestas incorrectas."}
-            </p>
+      <div className="mt-8 grid gap-7 lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,.72fr)]">
+        <div className="grid min-w-0 content-start gap-7">
+          <section className="kanso-panel min-w-0 p-6 md:p-8">
+            <div className="feelings-head">
+              <div className="min-w-0">
+                <h2 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
+                  {recommendationStep === 1
+                    ? "Elige tu fuente"
+                    : recommendationType === "mood"
+                      ? "Elige una sensación"
+                      : "Elige una actividad"}
+                </h2>
+                <p className="mt-2 text-xs text-[var(--kanso-muted)]">
+                  {recommendationStep === 1
+                    ? "Elige si quieres explorar toda tu colección o un formato físico concreto."
+                    : "No hay respuestas incorrectas."}
+                </p>
+              </div>
+
+              {recommendationStep === 0 && (
+                <div className="feelings-head__actions">
+                  <button
+                    type="button"
+                    onClick={() => setQuickOpen((open) => !open)}
+                    aria-expanded={quickOpen}
+                    aria-controls="quick-recommendation"
+                    className="flex items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--kanso-line)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
+                  >
+                    <span aria-hidden="true">⚡</span>
+                    {tQuick("open")}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <AnimatePresence initial={false}>
+              {recommendationStep === 0 && quickOpen && (
+                <motion.div
+                  key="quick-recommendation"
+                  id="quick-recommendation"
+                  initial={
+                    reduce ? { opacity: 0 } : { opacity: 0, height: 0, y: -6 }
+                  }
+                  animate={
+                    reduce
+                      ? { opacity: 1 }
+                      : { opacity: 1, height: "auto", y: 0 }
+                  }
+                  exit={
+                    reduce ? { opacity: 0 } : { opacity: 0, height: 0, y: -6 }
+                  }
+                  transition={{ duration: 0.26, ease: EASE_OUT }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-5">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">
+                      {tQuick("title")}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--kanso-muted)]">
+                      {tQuick("subtitle")}
+                    </p>
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {[
+                        [tQuick("anyFormat"), "all"],
+                        [tQuick("vinyl"), "vinyl"],
+                        [tQuick("cd"), "cd"],
+                        [tQuick("cassette"), "cassette"],
+                      ].map(([label, value]) => {
+                        const isSelected = quickFormat === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={isSelected}
+                            onClick={() =>
+                              setQuickFormat(value as "all" | FavoriteFormat)
+                            }
+                            className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
+                              isSelected
+                                ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                                : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {collectionTags.length > 0 && (
+                      <div className="mt-5">
+                        <p className="text-xs font-semibold text-[var(--kanso-muted)]">
+                          {tQuick("tagsLabel")}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {collectionTags.map((tag) => {
+                            const value = `${tag.category}:${tag.value}`;
+                            const isSelected = quickTag === value;
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                aria-pressed={isSelected}
+                                onClick={() =>
+                                  setQuickTag(isSelected ? null : value)
+                                }
+                                className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
+                                  isSelected
+                                    ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                                    : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
+                                }`}
+                              >
+                                {tag.category}: {tag.value}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-5 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleQuickRecommendation}
+                        className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
+                      >
+                        {tQuick("cta")} <span aria-hidden="true">→</span>
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {recommendationStep === 0 && (
               <>
-                <div
-                  role="tablist"
-                  aria-label="Tipo de recomendación"
-                  className="mb-6 mt-5 flex max-w-sm rounded-[var(--radius-sm)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-1"
-                >
-                  {[
-                    ["Por emoción", "mood"],
-                    ["Por actividad", "activity"],
-                  ].map(([label, type]) => {
-                    const isActive = recommendationType === type;
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        onClick={() => {
-                          setRecommendationType(type as "mood" | "activity");
-                          setRecommendationStep(0);
-                        }}
-                        className={`flex-1 rounded-[var(--radius-xs)] px-3 py-2 text-xs font-semibold transition ${
-                          isActive
-                            ? "bg-[var(--collectify-mint)] text-[var(--background)]"
-                            : "text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                  {selectorItems.map(([emoji, label, value]) => {
-                    const isSelected =
-                      recommendationType === "mood"
-                        ? selectedMood.includes(value)
-                        : selectedActivity.includes(value);
-                    return (
-                      <button
-                        key={label}
-                        type="button"
-                        aria-pressed={isSelected}
-                        onClick={() => toggleSelection(value)}
-                        className={`flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-[var(--radius-sm)] border p-3 text-center transition ${
-                          isSelected
-                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                            : "border-[var(--collectify-line)] bg-[var(--collectify-panel)] text-[var(--foreground)] hover:-translate-y-0.5 hover:border-[var(--collectify-mint)]"
-                        }`}
-                      >
-                        <span className="text-2xl" aria-hidden="true">
-                          {emoji}
-                        </span>
-                        <span className="text-xs font-semibold leading-tight">
+                <div className="mb-5 mt-5 flex items-center justify-between gap-3">
+                  <div
+                    role="group"
+                    aria-label="Tipo de recomendación"
+                    className="flex max-w-sm flex-1 rounded-[var(--radius-sm)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-1"
+                  >
+                    {[
+                      ["Por emoción", "mood"],
+                      ["Por actividad", "activity"],
+                    ].map(([label, type]) => {
+                      const isActive = recommendationType === type;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          aria-pressed={isActive}
+                          onClick={() => {
+                            setRecommendationType(type as "mood" | "activity");
+                            setRecommendationStep(0);
+                          }}
+                          className={`flex-1 rounded-[var(--radius-xs)] px-3 py-2 text-xs font-semibold transition ${
+                            isActive
+                              ? "bg-[var(--kanso-mint)] text-[var(--background)]"
+                              : "text-[var(--kanso-muted)] hover:text-[var(--foreground)]"
+                          }`}
+                        >
                           {label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen((open) => !open)}
+                    aria-expanded={searchOpen}
+                    aria-controls="feelings-search"
+                    aria-label={
+                      searchOpen
+                        ? tFeelings("closeSearch")
+                        : tFeelings("search")
+                    }
+                    data-active={searchOpen || undefined}
+                    className="feelings-carousel__control"
+                  >
+                    <FaSearch aria-hidden="true" />
+                  </button>
                 </div>
 
-                <div className="mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                  <p className="text-xs text-[var(--collectify-muted)]">
+                <FeelingsCarousel
+                  key={recommendationType}
+                  options={carouselOptions}
+                  selection={
+                    recommendationType === "mood" ? "multiple" : "single"
+                  }
+                  selectedKeys={
+                    recommendationType === "mood"
+                      ? selectedMood
+                      : selectedActivity
+                  }
+                  onSelect={handleSelect}
+                  label={
+                    recommendationType === "mood" ? "Emociones" : "Actividades"
+                  }
+                  search={{
+                    open: searchOpen,
+                    onOpenChange: setSearchOpen,
+                  }}
+                />
+
+                <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                  <p className="text-xs text-[var(--kanso-muted)]">
                     Has elegido:{" "}
                     <strong className="text-[var(--foreground)]">
                       {selectedLabels || "nada todavía"}
@@ -266,7 +409,7 @@ export default function StartPage() {
                     type="button"
                     onClick={() => setRecommendationStep(1)}
                     disabled={!hasSelection}
-                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Siguiente <span aria-hidden="true">→</span>
                   </button>
@@ -294,8 +437,8 @@ export default function StartPage() {
                         }
                         className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
                           isSelected
-                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                            : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                            ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                            : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
                         }`}
                       >
                         {label}
@@ -327,8 +470,8 @@ export default function StartPage() {
                             }
                             className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
                               isSelected
-                                ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                                : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]"
+                                ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
+                                : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                             }`}
                           >
                             {tag.category}: {tag.value}
@@ -343,14 +486,14 @@ export default function StartPage() {
                   <button
                     type="button"
                     onClick={() => setRecommendationStep(0)}
-                    className="rounded-[var(--radius-sm)] px-3 py-2.5 text-sm text-[var(--collectify-muted)] hover:text-[var(--foreground)]"
+                    className="rounded-[var(--radius-sm)] px-3 py-2.5 text-sm text-[var(--kanso-muted)] hover:text-[var(--foreground)]"
                   >
                     ← Atrás
                   </button>
                   <button
                     type="button"
                     onClick={handleRecommendation}
-                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
+                    className="rounded-[var(--radius-sm)] bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
                   >
                     Encontrar mi disco <span aria-hidden="true">→</span>
                   </button>
@@ -358,112 +501,16 @@ export default function StartPage() {
               </div>
             )}
           </section>
-
-          {/* Vía secundaria: la recomendación rápida queda subordinada al panel principal. */}
-          <section className="border-t border-[var(--collectify-line)] pt-5">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-[var(--foreground)]">
-                ¿Sin ganas de elegir?
-              </span>
-              <button
-                type="button"
-                onClick={() => setQuickOpen((open) => !open)}
-                aria-expanded={quickOpen}
-                className="w-fit text-sm font-semibold text-[var(--collectify-mint)] hover:underline"
-              >
-                ⚡ {tQuick("open")}
-              </button>
-            </div>
-
-            {quickOpen && (
-              <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-5">
-                <p className="text-sm font-semibold text-[var(--foreground)]">
-                  {tQuick("title")}
-                </p>
-                <p className="mt-1 text-xs text-[var(--collectify-muted)]">
-                  {tQuick("subtitle")}
-                </p>
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    [tQuick("anyFormat"), "all"],
-                    [tQuick("vinyl"), "vinyl"],
-                    [tQuick("cd"), "cd"],
-                    [tQuick("cassette"), "cassette"],
-                  ].map(([label, value]) => {
-                    const isSelected = quickFormat === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        aria-pressed={isSelected}
-                        onClick={() =>
-                          setQuickFormat(value as "all" | FavoriteFormat)
-                        }
-                        className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
-                          isSelected
-                            ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                            : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {collectionTags.length > 0 && (
-                  <div className="mt-5">
-                    <p className="text-xs font-semibold text-[var(--collectify-muted)]">
-                      {tQuick("tagsLabel")}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {collectionTags.map((tag) => {
-                        const value = `${tag.category}:${tag.value}`;
-                        const isSelected = quickTag === value;
-                        return (
-                          <button
-                            key={value}
-                            type="button"
-                            aria-pressed={isSelected}
-                            onClick={() =>
-                              setQuickTag(isSelected ? null : value)
-                            }
-                            className={`rounded-[var(--radius-pill)] border px-3 py-2 text-xs transition ${
-                              isSelected
-                                ? "border-[var(--collectify-mint)] bg-[var(--collectify-mint)] text-[var(--background)]"
-                                : "border-[var(--collectify-line)] text-[var(--collectify-muted)] hover:border-[var(--collectify-mint)]"
-                            }`}
-                          >
-                            {tag.category}: {tag.value}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div className="mt-5 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleQuickRecommendation}
-                    className="rounded-[var(--radius-sm)] bg-[var(--collectify-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:opacity-90"
-                  >
-                    {tQuick("cta")} <span aria-hidden="true">→</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
         </div>
 
-        <aside className="grid content-start gap-7">
+        <aside className="grid min-w-0 content-start gap-7">
           <section>
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="collectify-section-title">
-                Últimas recomendaciones
-              </h2>
+              <h2 className="kanso-section-title">Últimas recomendaciones</h2>
               <button
                 type="button"
                 onClick={() => router.push("/recomendationHistory")}
-                className="text-xs font-semibold text-[var(--collectify-mint)]"
+                className="text-xs font-semibold text-[var(--kanso-mint)]"
               >
                 Ver historial →
               </button>
@@ -480,7 +527,7 @@ export default function StartPage() {
             ) : historyError ? (
               <p
                 role="alert"
-                className="text-sm leading-relaxed text-[var(--collectify-danger)]"
+                className="text-sm leading-relaxed text-[var(--kanso-danger)]"
               >
                 {historyError}
               </p>
@@ -491,7 +538,7 @@ export default function StartPage() {
                     <button
                       type="button"
                       onClick={() => router.push(`/albums/${item.album.id}`)}
-                      className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-transparent p-2 text-left transition hover:border-[var(--collectify-line)] hover:bg-[var(--surface-2)]"
+                      className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-transparent p-2 text-left transition hover:border-[var(--kanso-line)] hover:bg-[var(--surface-2)]"
                     >
                       <img
                         loading="lazy"
@@ -507,7 +554,7 @@ export default function StartPage() {
                         <strong className="block truncate text-sm text-[var(--foreground)]">
                           {item.album.name}
                         </strong>
-                        <small className="mt-1 block truncate text-xs text-[var(--collectify-muted)]">
+                        <small className="mt-1 block truncate text-xs text-[var(--kanso-muted)]">
                           {item.album.artists[0]?.name}
                         </small>
                       </span>
@@ -516,15 +563,15 @@ export default function StartPage() {
                 ))}
               </Stagger>
             ) : (
-              <div className="rounded-[var(--radius-sm)] border border-[var(--collectify-line)] bg-[var(--surface-2)] p-4">
-                <p className="text-sm leading-relaxed text-[var(--collectify-muted)]">
+              <div className="rounded-[var(--radius-sm)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-4">
+                <p className="text-sm leading-relaxed text-[var(--kanso-muted)]">
                   Todavía no tienes recomendaciones. Busca álbumes para empezar
                   tu colección o elige un momento para recibir una.
                 </p>
                 <button
                   type="button"
                   onClick={() => router.push("/search")}
-                  className="mt-3 text-sm font-semibold text-[var(--collectify-mint)] underline"
+                  className="mt-3 text-sm font-semibold text-[var(--kanso-mint)] underline"
                 >
                   Explorar discos
                 </button>

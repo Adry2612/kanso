@@ -4,7 +4,7 @@ import { Album } from "../../../../../models/album";
 import { SuccessModal } from "./steps/SuccessAlbumModal";
 import { SaveAlbumModal } from "./steps/SaveAlbumModal";
 import { AlbumAlreadyFavoriteStep } from "./steps/AlbumAlreadyFavoriteStep";
-import { musicalFeelings } from "@/constants/feelings";
+import { getMood } from "@/constants/moods";
 import { FavoriteFormat } from "@/types/favorites";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -35,17 +35,19 @@ export default function SelectedAlbumModal({
   const [feelings, setFeelings] = useState<Array<Moods>>([]);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Las claves guardadas son canónicas: resolvemos la marca (emoji/símbolo) del
+  // catálogo para que la burbuja muestre la etiqueta traducida y no la clave.
   const savedFeelings = (favoriteData?.labeledFeelings || []).map(
     (feeling: any) => {
-      const label = typeof feeling === "string" ? feeling : feeling.label;
-      const match = musicalFeelings.find((item) => item.nombre === label);
+      const raw = typeof feeling === "string" ? feeling : feeling?.label;
+      const match = getMood(raw);
       return {
-        label,
+        label: match?.key ?? raw,
         emoji:
-          typeof feeling === "string"
-            ? match?.emoji || "🎵"
-            : feeling.emoji || match?.emoji || "🎵",
-        symbol: match?.symbol || feeling.symbol,
+          match?.emoji ??
+          (typeof feeling === "object" ? feeling?.emoji : undefined) ??
+          "🎵",
+        symbol: match?.symbol,
       };
     },
   );

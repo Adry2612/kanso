@@ -53,10 +53,7 @@ function loadServiceAccount(): ServiceAccount | null {
   if (path) {
     try {
       const raw = readFileSync(path, "utf8");
-      const parsed = parseServiceAccount(
-        raw,
-        "FIREBASE_SERVICE_ACCOUNT_PATH",
-      );
+      const parsed = parseServiceAccount(raw, "FIREBASE_SERVICE_ACCOUNT_PATH");
       if (parsed) return parsed;
     } catch (error) {
       console.error("No se pudo leer la service account de Firebase:", error);

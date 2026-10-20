@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
   OAuthProvider,
   createUserWithEmailAndPassword,
@@ -9,10 +9,12 @@ import {
   updateProfile,
 } from "firebase/auth";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "../../lib/firebase";
 import { signInAsGuest, signInWithGoogle } from "../../lib/firebaseAuth";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
+import { AppleIcon, GoogleIcon } from "@/components/BrandIcons";
 
 function LoginForm() {
   const [name, setName] = useState("");
@@ -23,9 +25,29 @@ function LoginForm() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isStartingGuest, setIsStartingGuest] = useState(false);
+  const googleTimeoutRef = useRef<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegisterMode = searchParams.get("mode") !== "login";
+  const requestedNext = searchParams.get("next");
+  const destination =
+    requestedNext &&
+    requestedNext.startsWith("/") &&
+    !requestedNext.startsWith("//")
+      ? requestedNext
+      : "/home";
+  const nextQuery =
+    destination !== "/home" ? `&next=${encodeURIComponent(destination)}` : "";
+
+  // Si el popup se queda colgado (COOP, bloqueo del navegador), el botón no
+  // debe quedar deshabilitado para siempre.
+  useEffect(
+    () => () => {
+      if (googleTimeoutRef.current)
+        window.clearTimeout(googleTimeoutRef.current);
+    },
+    [],
+  );
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -48,7 +70,7 @@ function LoginForm() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.replace("/home");
+      router.replace(destination);
     } catch (err: any) {
       setError(err?.message || "No hemos podido completar la operación.");
     } finally {
@@ -58,13 +80,22 @@ function LoginForm() {
 
   const handleGoogleLogin = async () => {
     if (isLoggingIn) return;
+    setError(null);
     try {
       setIsLoggingIn(true);
+      // Red de seguridad: si el popup nunca resuelve, se libera el botón.
+      googleTimeoutRef.current = window.setTimeout(() => {
+        setIsLoggingIn(false);
+      }, 90_000);
       const user = await signInWithGoogle();
-      if (user) router.replace("/home");
+      if (user) router.replace(destination);
     } catch {
       setError("No hemos podido iniciar sesión con Google.");
     } finally {
+      if (googleTimeoutRef.current) {
+        window.clearTimeout(googleTimeoutRef.current);
+        googleTimeoutRef.current = null;
+      }
       setIsLoggingIn(false);
     }
   };
@@ -82,7 +113,7 @@ function LoginForm() {
     setIsStartingGuest(true);
     try {
       await signInAsGuest();
-      router.replace("/home");
+      router.replace(destination);
     } catch (error: unknown) {
       setGuestError(getGuestSignInErrorMessage(error));
     } finally {
@@ -98,7 +129,15 @@ function LoginForm() {
             href="/"
             className="flex items-center gap-3 font-semibold tracking-tight"
           >
-            <span className="text-lg">Collectify</span>
+            <Image
+              src="/kanso-logo.png"
+              alt=""
+              width={28}
+              height={28}
+              priority
+              className="h-7 w-7 max-w-none shrink-0"
+            />
+            <span className="text-lg">Kanso</span>
           </Link>
           <p className="mt-20 max-w-md text-5xl font-semibold leading-[.98] tracking-[-.065em]">
             Tu música, tus momentos,{" "}
@@ -115,9 +154,17 @@ function LoginForm() {
             href="/"
             className="flex items-center gap-3 font-semibold tracking-tight lg:hidden"
           >
-            <span className="text-lg">Collectify</span>
+            <Image
+              src="/kanso-logo.png"
+              alt=""
+              width={28}
+              height={28}
+              priority
+              className="h-7 w-7 max-w-none shrink-0"
+            />
+            <span className="text-lg">Kanso</span>
           </Link>
-          <div className="mt-8 border-b border-[var(--collectify-line)] pb-6 lg:mt-0">
+          <div className="mt-8 border-b border-[var(--kanso-line)] pb-6 lg:mt-0">
             <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
               Tu espacio musical
             </p>
@@ -195,26 +242,29 @@ function LoginForm() {
             </button>
           </form>
           <div className="my-6 flex items-center gap-3">
-            <span className="h-px flex-1 bg-[var(--collectify-line)]" />
+            <span className="h-px flex-1 bg-[var(--kanso-line)]" />
             <span className="public-muted text-[10px] uppercase tracking-[.18em]">
               o continúa con
             </span>
-            <span className="h-px flex-1 bg-[var(--collectify-line)]" />
+            <span className="h-px flex-1 bg-[var(--kanso-line)]" />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <button
+              type="button"
               onClick={handleGoogleLogin}
               disabled={isLoggingIn}
-              className="public-button-secondary px-3 py-3 text-sm disabled:opacity-60"
+              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm disabled:opacity-60"
             >
-              <span className="public-accent mr-2 font-bold">G</span>
+              <GoogleIcon className="h-[18px] w-[18px] shrink-0" />
               {isLoggingIn ? "Cargando..." : "Google"}
             </button>
             <button
+              type="button"
               onClick={handleAppleLogin}
-              className="public-button-secondary px-3 py-3 text-sm"
+              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm"
             >
-              <span className="mr-2">●</span>Apple
+              <AppleIcon className="h-[19px] w-[19px] shrink-0" />
+              Apple
             </button>
           </div>
           <button
@@ -234,7 +284,7 @@ function LoginForm() {
             >
               <p>{guestError}</p>
               <Link
-                href="/login?mode=register"
+                href={`/login?mode=register${nextQuery}`}
                 className="mt-1 inline-block font-semibold underline"
               >
                 Crear una cuenta
@@ -245,7 +295,9 @@ function LoginForm() {
             {isRegisterMode ? "¿Ya tienes cuenta?" : "¿Aún no tienes cuenta?"}{" "}
             <a
               href={
-                isRegisterMode ? "/login?mode=login" : "/login?mode=register"
+                isRegisterMode
+                  ? `/login?mode=login${nextQuery}`
+                  : `/login?mode=register${nextQuery}`
               }
               className="public-accent font-medium hover:underline"
             >
@@ -263,7 +315,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--collectify-mint)]">
+          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--kanso-mint)]">
             Cargando...
           </div>
         </div>

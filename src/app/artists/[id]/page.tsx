@@ -48,17 +48,17 @@ export default function ArtistPage() {
   }, [artistId]);
 
   return (
-    <main className="collectify-main min-h-screen">
+    <main className="kanso-main min-h-screen">
       <button
         onClick={() => window.history.back()}
-        className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--collectify-mint)] transition hover:text-[var(--foreground)]"
+        className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--kanso-mint)] transition hover:text-[var(--foreground)]"
       >
         ← {t("back")}
       </button>
 
       {artist && (
-        <header className="flex flex-col items-start gap-6 border-b border-[var(--collectify-line)] pb-8 sm:flex-row sm:items-end">
-          <span className="relative block h-32 w-32 shrink-0 overflow-hidden rounded-full border border-[var(--collectify-line)]">
+        <header className="flex flex-col items-start gap-6 border-b border-[var(--kanso-line)] pb-8 sm:flex-row sm:items-end">
+          <span className="relative block h-32 w-32 shrink-0 overflow-hidden rounded-full border border-[var(--kanso-line)]">
             {artist.images?.[0]?.url ? (
               <img
                 loading="lazy"
@@ -68,25 +68,25 @@ export default function ArtistPage() {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="flex h-full w-full items-center justify-center bg-[var(--surface-3)] text-3xl font-semibold text-[var(--collectify-mint)]">
+              <span className="flex h-full w-full items-center justify-center bg-[var(--surface-3)] text-3xl font-semibold text-[var(--kanso-mint)]">
                 {artist.name.charAt(0).toUpperCase()}
               </span>
             )}
           </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
               {t("eyebrow")}
             </p>
             <h1 className="mt-2 truncate text-4xl font-semibold tracking-tight text-[var(--foreground)] md:text-5xl">
               {artist.name}
             </h1>
             {artist.genres && artist.genres.length > 0 && (
-              <p className="mt-2 text-sm text-[var(--collectify-muted)]">
+              <p className="mt-2 text-sm text-[var(--kanso-muted)]">
                 {artist.genres.slice(0, 3).join(" · ")}
               </p>
             )}
             {typeof artist.followers?.total === "number" && (
-              <p className="mt-1 text-xs text-[var(--collectify-muted)]">
+              <p className="mt-1 text-xs text-[var(--kanso-muted)]">
                 {artist.followers.total.toLocaleString("es")} {t("followers")}
               </p>
             )}
@@ -100,7 +100,7 @@ export default function ArtistPage() {
         </h2>
 
         {error && (
-          <p role="alert" className="text-sm text-[var(--collectify-danger)]">
+          <p role="alert" className="text-sm text-[var(--kanso-danger)]">
             {error}
           </p>
         )}
@@ -117,7 +117,7 @@ export default function ArtistPage() {
         )}
 
         {albums && albums.length === 0 && (
-          <p className="rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--collectify-muted)]">
+          <p className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">
             {t("noAlbums")}
           </p>
         )}

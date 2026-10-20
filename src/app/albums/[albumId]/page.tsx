@@ -178,7 +178,7 @@ export default function AlbumDetail() {
   };
 
   return (
-    <main className="collectify-main relative min-h-screen overflow-hidden">
+    <main className="kanso-main relative min-h-screen overflow-hidden">
       {/* Gradiente de fondo basado en los colores del álbum - desde abajo */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -190,7 +190,7 @@ export default function AlbumDetail() {
       <div className="relative pt-12 md:pt-16">
         <button
           onClick={() => router.back()}
-          className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--collectify-mint)] transition hover:text-[var(--foreground)]"
+          className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--kanso-mint)] transition hover:text-[var(--foreground)]"
         >
           ← Volver
         </button>
@@ -198,7 +198,7 @@ export default function AlbumDetail() {
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE_OUT }}
-          className="grid w-full items-start gap-8 border-b border-[var(--collectify-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16"
+          className="grid w-full items-start gap-8 border-b border-[var(--kanso-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16"
         >
           <div className="flex w-full flex-col items-start">
             <img
@@ -213,23 +213,23 @@ export default function AlbumDetail() {
             />
           </div>
           <div className="flex min-w-0 flex-col pt-1">
-            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
               Álbum seleccionado
             </p>
             <h1 className="mt-3 text-5xl font-semibold tracking-tight text-[var(--foreground)] md:text-7xl">
               {album.name}
             </h1>
-            <h2 className="mt-4 text-base text-[var(--collectify-mint)]">
+            <h2 className="mt-4 text-base text-[var(--kanso-mint)]">
               {album.artists[0].name}
             </h2>
-            <p className="mt-6 max-w-lg text-sm leading-relaxed text-[var(--collectify-muted)]">
+            <p className="mt-6 max-w-lg text-sm leading-relaxed text-[var(--kanso-muted)]">
               Un disco para volver a escuchar con calma. Explora su lista de
               canciones y guárdalo en tu colección.
             </p>
             <div className="mt-7 flex flex-wrap gap-2">
               <button
                 onClick={() => openSpotify(album.external_urls.spotify)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-[var(--collectify-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--collectify-lime)]"
+                className="flex items-center justify-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)]"
               >
                 <FaSpotify />
                 {tModal("listenOnSpotify")}
@@ -239,14 +239,14 @@ export default function AlbumDetail() {
                   <>
                     <button
                       onClick={() => setModalOpen(true)}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-[var(--collectify-line)] px-4 py-3 text-sm text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
                     >
                       <MdEdit /> Editar colección
                     </button>
                     <button
                       onClick={removeFromCollection}
                       disabled={removing}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-[var(--collectify-danger)]/40 px-4 py-3 text-sm text-[var(--collectify-danger)] transition hover:bg-[var(--collectify-danger)]/10 disabled:opacity-60"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-danger)]/40 px-4 py-3 text-sm text-[var(--kanso-danger)] transition hover:bg-[var(--kanso-danger)]/10 disabled:opacity-60"
                     >
                       <Trash2Icon size={17} />
                       {removing ? "Eliminando..." : "Eliminar de la colección"}
@@ -255,16 +255,16 @@ export default function AlbumDetail() {
                 ) : (
                   <button
                     onClick={() => setModalOpen(true)}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-[var(--collectify-line)] px-4 py-3 text-sm text-[var(--collectify-muted)] transition hover:border-[var(--collectify-mint)] hover:text-[var(--foreground)]"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
                   >
                     <MdEdit /> Añadir a la colección
                   </button>
                 ))}
             </div>
             {favorite && (
-              <div className="mt-7 grid gap-5 border-t grid-cols-[3fr_2fr] border-[var(--collectify-line)] pt-5">
+              <div className="mt-7 grid gap-5 border-t grid-cols-[3fr_2fr] border-[var(--kanso-line)] pt-5">
                 <div>
-                  <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
+                  <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
                     Emociones
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -274,14 +274,14 @@ export default function AlbumDetail() {
                         return (
                           <span
                             key={mood}
-                            className="rounded-full bg-[var(--collectify-mint)]/10 px-3 py-1.5 text-xs text-[var(--collectify-mint)]"
+                            className="rounded-full bg-[var(--kanso-mint)]/10 px-3 py-1.5 text-xs text-[var(--kanso-mint)]"
                           >
                             {item?.symbol} {tMoods(mood)}
                           </span>
                         );
                       })
                     ) : (
-                      <span className="text-sm text-[var(--collectify-muted)]">
+                      <span className="text-sm text-[var(--kanso-muted)]">
                         Sin emociones asociadas
                       </span>
                     )}
@@ -289,7 +289,7 @@ export default function AlbumDetail() {
                 </div>
 
                 <div>
-                  <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
+                  <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
                     Formato
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -310,7 +310,7 @@ export default function AlbumDetail() {
                   </div>
                 </div>
                 <div>
-                  <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
+                  <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
                     Actividades
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -324,7 +324,7 @@ export default function AlbumDetail() {
                         </span>
                       ))
                     ) : (
-                      <span className="text-sm text-[var(--collectify-muted)]">
+                      <span className="text-sm text-[var(--kanso-muted)]">
                         Sin actividades asociadas
                       </span>
                     )}
@@ -332,7 +332,7 @@ export default function AlbumDetail() {
                 </div>
                 {(favorite.tags?.length ?? 0) > 0 && (
                   <div>
-                    <p className="mb-2 text-xs font-semibold text-[var(--collectify-muted)]">
+                    <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
                       Etiquetas
                     </p>
                     <TagList tags={favorite.tags} />

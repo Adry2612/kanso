@@ -1,4 +1,4 @@
-# Sistema de Traducciones (i18n) - Collectify
+# Sistema de Traducciones (i18n) - Kanso
 
 ## 📋 Resumen
 

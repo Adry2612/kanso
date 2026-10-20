@@ -50,14 +50,14 @@ export default function RecomendationHistoryPage() {
 
   if (!mounted || loading) {
     return (
-      <main className="collectify-main min-h-screen">
+      <main className="kanso-main min-h-screen">
         <Skeleton className="mb-3 h-4 w-40" />
         <Skeleton className="mb-10 h-14 w-72" />
-        <div className="border-t border-[var(--collectify-line)]">
+        <div className="border-t border-[var(--kanso-line)]">
           {[...Array(3)].map((_, idx) => (
             <div
               key={`history-skeleton-${idx}`}
-              className="flex items-center gap-4 border-b border-[var(--collectify-line)] py-4"
+              className="flex items-center gap-4 border-b border-[var(--kanso-line)] py-4"
             >
               <Skeleton className="h-14 w-14 rounded-lg" />
               <div className="flex-1 space-y-2">
@@ -72,9 +72,9 @@ export default function RecomendationHistoryPage() {
   }
 
   return (
-    <main className="collectify-main min-h-screen">
+    <main className="kanso-main min-h-screen">
       <Reveal>
-        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           Tus descubrimientos
         </p>
         <h1 className="mt-3 mb-12 text-5xl font-semibold tracking-tight text-[var(--foreground)] md:text-6xl">
@@ -85,18 +85,18 @@ export default function RecomendationHistoryPage() {
         Object.entries(recomendationsGroupedByDate).map(
           ([date, recomendations]) => (
             <div key={date} className="mb-12">
-              <h2 className="mb-0 border-b border-[var(--collectify-line)] pb-3 text-xs font-bold uppercase tracking-[.16em] text-[var(--collectify-mint)]">
+              <h2 className="mb-0 border-b border-[var(--kanso-line)] pb-3 text-xs font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
                 {date}
               </h2>
               <Stagger
-                className="border-t border-[var(--collectify-line)]"
+                className="border-t border-[var(--kanso-line)]"
                 stagger={0.04}
                 onMount
               >
                 {recomendations.map((recomendation: any) => (
                   <StaggerItem key={recomendation.id} y={12}>
-                    <div className="grid grid-cols-[28px_58px_minmax(0,1fr)] items-center gap-3 border-b border-[var(--collectify-line)] py-4 md:grid-cols-[28px_70px_minmax(0,1fr)_auto] md:gap-5">
-                      <span className="text-xs text-[var(--collectify-muted)]" />
+                    <div className="grid grid-cols-[28px_58px_minmax(0,1fr)] items-center gap-3 border-b border-[var(--kanso-line)] py-4 md:grid-cols-[28px_70px_minmax(0,1fr)_auto] md:gap-5">
+                      <span className="text-xs text-[var(--kanso-muted)]" />
 
                       <img
                         loading="lazy"
@@ -109,16 +109,16 @@ export default function RecomendationHistoryPage() {
                         <p className="truncate text-sm font-semibold text-[var(--foreground)] md:text-base">
                           {recomendation.album.name}
                         </p>
-                        <p className="mt-1 truncate text-xs text-[var(--collectify-muted)]">
+                        <p className="mt-1 truncate text-xs text-[var(--kanso-muted)]">
                           {recomendation.album.artists[0]?.name ||
                             "Artista desconocido"}
                         </p>
                         <div className="mt-3 flex flex-wrap gap-3">
-                          <p className="flex items-center gap-1 text-xs text-[var(--collectify-muted)]">
+                          <p className="flex items-center gap-1 text-xs text-[var(--kanso-muted)]">
                             <CiClock2 />
                             {` ${formatTime(recomendation.providedAt)}`}
                           </p>
-                          <p className="flex items-center text-xs text-[var(--collectify-muted)]">
+                          <p className="flex items-center text-xs text-[var(--kanso-muted)]">
                             <TbMoodHappy />
                             {recomendation.moods.join(", ")}
                           </p>
@@ -126,7 +126,7 @@ export default function RecomendationHistoryPage() {
                       </div>
                       <div className="col-span-3 md:col-span-1">
                         <button
-                          className="w-full rounded-xl bg-[var(--collectify-mint)] px-4 py-2.5 text-xs font-semibold text-[var(--background)] transition hover:bg-[var(--collectify-lime)] md:w-auto"
+                          className="w-full rounded-xl bg-[var(--kanso-mint)] px-4 py-2.5 text-xs font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)] md:w-auto"
                           onClick={() =>
                             openSpotify(
                               recomendation.album.external_urls.spotify,
@@ -144,12 +144,12 @@ export default function RecomendationHistoryPage() {
           ),
         )
       ) : (
-        <section className="max-w-xl rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-7 text-center">
-          <span className="text-3xl text-[var(--collectify-mint)]">◇</span>
+        <section className="max-w-xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-7 text-center">
+          <span className="text-3xl text-[var(--kanso-mint)]">◇</span>
           <h2 className="mt-4 text-xl font-semibold text-[var(--foreground)]">
             {t("noHistory")}
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[var(--collectify-muted)]">
+          <p className="mt-2 text-sm leading-relaxed text-[var(--kanso-muted)]">
             Cuando recibas una recomendación, quedará guardada aquí para volver
             a ella.
           </p>

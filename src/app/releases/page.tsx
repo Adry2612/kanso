@@ -70,37 +70,34 @@ export default function ReleasesPage() {
   };
 
   return (
-    <main className="collectify-main min-h-screen">
-      <section className="mt-12 max-w-3xl md:mt-20">
-        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--collectify-mint)]">
+    <main className="kanso-main min-h-screen">
+      <section className="max-w-3xl">
+        <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {t("eyebrow")}
         </p>
-        <h1 className="collectify-page-title !mt-3 !text-5xl md:!text-6xl">
+        <h1 className="kanso-page-title !mt-3 !text-5xl md:!text-6xl">
           {t("title")}
         </h1>
-        <p className="mt-4 max-w-md text-sm leading-relaxed text-[var(--collectify-muted)]">
+        <p className="mt-4 max-w-md text-sm leading-relaxed text-[var(--kanso-muted)]">
           {t("subtitle")}
         </p>
       </section>
 
       <div className="w-full max-w-6xl pb-16">
         {releases === null && (
-          <p className="mt-9 text-sm text-[var(--collectify-muted)]">
+          <p className="mt-9 text-sm text-[var(--kanso-muted)]">
             {t("loading")}
           </p>
         )}
 
         {error && (
-          <p
-            role="alert"
-            className="mt-9 text-sm text-[var(--collectify-danger)]"
-          >
+          <p role="alert" className="mt-9 text-sm text-[var(--kanso-danger)]">
             {t("error")}
           </p>
         )}
 
         {releases !== null && !error && groups.length === 0 && (
-          <p className="mt-9 rounded-2xl border border-[var(--collectify-line)] bg-[var(--surface-1)]/45 p-5 text-sm leading-relaxed text-[var(--collectify-muted)]">
+          <p className="mt-9 rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm leading-relaxed text-[var(--kanso-muted)]">
             {t("empty")}
           </p>
         )}
@@ -119,7 +116,7 @@ export default function ReleasesPage() {
                 <StaggerItem key={release.id} className="h-full">
                   <article
                     onClick={() => router.push(`/albums/${release.id}`)}
-                    className="collectify-card group flex h-full w-full cursor-pointer flex-col p-2"
+                    className="kanso-card group flex h-full w-full cursor-pointer flex-col p-2"
                   >
                     <div className="relative aspect-square overflow-hidden rounded-[var(--radius-xs)]">
                       <img
@@ -134,12 +131,12 @@ export default function ReleasesPage() {
                       <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
                         {release.name}
                       </span>
-                      <span className="mt-1 block truncate text-xs text-[var(--collectify-muted)]">
+                      <span className="mt-1 block truncate text-xs text-[var(--kanso-muted)]">
                         {release.artists[0]?.name}
                       </span>
-                      <span className="mt-auto flex items-center gap-2 pt-3 text-[11px] font-semibold uppercase tracking-[.14em] text-[var(--collectify-mint)]">
+                      <span className="mt-auto flex items-center gap-2 pt-3 text-[11px] font-semibold uppercase tracking-[.14em] text-[var(--kanso-mint)]">
                         {typeLabel(release)}
-                        <span className="text-[var(--collectify-muted)]">
+                        <span className="text-[var(--kanso-muted)]">
                           {release.releaseDate}
                         </span>
                       </span>

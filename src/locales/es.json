@@ -24,18 +24,20 @@
     "yourProfile": "Tu perfil",
     "testSession": "Sesión de prueba",
     "sectionLabel": "Tu espacio",
-    "brandHome": "Collectify, ir al inicio",
+    "brandHome": "Kanso, ir al inicio",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
     "mainNav": "Navegación principal",
     "sidebarTagline": "Tu colección, a tu ritmo.",
-    "sidebarSubtitle": "Guarda discos y vuelve a tus momentos favoritos."
+    "sidebarSubtitle": "Guarda discos y vuelve a tus momentos favoritos.",
+    "friends": "Amigos",
+    "profileSettings": "Ajustes de perfil"
   },
   "settings": {
     "back": "Volver",
     "eyebrow": "Tu espacio",
     "title": "Ajustes generales",
-    "subtitle": "Personaliza la apariencia y las preferencias de tu experiencia en Collectify.",
+    "subtitle": "Personaliza la apariencia y las preferencias de tu experiencia en Kanso.",
     "appearance": {
       "title": "Apariencia",
       "subtitle": "Elige cómo quieres ver tu colección.",
@@ -45,6 +47,20 @@
       "lightDesc": "Superficies luminosas y contraste suave.",
       "darkTitle": "Modo oscuro",
       "darkDesc": "Fondos profundos y acento mint."
+    },
+    "profile": {
+      "title": "Foto de perfil",
+      "subtitle": "Usamos la foto de tu cuenta de Google. Si te registraste con correo, puedes añadir una aquí.",
+      "fallbackName": "Tu perfil",
+      "add": "Añadir foto",
+      "change": "Cambiar foto",
+      "remove": "Quitar foto",
+      "uploading": "Guardando...",
+      "updated": "Foto de perfil actualizada.",
+      "removed": "Foto de perfil eliminada.",
+      "invalidType": "Elige una imagen JPG, PNG o WebP.",
+      "tooLarge": "La imagen original no puede superar 8 MB.",
+      "error": "No se pudo actualizar la foto de perfil."
     },
     "preferences": {
       "title": "Preferencias"
@@ -57,7 +73,7 @@
     },
     "account": {
       "title": "Cuenta",
-      "subtitle": "Cierra la sesión de Collectify en este dispositivo.",
+      "subtitle": "Cierra la sesión de Kanso en este dispositivo.",
       "goHome": "Ir al inicio",
       "logout": "Cerrar sesión",
       "signingOut": "Cerrando sesión..."
@@ -174,7 +190,7 @@
     }
   },
   "init": {
-    "welcome": "Bienvenido a Collectify",
+    "welcome": "Bienvenido a Kanso",
     "start": "Comenzar",
     "selectMood": "¿Cómo te sientes hoy?",
     "getRecommendation": "Obtener recomendación",
@@ -283,5 +299,127 @@
     "typeEp": "EP",
     "typeSingle": "Single",
     "typeRelease": "Lanzamiento"
+  },
+  "feelingsCarousel": {
+    "search": "Buscar emoción o actividad",
+    "searchPlaceholder": "Filtra por nombre…",
+    "clear": "Borrar búsqueda",
+    "closeSearch": "Cerrar búsqueda",
+    "noResults": "No hay ninguna opción que coincida con tu búsqueda.",
+    "resultOne": "resultado",
+    "results": "resultados",
+    "previous": "Opciones anteriores",
+    "next": "Opciones siguientes",
+    "hint": "Usa las flechas para moverte entre las opciones, Inicio y Fin para ir a los extremos, y Espacio o Enter para elegir. También puedes arrastrar o usar la rueda."
+  },
+  "friends": {
+    "eyebrow": "Tu círculo",
+    "title": "Amigos",
+    "subtitle": "Comparte tu perfil y descubre a quién escuchan las personas que te importan. Solo verás su nombre y su avatar.",
+    "shareProfile": "Compartir perfil",
+    "loading": "Cargando tus amigos...",
+    "loadError": "No pudimos cargar tus amigos.",
+    "retry": "Reintentar",
+    "guest": {
+      "eyebrow": "Solo para cuentas",
+      "title": "Los amigos necesitan una cuenta",
+      "description": "Las sesiones de prueba son temporales. Crea una cuenta para guardar tu perfil, compartir tu QR y mantener tus amistades.",
+      "createAccount": "Crear cuenta",
+      "signIn": "Iniciar sesión"
+    },
+    "noSession": {
+      "title": "Entra para ver tus amigos",
+      "description": "Inicia sesión o crea una cuenta para compartir tu perfil y conectar con otras personas.",
+      "signIn": "Iniciar sesión",
+      "createAccount": "Crear cuenta"
+    },
+    "add": {
+      "title": "Añade por código",
+      "description": "Pega el código de 8 caracteres que te haya compartido otra persona.",
+      "label": "Código de invitación",
+      "placeholder": "ABCD2345",
+      "submit": "Enviar solicitud",
+      "submitting": "Enviando...",
+      "invalidCode": "El código debe tener 8 caracteres.",
+      "sent": "Solicitud enviada.",
+      "accepted": "Ya sois amigos.",
+      "error": "No se pudo enviar la solicitud."
+    },
+    "incoming": {
+      "title": "Solicitudes recibidas",
+      "empty": "No tienes solicitudes pendientes.",
+      "accept": "Aceptar",
+      "reject": "Rechazar",
+      "accepting": "Aceptando...",
+      "rejecting": "Rechazando...",
+      "from": "Quiere añadirte"
+    },
+    "outgoing": {
+      "title": "Solicitudes enviadas",
+      "empty": "No has enviado ninguna solicitud.",
+      "pending": "Pendiente",
+      "to": "Esperando respuesta"
+    },
+    "list": {
+      "title": "Tus amigos",
+      "emptyTitle": "Todavía no tienes amigos",
+      "emptyDescription": "Comparte tu perfil por QR o pide a alguien su código para empezar.",
+      "emptyCta": "Compartir mi perfil",
+      "remove": "Eliminar",
+      "removeConfirm": "¿Eliminar la amistad con {name}?",
+      "cancel": "Cancelar",
+      "confirmRemove": "Eliminar",
+      "removing": "Eliminando...",
+      "removeError": "No se pudo eliminar la amistad.",
+      "friendLabel": "Amigo"
+    },
+    "share": {
+      "eyebrow": "Tu perfil",
+      "title": "Comparte tu perfil",
+      "description": "Quien escanee este QR podrá ver tu nombre y avatar, y enviarte una solicitud. Nunca verá tu colección.",
+      "qrLabel": "Código QR con el enlace a tu perfil",
+      "codeLabel": "Tu código",
+      "linkLabel": "Enlace corto",
+      "copy": "Copiar enlace",
+      "copied": "Enlace copiado",
+      "share": "Compartir",
+      "copyError": "No se pudo copiar el enlace.",
+      "shareError": "No se pudo compartir el enlace.",
+      "nativeText": "Mi perfil de Kanso",
+      "close": "Cerrar"
+    },
+    "public": {
+      "eyebrow": "Perfil de Kanso",
+      "title": "Un momento musical compartido",
+      "loading": "Cargando perfil...",
+      "notFoundTitle": "Perfil no encontrado",
+      "notFoundDescription": "El código no es válido o el perfil ya no está disponible.",
+      "backHome": "Ir a Kanso",
+      "add": "Añadir a amigos",
+      "adding": "Enviando solicitud...",
+      "requestSent": "Solicitud enviada",
+      "accepted": "Ya sois amigos",
+      "pendingIncoming": "Tienes una solicitud de esta persona",
+      "goToFriends": "Ir a Amigos",
+      "self": "Este es tu perfil",
+      "guestTitle": "Crea una cuenta para añadir a esta persona",
+      "guestDescription": "Las sesiones de invitado son temporales. Crea una cuenta para enviar y recibir solicitudes.",
+      "loginTitle": "Entra para añadir a esta persona",
+      "loginDescription": "Inicia sesión o crea una cuenta para enviarle una solicitud.",
+      "login": "Iniciar sesión",
+      "register": "Crear cuenta",
+      "error": "No se pudo enviar la solicitud."
+    },
+    "notifications": {
+      "title": "Nueva solicitud de amistad",
+      "titleMultiple": "Nuevas solicitudes de amistad",
+      "single": "{name} quiere añadirte.",
+      "multiple": "{count} personas quieren añadirte.",
+      "view": "Ver solicitudes"
+    },
+    "actionError": "No se pudo completar la acción."
+  },
+  "toast": {
+    "close": "Cerrar notificación"
   }
 }

@@ -74,7 +74,7 @@ export const AlbumAlreadyFavoriteStep = ({
             álbum.
           </p>
         </div>
-        <div className="mt-6 grid gap-5 border-t border-[var(--collectify-line)] pt-5">
+        <div className="mt-6 grid gap-5 border-t border-[var(--kanso-line)] pt-5">
           <div>
             <p className="album-action-modal-eyebrow">Emociones</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export const AlbumAlreadyFavoriteStep = ({
                 activities.map((activity) => (
                   <span
                     key={activity}
-                    className="rounded-full border border-[var(--collectify-line-strong)] px-3 py-1.5 text-xs text-[var(--collectify-muted)]"
+                    className="rounded-full border border-[var(--kanso-line-strong)] px-3 py-1.5 text-xs text-[var(--kanso-muted)]"
                   >
                     {tActivities(activity)}
                   </span>

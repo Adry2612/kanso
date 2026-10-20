@@ -44,7 +44,7 @@ function RecommendationReader() {
   if (!mounted || authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--collectify-mint)]">
+        <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--kanso-mint)]">
           Cargando...
         </div>
       </div>
@@ -67,7 +67,7 @@ export default function RecommendationPageRoute() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--collectify-mint)]">
+          <div className="surface-raised rounded-[var(--radius-md)] px-6 py-4 text-sm text-[var(--kanso-mint)]">
             Cargando...
           </div>
         </div>

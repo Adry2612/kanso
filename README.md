@@ -1,4 +1,4 @@
-# 🎵 Collectify
+# 🎵 Kanso
 
 Una aplicación web moderna para descubrir, coleccionar y organizar álbumes musicales basándose en estados de ánimo, con integración a Spotify y Firebase.
 
@@ -59,8 +59,8 @@ Una aplicación web moderna para descubrir, coleccionar y organizar álbumes mus
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/collectify.git
-cd collectify
+git clone https://github.com/tu-usuario/kanso.git
+cd kanso
 ```
 
 ### 2. Instalar dependencias
@@ -98,7 +98,7 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 ## 📁 Estructura del Proyecto
 
 ```
-collectify/
+kanso/
 ├── src/
 │   ├── app/                    # App Router de Next.js
 │   │   ├── albums/            # Páginas de detalle de álbumes
@@ -150,9 +150,17 @@ npm start
 
 ### Desplegar en Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tu-usuario/collectify)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tu-usuario/kanso)
 
 La forma más sencilla de desplegar es usar [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
+
+> **Inicio de sesión con Google en producción:** añade el dominio de Vercel
+> (`tu-proyecto.vercel.app`) y, si lo hay, tu dominio propio en
+> **Firebase Console → Authentication → Settings → Authorized domains**.
+> Sin ese paso, `signInWithPopup` falla con `auth/unauthorized-domain`.
+> Los dominios de preview de Vercel cambian en cada despliegue y no admiten
+> comodines: para probar el login en un preview hay que autorizar ese dominio
+> concreto o usar el de producción.
 
 Consulta la [documentación de despliegue de Next.js](https://nextjs.org/docs/app/building-your-application/deploying) para más detalles.
 

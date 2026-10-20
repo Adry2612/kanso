@@ -12,6 +12,7 @@ import { useTranslations } from "@/context/I18nContext";
 import { FavoriteFormat, FavoriteTag } from "@/types/favorites";
 import ArtistBackdrop from "./ArtistBackdrop";
 import ModalShell from "@/components/ModalShell";
+import Medallion from "@/components/Medallion";
 import { activityOptions } from "@/constants/activities";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -112,7 +113,7 @@ export const SaveAlbumModal = ({
             className="album-art-modal-floating-cover"
           />
           <div className="album-modal-album-meta">
-            <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
+            <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
               Álbum
             </p>
             <h2
@@ -126,11 +127,11 @@ export const SaveAlbumModal = ({
             </p>
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-2 border-[var(--collectify-line)] pt-4">
+        <div className="mt-5 grid grid-cols-3 gap-2 border-[var(--kanso-line)] pt-4">
           {steps.map((label, index) => (
             <div
               key={label}
-              className={`pb-4 pt-2 text-[10px] font-bold uppercase tracking-[.12em] transition ${index <= step ? "border-t-2 border-[var(--collectify-mint)] text-[var(--collectify-mint)]" : "border-t-2 border-[var(--collectify-line)] text-[var(--collectify-muted)]"}`}
+              className={`pb-4 pt-2 text-[10px] font-bold uppercase tracking-[.12em] transition ${index <= step ? "border-t-2 border-[var(--kanso-mint)] text-[var(--kanso-mint)]" : "border-t-2 border-[var(--kanso-line)] text-[var(--kanso-muted)]"}`}
             >
               <span className="mr-1">0{index + 1}</span>
               {label}
@@ -150,7 +151,7 @@ export const SaveAlbumModal = ({
           >
             {step === 0 && (
               <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
+                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
                   Paso 1
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
@@ -160,10 +161,9 @@ export const SaveAlbumModal = ({
                   Selecciona una o varias emociones para recordar por qué
                   guardas este disco.
                 </p>
-                <div className="mt-5 rounded-xl border border-[var(--collectify-line)] p-2">
+                <div className="mt-5 rounded-xl border border-[var(--kanso-line)] p-2">
                   <MoodSelector
                     onChange={setFeelings}
-                    compact
                     initialSelectedMoods={initialFeelings}
                   />
                 </div>
@@ -172,7 +172,7 @@ export const SaveAlbumModal = ({
                     ? `${feelings.length} sensación${feelings.length === 1 ? "" : "es"} seleccionada${feelings.length === 1 ? "" : "s"}`
                     : "Puedes continuar sin seleccionar ninguna."}
                 </p>
-                <div className="mt-6 border-t border-[var(--collectify-line)] pt-5">
+                <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
                   <h4 className="text-sm font-semibold">
                     Etiquetas personales
                   </h4>
@@ -184,7 +184,7 @@ export const SaveAlbumModal = ({
                     <select
                       value={tagCategory}
                       onChange={(event) => setTagCategory(event.target.value)}
-                      className="collectify-input px-3 py-2 text-sm"
+                      className="kanso-input px-3 py-2 text-sm"
                     >
                       <option value="idioma">Idioma</option>
                       <option value="género">Género</option>
@@ -214,7 +214,7 @@ export const SaveAlbumModal = ({
                         }
                       }}
                       placeholder="Escribe un subtag"
-                      className="collectify-input px-3 py-2 text-sm"
+                      className="kanso-input px-3 py-2 text-sm"
                     />
                     <button
                       type="button"
@@ -232,7 +232,7 @@ export const SaveAlbumModal = ({
                           setTagValue("");
                         }
                       }}
-                      className="rounded-xl border border-[var(--collectify-line-strong)] px-3 py-2 text-sm text-[var(--collectify-mint)] hover:border-[var(--collectify-mint)]/60"
+                      className="rounded-xl border border-[var(--kanso-line-strong)] px-3 py-2 text-sm text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60"
                     >
                       Añadir
                     </button>
@@ -252,7 +252,7 @@ export const SaveAlbumModal = ({
                               ),
                             )
                           }
-                          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)] hover:text-[var(--collectify-danger)]"
+                          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)] hover:text-[var(--kanso-danger)]"
                         >
                           {tag.category}: {tag.value} ×
                         </button>
@@ -264,7 +264,7 @@ export const SaveAlbumModal = ({
             )}
             {step === 1 && (
               <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
+                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
                   Paso 2
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
@@ -274,13 +274,14 @@ export const SaveAlbumModal = ({
                   Añade actividades para encontrarlo más fácilmente después.
                 </p>
                 <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {activityOptions.map(({ icon, id: activity }) => {
+                  {activityOptions.map(({ emoji, id: activity }) => {
                     const selected = activities.includes(activity);
                     return (
                       <button
                         key={activity}
                         type="button"
                         data-selected={selected}
+                        aria-pressed={selected}
                         onClick={() =>
                           setActivities((current) =>
                             selected
@@ -288,10 +289,14 @@ export const SaveAlbumModal = ({
                               : [...current, activity],
                           )
                         }
-                        className="save-album-modal-option rounded-xl p-3 text-left transition"
+                        className="save-album-modal-option flex items-center gap-3 rounded-xl p-3 text-left transition"
                       >
-                        <span className="block text-lg">{icon}</span>
-                        <span className="mt-2 block text-xs font-semibold">
+                        <Medallion
+                          emoji={emoji}
+                          size="sm"
+                          onAccent={selected}
+                        />
+                        <span className="text-xs font-semibold">
                           {tActivities(activity)}
                         </span>
                       </button>
@@ -307,7 +312,7 @@ export const SaveAlbumModal = ({
             )}
             {step === 2 && (
               <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--collectify-mint)]">
+                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
                   Paso 3
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
@@ -362,7 +367,7 @@ export const SaveAlbumModal = ({
       {error && (
         <p
           role="alert"
-          className="border-t border-[var(--collectify-danger)]/20 bg-[var(--collectify-danger)]/10 px-5 py-3 text-xs text-[var(--collectify-danger)] sm:px-7"
+          className="border-t border-[var(--kanso-danger)]/20 bg-[var(--kanso-danger)]/10 px-5 py-3 text-xs text-[var(--kanso-danger)] sm:px-7"
         >
           {error}
         </p>

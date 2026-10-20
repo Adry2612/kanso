@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Collectify: el acceso a los datos se sirve EXCLUSIVAMENTE a través de la API
+// Kanso: el acceso a los datos se sirve EXCLUSIVAMENTE a través de la API
 // (Admin SDK, que no está sujeto a estas reglas). El cliente no accede a
 // Firestore directamente, así que se deniega todo.
 //
