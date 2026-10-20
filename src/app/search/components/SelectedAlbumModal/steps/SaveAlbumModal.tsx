@@ -14,6 +14,7 @@ import ArtistBackdrop from "./ArtistBackdrop";
 import ModalShell from "@/components/ModalShell";
 import Medallion from "@/components/Medallion";
 import TagEditor from "@/components/TagEditor";
+import OptionCarousel from "@/components/OptionCarousel";
 import { activityOptions } from "@/constants/activities";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -180,33 +181,18 @@ export const SaveAlbumModal = ({
                       Selecciona una o varias emociones para recordar por qué
                       guardas este disco.
                     </p>
-                    <div className="save-album-modal-step-split mt-5">
-                      <div>
-                        <div className="save-album-modal-moods rounded-xl border border-[var(--kanso-line)] p-2">
-                          <MoodSelector
-                            onChange={setFeelings}
-                            initialSelectedMoods={initialFeelings}
-                          />
-                        </div>
-                        <p className="album-action-modal-muted mt-3 text-xs">
-                          {feelings.length
-                            ? `${feelings.length} ${feelings.length === 1 ? "sensación" : "sensaciones"} seleccionada${feelings.length === 1 ? "" : "s"}`
-                            : "Puedes continuar sin seleccionar ninguna."}
-                        </p>
-                      </div>
-
-                      <div className="save-album-modal-tags">
-                        <h4 className="text-sm font-semibold">
-                          {tTags("title")}
-                        </h4>
-                        <p className="album-action-modal-muted mt-1 text-xs">
-                          {tTags("description")}
-                        </p>
-                        <div className="mt-3">
-                          <TagEditor tags={tags} onChange={setTags} />
-                        </div>
-                      </div>
+                    <div className="mt-5">
+                      <MoodSelector
+                        variant="carousel"
+                        selectedMoods={feelings}
+                        onChange={setFeelings}
+                      />
                     </div>
+                    <p className="album-action-modal-muted mt-3 text-xs">
+                      {feelings.length
+                        ? `${feelings.length} ${feelings.length === 1 ? "sensación" : "sensaciones"} seleccionada${feelings.length === 1 ? "" : "s"}`
+                        : "Puedes continuar sin seleccionar ninguna."}
+                    </p>
                   </section>
                 )}
                 {step === 1 && (
@@ -220,35 +206,42 @@ export const SaveAlbumModal = ({
                     <p className="album-action-modal-muted mt-2 text-sm">
                       Añade actividades para encontrarlo más fácilmente después.
                     </p>
-                    <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                      {activityOptions.map(({ emoji, id: activity }) => {
-                        const selected = activities.includes(activity);
-                        return (
-                          <button
-                            key={activity}
-                            type="button"
-                            data-selected={selected}
-                            aria-pressed={selected}
-                            onClick={() =>
-                              setActivities((current) =>
-                                selected
-                                  ? current.filter((item) => item !== activity)
-                                  : [...current, activity],
-                              )
-                            }
-                            className="save-album-modal-option flex items-center gap-3 rounded-xl p-3 text-left transition"
-                          >
-                            <Medallion
-                              emoji={emoji}
-                              size="sm"
-                              onAccent={selected}
-                            />
-                            <span className="text-xs font-semibold">
-                              {tActivities(activity)}
-                            </span>
-                          </button>
-                        );
-                      })}
+                    <div className="mt-5">
+                      <OptionCarousel
+                        ariaLabel="Actividades"
+                        className="activity-carousel"
+                      >
+                        {activityOptions.map(({ emoji, id: activity }) => {
+                          const selected = activities.includes(activity);
+                          return (
+                            <button
+                              key={activity}
+                              type="button"
+                              data-selected={selected}
+                              aria-pressed={selected}
+                              onClick={() =>
+                                setActivities((current) =>
+                                  selected
+                                    ? current.filter(
+                                        (item) => item !== activity,
+                                      )
+                                    : [...current, activity],
+                                )
+                              }
+                              className="save-album-modal-option flex items-center gap-3 rounded-xl p-3 text-left transition"
+                            >
+                              <Medallion
+                                emoji={emoji}
+                                size="sm"
+                                onAccent={selected}
+                              />
+                              <span className="text-xs font-semibold">
+                                {tActivities(activity)}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </OptionCarousel>
                     </div>
                     <p className="album-action-modal-muted mt-3 text-xs">
                       {activities.length
@@ -310,6 +303,18 @@ export const SaveAlbumModal = ({
                         ? `${format.length} formato${format.length === 1 ? "" : "s"} seleccionado${format.length === 1 ? "" : "s"}.`
                         : "Selecciona al menos un formato para guardar el álbum."}
                     </p>
+
+                    <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
+                      <h4 className="text-sm font-semibold">
+                        {tTags("title")}
+                      </h4>
+                      <p className="album-action-modal-muted mt-1 text-xs">
+                        {tTags("description")}
+                      </p>
+                      <div className="mt-3">
+                        <TagEditor tags={tags} onChange={setTags} />
+                      </div>
+                    </div>
                   </section>
                 )}
               </motion.div>

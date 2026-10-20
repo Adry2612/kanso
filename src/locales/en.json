@@ -8,7 +8,9 @@
     "history": "History",
     "logout": "Logout",
     "login": "Login",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "previous": "Previous",
+    "next": "Next"
   },
   "header": {
     "search": "Search",
@@ -156,12 +158,12 @@
     },
     "searchPlaceholder": "Search by album or artist…",
     "clearFilters": "Clear filters",
+    "viewList": "View as list",
+    "viewGrid": "View as grid",
     "allMoods": "All",
     "noMatches": "No album matches",
     "noMatchesDescription": "Try another title, artist or mood.",
     "listen": "Listen",
-    "previous": "Previous",
-    "next": "Next",
     "unknownArtist": "Unknown artist"
   },
   "album": {

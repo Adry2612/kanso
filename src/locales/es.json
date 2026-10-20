@@ -8,7 +8,9 @@
     "history": "Histórico",
     "logout": "Cerrar sesión",
     "login": "Iniciar sesión",
-    "welcome": "Bienvenido"
+    "welcome": "Bienvenido",
+    "previous": "Anterior",
+    "next": "Siguiente"
   },
   "header": {
     "search": "Buscar",
@@ -156,12 +158,12 @@
     },
     "searchPlaceholder": "Buscar por álbum o artista…",
     "clearFilters": "Limpiar filtros",
+    "viewList": "Ver en lista",
+    "viewGrid": "Ver en cuadrícula",
     "allMoods": "Todas",
     "noMatches": "Ningún disco coincide",
     "noMatchesDescription": "Prueba con otro título, artista o emoción.",
     "listen": "Escuchar",
-    "previous": "Anterior",
-    "next": "Siguiente",
     "unknownArtist": "Artista desconocido"
   },
   "album": {
