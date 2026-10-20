@@ -28,6 +28,8 @@ export interface FilterModalProps {
     formats: FavoriteFormat[];
     tags: FavoriteTag[];
   }) => void;
+  /** Etiquetas presentes en la colección, para filtrar sin escribirlas. */
+  availableTags?: FavoriteTag[];
 }
 
 import type { FavoriteFormat, FavoriteTag } from "./favorites";

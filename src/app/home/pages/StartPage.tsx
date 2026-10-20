@@ -8,6 +8,7 @@ import { useTransitionRouter } from "next-view-transitions";
 import { moodOptions } from "@/constants/moods";
 import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
+import { normalizeTagCategory } from "@/lib/tags";
 import type { FavoriteFormat } from "@/types/favorites";
 import {
   AnimatePresence,
@@ -43,6 +44,7 @@ export default function StartPage() {
   const tActivities = useTranslations("activities");
   const tQuick = useTranslations("quickRecommendation");
   const tFeelings = useTranslations("feelingsCarousel");
+  const tTags = useTranslations("tags");
   const reduce = useReducedMotion();
 
   const [mounted, setMounted] = useState(false);
@@ -70,6 +72,13 @@ export default function StartPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [quickFormat, setQuickFormat] = useState<"all" | FavoriteFormat>("all");
   const [quickTag, setQuickTag] = useState<string | null>(null);
+
+  const tagCategoryLabel = (category: string) => {
+    const normalized = normalizeTagCategory(category);
+    if (normalized === "idioma") return tTags("categories.language");
+    if (normalized === "género") return tTags("categories.genre");
+    return tTags("categories.other");
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -305,7 +314,7 @@ export default function StartPage() {
                                     : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                                 }`}
                               >
-                                {tag.category}: {tag.value}
+                                {tagCategoryLabel(tag.category)}: {tag.value}
                               </button>
                             );
                           })}
@@ -474,7 +483,7 @@ export default function StartPage() {
                                 : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                             }`}
                           >
-                            {tag.category}: {tag.value}
+                            {tagCategoryLabel(tag.category)}: {tag.value}
                           </button>
                         );
                       })}

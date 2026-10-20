@@ -6,8 +6,10 @@ import type {
   FriendRequestNotificationsResponse,
   FriendRequestResult,
   FriendsResponse,
+  FriendSharingSettings,
   PublicProfileResponse,
 } from "@/types/friends";
+import type { FriendLibraryResponse } from "@/lib/friendLibrary";
 
 async function parseError(response: Response, fallback: string) {
   try {
@@ -91,6 +93,45 @@ export async function removeFriend(uid: string): Promise<void> {
       await parseError(response, "No se pudo eliminar la amistad."),
     );
   }
+}
+
+export async function getFriendLibrary(
+  uid: string,
+): Promise<FriendLibraryResponse | null> {
+  const response = await authFetch(
+    `/api/friends/${encodeURIComponent(uid)}/library`,
+  );
+
+  // 404 y 403 comparten el mismo mensaje genérico en la UI: no distinguimos
+  // entre «no existe» y «no es tu amigo» para no filtrar información.
+  if (response.status === 404 || response.status === 403) return null;
+
+  if (!response.ok) {
+    throw new Error(
+      await parseError(response, "No se pudo cargar la biblioteca."),
+    );
+  }
+
+  return (await response.json()) as FriendLibraryResponse;
+}
+
+export async function updateSharing(
+  settings: Partial<FriendSharingSettings>,
+): Promise<FriendSharingSettings> {
+  const response = await authFetch("/api/friends/sharing", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await parseError(response, "No se pudo guardar la configuración."),
+    );
+  }
+
+  const data = (await response.json()) as { sharing: FriendSharingSettings };
+  return data.sharing;
 }
 
 export async function getPublicProfile(

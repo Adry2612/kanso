@@ -2,6 +2,7 @@
 
 import { SortMethod, FilterOptions, GroupedFavorites } from "@/types/favorites";
 import { normalizeMood } from "@/constants/moods";
+import { normalizeTagCategory } from "@/lib/tags";
 
 const GENRE_TAG_CATEGORIES = ["género", "genero", "genre"];
 
@@ -159,7 +160,8 @@ export function filterFavorites(
       filters.tags.some((tag) =>
         favoriteTags.some(
           (favoriteTag: { category: string; value: string }) =>
-            favoriteTag.category.toLowerCase() === tag.category.toLowerCase() &&
+            normalizeTagCategory(favoriteTag.category) ===
+              normalizeTagCategory(tag.category) &&
             favoriteTag.value.toLowerCase() === tag.value.toLowerCase(),
         ),
       );

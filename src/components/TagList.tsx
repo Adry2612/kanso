@@ -1,4 +1,8 @@
+"use client";
+
 import React from "react";
+import { useTranslations } from "@/context/I18nContext";
+import { normalizeTagCategory, tagKey } from "@/lib/tags";
 
 export interface Tag {
   category: string;
@@ -7,32 +11,37 @@ export interface Tag {
 
 interface TagListProps {
   tags?: Tag[];
-  showCategory?: boolean; // Opcional: por si quieres mostrar la categoría (ej: "Género: Rock")
+  showCategory?: boolean;
 }
-
-// Función auxiliar para capitalizar (Primera mayúscula, resto minúsculas)
-const capitalize = (text: string) => {
-  if (!text) return "";
-  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-};
 
 export const TagList: React.FC<TagListProps> = ({
   tags = [],
   showCategory = false,
 }) => {
+  const t = useTranslations("tags");
+
   if (!tags || tags.length === 0) return null;
+
+  const categoryLabel = (category: string) => {
+    const normalized = normalizeTagCategory(category);
+    if (normalized === "idioma") return t("categories.language");
+    if (normalized === "género") return t("categories.genre");
+    return t("categories.other");
+  };
 
   return (
     <div className="flex flex-wrap gap-2">
       {tags.map((tag) => (
         <span
-          key={`${tag.category}-${tag.value}`}
+          key={tagKey(tag)}
           className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
         >
           {showCategory && (
-            <span className="mr-1 opacity-60">{capitalize(tag.category)}:</span>
+            <span className="mr-1 text-[10px] font-semibold uppercase tracking-[.08em] opacity-60">
+              {categoryLabel(tag.category)}:
+            </span>
           )}
-          {capitalize(tag.value)}
+          {tag.value}
         </span>
       ))}
     </div>

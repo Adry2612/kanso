@@ -333,9 +333,9 @@ export default function AlbumDetail() {
                 {(favorite.tags?.length ?? 0) > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-                      Etiquetas
+                      Idioma y género
                     </p>
-                    <TagList tags={favorite.tags} />
+                    <TagList tags={favorite.tags} showCategory />
                   </div>
                 )}
               </div>

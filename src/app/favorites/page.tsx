@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { BiSortAlt2 } from "react-icons/bi";
 import { MdFilterList } from "react-icons/md";
 import { useTransitionRouter } from "next-view-transitions";
@@ -12,7 +12,8 @@ import { useTranslations } from "@/context/I18nContext";
 import SortModal from "@/components/SortModal";
 import FilterModal from "@/components/FilterModal";
 import { useFavoritesFilter } from "@/hooks/useFavoritesFilter";
-import { FilterOptions, SortMethod } from "@/types/favorites";
+import { FilterOptions, SortMethod, type FavoriteTag } from "@/types/favorites";
+import { normalizeTagCategory, tagKey } from "@/lib/tags";
 import { Skeleton } from "@/components/Skeleton";
 import { authFetch } from "@/lib/api/authFetch";
 
@@ -20,6 +21,7 @@ export default function UserFavorites() {
   const t = useTranslations("favorites");
   const tModal = useTranslations("modal");
   const tMoods = useTranslations("moods");
+  const tTags = useTranslations("tags");
   const { user, loading: authLoading } = useAuth();
   const router = useTransitionRouter();
   const [favorites, setFavorites] = useState([]);
@@ -53,6 +55,32 @@ export default function UserFavorites() {
   };
 
   const { groupedFavorites } = useFavoritesFilter(favorites, sortBy, filters);
+
+  const availableTags = useMemo(() => {
+    const unique = new Map<string, FavoriteTag>();
+
+    (favorites as any[]).forEach((favorite) => {
+      (favorite.tags ?? []).forEach((tag: FavoriteTag) => {
+        const value = tag?.value?.trim();
+        if (!tag?.category || !value) return;
+        const normalized: FavoriteTag = {
+          category: normalizeTagCategory(tag.category),
+          value,
+        };
+        const key = tagKey(normalized);
+        if (!unique.has(key)) unique.set(key, normalized);
+      });
+    });
+
+    return Array.from(unique.values());
+  }, [favorites]);
+
+  const tagCategoryLabel = (category: string) => {
+    const normalized = normalizeTagCategory(category);
+    if (normalized === "idioma") return tTags("categories.language");
+    if (normalized === "género") return tTags("categories.genre");
+    return tTags("categories.other");
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -147,11 +175,13 @@ export default function UserFavorites() {
             {t("filter")}
             {(filters.moods.length > 0 ||
               filters.genres.length > 0 ||
-              filters.formats.length > 0) && (
+              filters.formats.length > 0 ||
+              filters.tags.length > 0) && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full flex items-center justify-center text-[var(--background)] text-xs font-bold">
                 {filters.moods.length +
                   filters.genres.length +
-                  filters.formats.length}
+                  filters.formats.length +
+                  filters.tags.length}
               </span>
             )}
           </button>
@@ -161,7 +191,8 @@ export default function UserFavorites() {
       {(sortBy ||
         filters.moods.length > 0 ||
         filters.genres.length > 0 ||
-        filters.formats.length > 0) && (
+        filters.formats.length > 0 ||
+        filters.tags.length > 0) && (
         <div className="flex flex-wrap gap-2 mb-6">
           {sortBy && (
             <span className="px-3 py-1 bg-green-900/30 text-green-400 text-sm rounded-full border border-green-400/30 flex items-center gap-2">
@@ -239,6 +270,34 @@ export default function UserFavorites() {
               </button>
             </span>
           ))}
+          {filters.tags.map((tag) => (
+            <span
+              key={tagKey(tag)}
+              className="flex items-center gap-2 rounded-full border border-[var(--kanso-line)] bg-[var(--surface-2)] px-3 py-1 text-sm text-[var(--kanso-mint)]"
+            >
+              <span className="text-xs uppercase tracking-[.1em] text-[var(--kanso-muted)]">
+                {tagCategoryLabel(tag.category)}
+              </span>
+              {tag.value}
+              <button
+                onClick={() =>
+                  setFilters({
+                    ...filters,
+                    tags: filters.tags.filter(
+                      (item) => tagKey(item) !== tagKey(tag),
+                    ),
+                  })
+                }
+                className="hover:text-[var(--kanso-danger)]"
+                aria-label={tTags("remove").replace(
+                  "{tag}",
+                  `${tagCategoryLabel(tag.category)}: ${tag.value}`,
+                )}
+              >
+                ✕
+              </button>
+            </span>
+          ))}
         </div>
       )}
 
@@ -248,7 +307,8 @@ export default function UserFavorites() {
           <h2 className="mt-4 text-xl font-semibold text-[var(--foreground)]">
             {filters.moods.length ||
             filters.genres.length ||
-            filters.formats.length
+            filters.formats.length ||
+            filters.tags.length
               ? "No hay discos con estos filtros"
               : t("noFavorites")}
           </h2>
@@ -300,6 +360,7 @@ export default function UserFavorites() {
         onClose={() => setShowFilterModal(false)}
         currentFilters={filters}
         onFiltersChange={setFilters}
+        availableTags={availableTags}
       />
     </main>
   );

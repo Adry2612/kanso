@@ -118,12 +118,45 @@
     "sort": "Sort",
     "filter": "Filter"
   },
+  "tags": {
+    "title": "Language & genre",
+    "description": "Add the language and genre to filter your collection and sharpen recommendations.",
+    "filterTitle": "Your tags",
+    "filterEmpty": "You don't have any tags yet. Add them when saving an album to filter by language or genre.",
+    "categories": {
+      "language": "Language",
+      "genre": "Genre",
+      "other": "Other"
+    },
+    "customPlaceholder": "Add another language or genre…",
+    "add": "Add",
+    "selected": "Selected",
+    "remove": "Remove {tag}"
+  },
   "history": {
     "title": "Recommendation history",
+    "eyebrow": "Your musical memory",
+    "subtitle": "Every album that reached you, with its date and the feelings it left behind.",
     "noHistory": "You don't have any recommendations yet",
+    "noHistoryDescription": "When you receive a recommendation, we'll keep it here so you can come back to it.",
+    "explore": "Discover music",
     "loading": "Loading history...",
     "error": "Error loading history",
-    "moods": "Moods"
+    "errorDescription": "We could not load your history. Please try again.",
+    "retry": "Try again",
+    "moods": "Moods",
+    "stats": {
+      "total": "Recommendations",
+      "artists": "Artists",
+      "moods": "Moods"
+    },
+    "searchPlaceholder": "Search by album or artist…",
+    "clearFilters": "Clear filters",
+    "allMoods": "All",
+    "noMatches": "No album matches",
+    "noMatchesDescription": "Try another title, artist or mood.",
+    "listen": "Listen",
+    "unknownArtist": "Unknown artist"
   },
   "album": {
     "tracklist": "Tracklist",
@@ -315,7 +348,7 @@
   "friends": {
     "eyebrow": "Your circle",
     "title": "Friends",
-    "subtitle": "Share your profile and see who the people you care about are listening to. You will only see their name and avatar.",
+    "subtitle": "Share your profile and see who the people you care about are listening to. Your friends will only see the sections you choose to share.",
     "shareProfile": "Share profile",
     "loading": "Loading your friends...",
     "loadError": "We could not load your friends.",
@@ -371,12 +404,67 @@
       "confirmRemove": "Remove",
       "removing": "Removing...",
       "removeError": "The friendship could not be removed.",
-      "friendLabel": "Friend"
+      "friendLabel": "Friend",
+      "viewProfile": "View profile"
+    },
+    "privacy": {
+      "eyebrow": "Privacy",
+      "title": "What you share",
+      "description": "Your friends will only see the sections you enable. The public QR never shows your collection.",
+      "saving": "Saving...",
+      "error": "The settings could not be saved.",
+      "sections": {
+        "recommendations": {
+          "title": "Recommendations",
+          "description": "The history of albums you have received as recommendations."
+        },
+        "collection": {
+          "title": "Albums",
+          "description": "The albums in your collection, without your personal tags."
+        },
+        "artists": {
+          "title": "Artists",
+          "description": "The artists you follow."
+        }
+      }
+    },
+    "profile": {
+      "back": "Back to Friends",
+      "eyebrow": "Shared profile",
+      "sharedNote": "You only see what {name} has chosen to share.",
+      "loading": "Loading profile...",
+      "unavailableTitle": "Profile unavailable",
+      "unavailableDescription": "You may no longer be friends, or the profile may not exist.",
+      "retry": "Try again",
+      "noSessionTitle": "Sign in to view this profile",
+      "noSessionDescription": "Sign in or create an account to see what this person shares.",
+      "guestTitle": "Create an account to view this profile",
+      "guestDescription": "Guest sessions are temporary. Create an account to browse your friends' libraries.",
+      "login": "Sign in",
+      "register": "Create account",
+      "recommendationsTitle": "Recommendations",
+      "recommendationsEmpty": "No shared recommendations yet.",
+      "collectionTitle": "Albums",
+      "collectionEmpty": "No shared albums yet.",
+      "artistsTitle": "Artists",
+      "artistsEmpty": "No shared artists yet.",
+      "sectionsLabel": "Shared sections",
+      "loadMore": "Show more",
+      "nothingTitle": "Nothing shared yet",
+      "nothingDescription": "{name} has not enabled any section of their library yet.",
+      "backToList": "Back to the list",
+      "listen": "Listen on Spotify",
+      "formats": {
+        "digital": "Digital",
+        "cd": "CD",
+        "cassette": "Cassette",
+        "vinyl": "Vinyl"
+      }
     },
     "share": {
       "eyebrow": "Your profile",
       "title": "Share your profile",
-      "description": "Anyone who scans this QR can see your name and avatar, and send you a request. They will never see your collection.",
+      "description": "Anyone who scans this QR will only see your name and avatar. Your friends will only see the sections you enable in \"What you share\".",
       "qrLabel": "QR code with the link to your profile",
       "codeLabel": "Your code",
       "linkLabel": "Short link",

@@ -7,6 +7,7 @@ import {
   Loader2,
   Send,
   Share2,
+  ShieldCheck,
   UserPlus,
   UsersRound,
 } from "lucide-react";
@@ -21,16 +22,24 @@ import {
   removeFriend,
   respondToFriendRequest,
   sendFriendRequest,
+  updateSharing,
 } from "@/lib/api/friends";
 import type {
   FriendEntry,
   FriendRequestEntry,
   FriendsResponse,
+  FriendSharingSettings,
 } from "@/types/friends";
 
 function loginHref(mode: "login" | "register") {
   return `/login?mode=${mode}&next=${encodeURIComponent("/friends")}`;
 }
+
+const SHARING_SECTIONS: (keyof FriendSharingSettings)[] = [
+  "recommendations",
+  "collection",
+  "artists",
+];
 
 export default function FriendsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -55,6 +64,11 @@ export default function FriendsPage() {
   const [confirmRemoveUid, setConfirmRemoveUid] = useState<string | null>(null);
   const [removingUid, setRemovingUid] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
+
+  const [sharingBusy, setSharingBusy] = useState<
+    keyof FriendSharingSettings | null
+  >(null);
+  const [sharingError, setSharingError] = useState<string | null>(null);
 
   const loadFriends = useCallback(async () => {
     setLoading(true);
@@ -141,6 +155,42 @@ export default function FriendsPage() {
       );
     } finally {
       setRemovingUid(null);
+    }
+  };
+
+  const handleSharingChange = async (
+    section: keyof FriendSharingSettings,
+    value: boolean,
+  ) => {
+    if (!data || sharingBusy) return;
+
+    const previous = data.profile.sharing;
+    const next = { ...previous, [section]: value };
+
+    // Guardado optimista: el interruptor responde al instante y se revierte
+    // si la API rechaza el cambio.
+    setData({ ...data, profile: { ...data.profile, sharing: next } });
+    setSharingBusy(section);
+    setSharingError(null);
+
+    try {
+      const saved = await updateSharing({ [section]: value });
+      setData((current) =>
+        current
+          ? { ...current, profile: { ...current.profile, sharing: saved } }
+          : current,
+      );
+    } catch (error) {
+      setData((current) =>
+        current
+          ? { ...current, profile: { ...current.profile, sharing: previous } }
+          : current,
+      );
+      setSharingError(
+        error instanceof Error ? error.message : t("privacy.error"),
+      );
+    } finally {
+      setSharingBusy(null);
     }
   };
 
@@ -252,16 +302,24 @@ export default function FriendsPage() {
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setRemoveError(null);
-              setConfirmRemoveUid(friend.uid);
-            }}
-            className="self-start rounded-lg border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-danger)]/50 hover:text-[var(--kanso-danger)] sm:self-auto"
-          >
-            {t("list.remove")}
-          </button>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <Link
+              href={`/friends/${friend.uid}`}
+              className="rounded-lg border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-mint)] transition hover:border-[var(--kanso-mint)]/60 hover:bg-[var(--kanso-mint)]/10"
+            >
+              {t("list.viewProfile")}
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setRemoveError(null);
+                setConfirmRemoveUid(friend.uid);
+              }}
+              className="rounded-lg border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-danger)]/50 hover:text-[var(--kanso-danger)]"
+            >
+              {t("list.remove")}
+            </button>
+          </div>
         )}
       </div>
     );
@@ -496,6 +554,83 @@ export default function FriendsPage() {
               </p>
             )}
           </form>
+        </section>
+      </Reveal>
+
+      <Reveal delay={0.07}>
+        <section
+          className="kanso-panel mt-7 max-w-5xl p-6 md:p-8"
+          aria-labelledby="sharing-title"
+        >
+          <div className="flex items-center gap-2">
+            <ShieldCheck
+              className="h-4 w-4 text-[var(--kanso-mint)]"
+              aria-hidden="true"
+            />
+            <h2
+              id="sharing-title"
+              className="text-lg font-semibold tracking-tight text-[var(--foreground)]"
+            >
+              {t("privacy.title")}
+            </h2>
+          </div>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--kanso-muted)]">
+            {t("privacy.description")}
+          </p>
+
+          {sharingError && (
+            <p role="alert" className="mt-3 text-sm text-[var(--kanso-danger)]">
+              {sharingError}
+            </p>
+          )}
+
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {SHARING_SECTIONS.map((section) => {
+              const enabled = data.profile.sharing[section];
+              const title = t(`privacy.sections.${section}.title`);
+
+              return (
+                <div
+                  key={section}
+                  className="flex items-start justify-between gap-3 rounded-xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/55 p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">
+                      {title}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-[var(--kanso-muted)]">
+                      {t(`privacy.sections.${section}.description`)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={enabled}
+                    aria-label={title}
+                    disabled={sharingBusy !== null}
+                    onClick={() => void handleSharingChange(section, !enabled)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--kanso-mint)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] disabled:cursor-wait disabled:opacity-60 ${
+                      enabled
+                        ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)]"
+                        : "border-[var(--kanso-line)] bg-[var(--surface-2)]"
+                    }`}
+                  >
+                    <span
+                      className={`h-4 w-4 rounded-full bg-[var(--background)] transition ${
+                        enabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {sharingBusy && (
+            <p role="status" className="mt-3 text-xs text-[var(--kanso-muted)]">
+              {t("privacy.saving")}
+            </p>
+          )}
         </section>
       </Reveal>
 

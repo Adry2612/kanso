@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { normalizeMoods } from "@/constants/moods";
+import { normalizeFavoriteFormats } from "@/lib/favorites";
 
 export async function GET(request: NextRequest) {
   const auth = await authenticate(request);
@@ -27,19 +28,7 @@ export async function GET(request: NextRequest) {
           format,
           ownership,
         } = favDoc.data();
-        // Los favoritos anteriores podían tener un único formato como string.
-        // La API siempre expone un array para que el cliente tenga un contrato único.
-        const normalizedFormats = Array.isArray(format)
-          ? format
-          : format
-            ? [format]
-            : ownership?.type === "physical"
-              ? Array.isArray(ownership.format)
-                ? ownership.format
-                : ownership.format
-                  ? [ownership.format]
-                  : []
-              : ["digital"];
+        const normalizedFormats = normalizeFavoriteFormats(format, ownership);
 
         const albumSnap = await db.doc(`albums/${albumId}`).get();
 

@@ -39,12 +39,19 @@ export function Reveal({
   delay = 0,
   y = 22,
   once = true,
+  amount = 0.2,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
   y?: number;
   once?: boolean;
+  /**
+   * Parte del bloque que debe entrar en pantalla para revelarlo. En secciones
+   * más altas que el viewport, un valor numérico alto puede no alcanzarse
+   * nunca; ahí conviene `"some"`.
+   */
+  amount?: number | "some" | "all";
 }) {
   const reduce = useReducedMotion();
   return (
@@ -52,7 +59,7 @@ export function Reveal({
       className={className}
       initial={reduce ? false : { opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, amount: 0.2 }}
+      viewport={{ once, amount }}
       transition={{ duration: 0.6, delay, ease: EASE_OUT }}
     >
       {children}

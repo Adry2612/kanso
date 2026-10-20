@@ -13,6 +13,7 @@ import { FavoriteFormat, FavoriteTag } from "@/types/favorites";
 import ArtistBackdrop from "./ArtistBackdrop";
 import ModalShell from "@/components/ModalShell";
 import Medallion from "@/components/Medallion";
+import TagEditor from "@/components/TagEditor";
 import { activityOptions } from "@/constants/activities";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -44,6 +45,7 @@ export const SaveAlbumModal = ({
   initialTags = [],
 }: SaveAlbumModalProps) => {
   const t = useTranslations("modal");
+  const tTags = useTranslations("tags");
   const tActivities = useTranslations("activities");
   const { user } = useAuth();
   const { execute: saveFavorite, loading, error } = useFetch(addFavorite);
@@ -51,8 +53,6 @@ export const SaveAlbumModal = ({
   const [activities, setActivities] = useState<string[]>([]);
   const [format, setFormat] = useState<FavoriteFormat[]>(["digital"]);
   const [tags, setTags] = useState<FavoriteTag[]>([]);
-  const [tagCategory, setTagCategory] = useState("idioma");
-  const [tagValue, setTagValue] = useState("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -61,8 +61,6 @@ export const SaveAlbumModal = ({
     setActivities(initialActivities);
     setFormat(initialFormat);
     setTags(initialTags);
-    setTagCategory("idioma");
-    setTagValue("");
     // Resetear con los valores initial* borraría las ediciones en curso del modal;
     // solo debe re-inicializarse al abrirse o al cambiar de álbum.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -173,92 +171,13 @@ export const SaveAlbumModal = ({
                     : "Puedes continuar sin seleccionar ninguna."}
                 </p>
                 <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
-                  <h4 className="text-sm font-semibold">
-                    Etiquetas personales
-                  </h4>
+                  <h4 className="text-sm font-semibold">{tTags("title")}</h4>
                   <p className="album-action-modal-muted mt-1 text-xs">
-                    Añade una categoría y su valor, por ejemplo idioma: inglés o
-                    género: pop.
+                    {tTags("description")}
                   </p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-[150px_1fr_auto]">
-                    <select
-                      value={tagCategory}
-                      onChange={(event) => setTagCategory(event.target.value)}
-                      className="kanso-input px-3 py-2 text-sm"
-                    >
-                      <option value="idioma">Idioma</option>
-                      <option value="género">Género</option>
-                      <option value="personal">Personal</option>
-                    </select>
-                    <input
-                      value={tagValue}
-                      onChange={(event) => setTagValue(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          const value = tagValue.trim();
-                          if (
-                            value &&
-                            !tags.some(
-                              (tag) =>
-                                tag.category === tagCategory &&
-                                tag.value === value.toLowerCase(),
-                            )
-                          ) {
-                            setTags([
-                              ...tags,
-                              { category: tagCategory, value },
-                            ]);
-                            setTagValue("");
-                          }
-                        }
-                      }}
-                      placeholder="Escribe un subtag"
-                      className="kanso-input px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const value = tagValue.trim();
-                        if (
-                          value &&
-                          !tags.some(
-                            (tag) =>
-                              tag.category === tagCategory &&
-                              tag.value === value.toLowerCase(),
-                          )
-                        ) {
-                          setTags([...tags, { category: tagCategory, value }]);
-                          setTagValue("");
-                        }
-                      }}
-                      className="rounded-xl border border-[var(--kanso-line-strong)] px-3 py-2 text-sm text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60"
-                    >
-                      Añadir
-                    </button>
+                  <div className="mt-3">
+                    <TagEditor tags={tags} onChange={setTags} />
                   </div>
-                  {tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {tags.map((tag) => (
-                        <button
-                          key={`${tag.category}-${tag.value}`}
-                          type="button"
-                          onClick={() =>
-                            setTags(
-                              tags.filter(
-                                (item) =>
-                                  item.category !== tag.category ||
-                                  item.value !== tag.value,
-                              ),
-                            )
-                          }
-                          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)] hover:text-[var(--kanso-danger)]"
-                        >
-                          {tag.category}: {tag.value} ×
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </section>
             )}

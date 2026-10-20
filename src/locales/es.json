@@ -118,12 +118,45 @@
     "sort": "Ordenar",
     "filter": "Filtrar"
   },
+  "tags": {
+    "title": "Idioma y género",
+    "description": "Añade el idioma y el género para filtrar tu colección y afinar las recomendaciones.",
+    "filterTitle": "Tus etiquetas",
+    "filterEmpty": "Todavía no tienes etiquetas. Añádelas al guardar un disco para poder filtrar por idioma o género.",
+    "categories": {
+      "language": "Idioma",
+      "genre": "Género",
+      "other": "Otra"
+    },
+    "customPlaceholder": "Añade otro idioma o género…",
+    "add": "Añadir",
+    "selected": "Seleccionadas",
+    "remove": "Quitar {tag}"
+  },
   "history": {
     "title": "Histórico de recomendaciones",
+    "eyebrow": "Tu memoria musical",
+    "subtitle": "Cada disco que llegó a ti, con su fecha y las emociones que dejó.",
     "noHistory": "No tienes recomendaciones todavía",
+    "noHistoryDescription": "Cuando recibas una recomendación, la guardaremos aquí para que puedas volver a ella.",
+    "explore": "Descubrir música",
     "loading": "Cargando histórico...",
     "error": "Error al cargar el histórico",
-    "moods": "Estados de ánimo"
+    "errorDescription": "No pudimos recuperar tu histórico. Inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "moods": "Estados de ánimo",
+    "stats": {
+      "total": "Recomendaciones",
+      "artists": "Artistas",
+      "moods": "Emociones"
+    },
+    "searchPlaceholder": "Buscar por álbum o artista…",
+    "clearFilters": "Limpiar filtros",
+    "allMoods": "Todas",
+    "noMatches": "Ningún disco coincide",
+    "noMatchesDescription": "Prueba con otro título, artista o emoción.",
+    "listen": "Escuchar",
+    "unknownArtist": "Artista desconocido"
   },
   "album": {
     "tracklist": "Lista de canciones",
@@ -315,7 +348,7 @@
   "friends": {
     "eyebrow": "Tu círculo",
     "title": "Amigos",
-    "subtitle": "Comparte tu perfil y descubre a quién escuchan las personas que te importan. Solo verás su nombre y su avatar.",
+    "subtitle": "Comparte tu perfil y descubre a quién escuchan las personas que te importan. Tus amigos solo verán las secciones que decidas compartir.",
     "shareProfile": "Compartir perfil",
     "loading": "Cargando tus amigos...",
     "loadError": "No pudimos cargar tus amigos.",
@@ -371,12 +404,67 @@
       "confirmRemove": "Eliminar",
       "removing": "Eliminando...",
       "removeError": "No se pudo eliminar la amistad.",
-      "friendLabel": "Amigo"
+      "friendLabel": "Amigo",
+      "viewProfile": "Ver perfil"
+    },
+    "privacy": {
+      "eyebrow": "Privacidad",
+      "title": "Qué compartes",
+      "description": "Tus amigos solo verán las secciones que actives. El QR público nunca muestra tu colección.",
+      "saving": "Guardando...",
+      "error": "No se pudo guardar la configuración.",
+      "sections": {
+        "recommendations": {
+          "title": "Recomendaciones",
+          "description": "El historial de discos que has recibido como recomendación."
+        },
+        "collection": {
+          "title": "Álbumes",
+          "description": "Los álbumes de tu colección, sin tus etiquetas personales."
+        },
+        "artists": {
+          "title": "Artistas",
+          "description": "Los artistas que sigues."
+        }
+      }
+    },
+    "profile": {
+      "back": "Volver a Amigos",
+      "eyebrow": "Perfil compartido",
+      "sharedNote": "Solo ves lo que {name} ha decidido compartir.",
+      "loading": "Cargando el perfil...",
+      "unavailableTitle": "Perfil no disponible",
+      "unavailableDescription": "Puede que ya no seáis amigos o que el perfil no exista.",
+      "retry": "Reintentar",
+      "noSessionTitle": "Entra para ver este perfil",
+      "noSessionDescription": "Inicia sesión o crea una cuenta para ver lo que comparte esta persona.",
+      "guestTitle": "Crea una cuenta para ver este perfil",
+      "guestDescription": "Las sesiones de invitado son temporales. Crea una cuenta para consultar la biblioteca de tus amigos.",
+      "login": "Iniciar sesión",
+      "register": "Crear cuenta",
+      "recommendationsTitle": "Recomendaciones",
+      "recommendationsEmpty": "Todavía no hay recomendaciones compartidas.",
+      "collectionTitle": "Álbumes",
+      "collectionEmpty": "Todavía no hay álbumes compartidos.",
+      "artistsTitle": "Artistas",
+      "artistsEmpty": "Todavía no hay artistas compartidos.",
+      "sectionsLabel": "Secciones compartidas",
+      "loadMore": "Ver más",
+      "nothingTitle": "No comparte nada todavía",
+      "nothingDescription": "{name} todavía no ha activado ninguna sección de su biblioteca.",
+      "backToList": "Volver a la lista",
+      "listen": "Escuchar en Spotify",
+      "formats": {
+        "digital": "Digital",
+        "cd": "CD",
+        "cassette": "Cassette",
+        "vinyl": "Vinilo"
+      }
     },
     "share": {
       "eyebrow": "Tu perfil",
       "title": "Comparte tu perfil",
-      "description": "Quien escanee este QR podrá ver tu nombre y avatar, y enviarte una solicitud. Nunca verá tu colección.",
+      "description": "Quien escanee este QR solo verá tu nombre y avatar. Tus amigos verán únicamente las secciones que actives en «Qué compartes».",
       "qrLabel": "Código QR con el enlace a tu perfil",
       "codeLabel": "Tu código",
       "linkLabel": "Enlace corto",

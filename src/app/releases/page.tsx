@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTransitionRouter } from "next-view-transitions";
 import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "@/context/I18nContext";
+import { ReleaseGridSkeleton } from "@/components/ContentSkeletons";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { getArtistReleases, type ArtistRelease } from "@/lib/api/artists";
 
@@ -85,9 +86,10 @@ export default function ReleasesPage() {
 
       <div className="w-full max-w-6xl pb-16">
         {releases === null && (
-          <p className="mt-9 text-sm text-[var(--kanso-muted)]">
-            {t("loading")}
-          </p>
+          <div className="mt-9" role="status" aria-busy="true">
+            <span className="sr-only">{t("loading")}</span>
+            <ReleaseGridSkeleton />
+          </div>
         )}
 
         {error && (

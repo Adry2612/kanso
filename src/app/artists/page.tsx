@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "@/context/I18nContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import ArtistCard from "@/components/ArtistCard";
+import { ArtistGridSkeleton } from "@/components/ContentSkeletons";
 import { Stagger, StaggerItem } from "@/components/motion";
 import {
   getUserArtists,
@@ -109,7 +110,10 @@ export default function ArtistsPage() {
       {hasQuery ? (
         <section className="w-full max-w-6xl pb-16">
           {searching && (
-            <p className="text-sm text-[var(--kanso-muted)]">{t("loading")}</p>
+            <div role="status" aria-busy="true">
+              <span className="sr-only">{t("loading")}</span>
+              <ArtistGridSkeleton />
+            </div>
           )}
           {error && (
             <p role="alert" className="text-sm text-[var(--kanso-danger)]">
@@ -121,7 +125,7 @@ export default function ArtistsPage() {
               {t("noResults")}
             </p>
           )}
-          {results.length > 0 && (
+          {!searching && results.length > 0 && (
             <Stagger
               className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6"
               stagger={0.04}
@@ -145,7 +149,10 @@ export default function ArtistsPage() {
             {t("yourArtists")}
           </h2>
           {!favoritesLoaded && (
-            <p className="text-sm text-[var(--kanso-muted)]">{t("loading")}</p>
+            <div role="status" aria-busy="true">
+              <span className="sr-only">{t("loading")}</span>
+              <ArtistGridSkeleton />
+            </div>
           )}
           {favoritesLoaded && favorites.length === 0 && (
             <p className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">

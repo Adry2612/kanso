@@ -6,7 +6,13 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useEffect, useRef, useState } from "react";
 import { Album } from "../../../models/album";
 import { useTranslations } from "@/context/I18nContext";
+import { normalizeTagCategory } from "@/lib/tags";
 import AlbumCard from "@/components/AlbumCard";
+import {
+  AlbumGridSkeleton,
+  CollectionSkeleton,
+} from "@/components/ContentSkeletons";
+import { Skeleton } from "@/components/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { getMood, normalizeMoods } from "@/constants/moods";
 import { Link } from "next-view-transitions";
@@ -15,6 +21,7 @@ import { authFetch } from "@/lib/api/authFetch";
 
 export default function SearchPage() {
   const t = useTranslations("search");
+  const tTags = useTranslations("tags");
   const { user } = useAuth();
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 500);
@@ -142,6 +149,13 @@ export default function SearchPage() {
     ).values(),
   ).slice(0, 8) as { category: string; value: string }[];
 
+  const tagCategoryLabel = (category: string) => {
+    const normalized = normalizeTagCategory(category);
+    if (normalized === "idioma") return tTags("categories.language");
+    if (normalized === "género") return tTags("categories.genre");
+    return tTags("categories.other");
+  };
+
   const handleOpenModal = (album: Album) => {
     setOpenModal((prev) => !prev);
     setSelectedAlbum(album);
@@ -211,13 +225,17 @@ export default function SearchPage() {
         className="kanso-input mt-8 mb-10 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--kanso-muted)]"
       />
 
-      {loading && (
-        <p className="text-sm text-[var(--kanso-muted)]">{t("loading")}</p>
-      )}
       {error && <p className="text-sm text-[var(--kanso-danger)]">{error}</p>}
 
       <div className="w-full max-w-6xl pb-16">
-        {mounted && result && (
+        {loading && (
+          <div role="status" aria-busy="true">
+            <span className="sr-only">{t("loading")}</span>
+            <Skeleton className="mb-5 h-6 w-56" />
+            <AlbumGridSkeleton withAction />
+          </div>
+        )}
+        {mounted && result && !loading && (
           <>
             <h2 className="mb-5 text-lg font-semibold tracking-tight text-[var(--foreground)]">
               {t("resultsTitle")}:{" "}
@@ -284,7 +302,7 @@ export default function SearchPage() {
                           onClick={() => setQuery(tag.value)}
                           className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                         >
-                          {tag.category}: {tag.value}
+                          {tagCategoryLabel(tag.category)}: {tag.value}
                         </button>
                       ))}
                     </div>
@@ -398,16 +416,17 @@ export default function SearchPage() {
                         onClick={() => setQuery(tag.value)}
                         className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                       >
-                        {tag.category}: {tag.value}
+                        {tagCategoryLabel(tag.category)}: {tag.value}
                       </button>
                     ))}
                   </div>
                 </div>
               )}
               {!favoritesLoaded && (
-                <p className="mt-5 text-sm text-[var(--kanso-muted)]">
-                  {t("loadingCollection")}
-                </p>
+                <div role="status" aria-busy="true">
+                  <span className="sr-only">{t("loadingCollection")}</span>
+                  <CollectionSkeleton />
+                </div>
               )}
               {favoritesError && (
                 <p

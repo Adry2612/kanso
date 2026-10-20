@@ -7,7 +7,11 @@ import {
   type Transaction,
 } from "firebase-admin/firestore";
 import { adminDb, getAdminApp } from "./firebaseAdmin";
-import type { FriendPerson, FriendProfile } from "@/types/friends";
+import type {
+  FriendPerson,
+  FriendProfile,
+  FriendSharingSettings,
+} from "@/types/friends";
 
 /** Alfabeto base32 sin caracteres que se confunden al dictar un código. */
 export const FRIEND_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -27,6 +31,25 @@ export class FriendApiError extends Error {
     super(message);
     this.name = "FriendApiError";
   }
+}
+
+/**
+ * Normaliza el mapa de compartición.
+ *
+ * Todo lo que no sea `true` se considera privado: así las cuentas anteriores a
+ * esta función siguen sin compartir nada y un valor corrupto nunca expone datos.
+ */
+export function normalizeSharing(value: unknown): FriendSharingSettings {
+  const sharing =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
+
+  return {
+    recommendations: sharing.recommendations === true,
+    collection: sharing.collection === true,
+    artists: sharing.artists === true,
+  };
 }
 
 /** Genera un código nuevo, sin consultar si ya está libre. */
@@ -153,6 +176,10 @@ export async function ensureUserProfile(uid: string): Promise<FriendProfile> {
       friendCode = await reserveFriendCode(uid, tx, db);
     }
 
+    // Se normaliza en cada lectura y se persiste para que el perfil devuelva
+    // siempre las tres claves, sin migración ni pérdida de preferencias.
+    const sharing = normalizeSharing(data.sharing);
+
     tx.set(
       userRef,
       {
@@ -160,13 +187,14 @@ export async function ensureUserProfile(uid: string): Promise<FriendProfile> {
         photoURL,
         photoSource,
         friendCode,
+        sharing,
         ...(snapshot.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
         updatedAt: FieldValue.serverTimestamp(),
       },
       { merge: true },
     );
 
-    return { uid, displayName, photoURL, friendCode };
+    return { uid, displayName, photoURL, friendCode, sharing };
   });
 }
 

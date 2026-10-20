@@ -6,8 +6,16 @@ export type FriendPerson = {
   photoURL: string | null;
 };
 
+/** Secciones de la biblioteca que se pueden compartir por separado. */
+export type FriendSharingSettings = {
+  recommendations: boolean;
+  collection: boolean;
+  artists: boolean;
+};
+
 export type FriendProfile = FriendPerson & {
   friendCode: string;
+  sharing: FriendSharingSettings;
 };
 
 export type FriendEntry = FriendPerson & {
