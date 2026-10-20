@@ -160,6 +160,8 @@
     "noMatches": "Ningún disco coincide",
     "noMatchesDescription": "Prueba con otro título, artista o emoción.",
     "listen": "Escuchar",
+    "previous": "Anterior",
+    "next": "Siguiente",
     "unknownArtist": "Artista desconocido"
   },
   "album": {
@@ -194,6 +196,12 @@
     "select": "Seleccionar",
     "listenOnSpotify": "Escuchar en Spotify",
     "editEmotions": "Editar emociones",
+    "newAlbum": "Nueva incorporación",
+    "editingBadge": "Editando",
+    "saveChanges": "Guardar cambios",
+    "albumUpdated": "Álbum actualizado",
+    "updated": "Álbum actualizado correctamente",
+    "updatedToFavorites": "Los cambios se han guardado en tu colección.",
     "sort": {
       "title": "Ordenar por",
       "recent": "Más recientes",

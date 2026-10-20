@@ -160,6 +160,8 @@
     "noMatches": "No album matches",
     "noMatchesDescription": "Try another title, artist or mood.",
     "listen": "Listen",
+    "previous": "Previous",
+    "next": "Next",
     "unknownArtist": "Unknown artist"
   },
   "album": {
@@ -194,6 +196,12 @@
     "select": "Select",
     "listenOnSpotify": "Listen on Spotify",
     "editEmotions": "Edit emotions",
+    "newAlbum": "New addition",
+    "editingBadge": "Editing",
+    "saveChanges": "Save changes",
+    "albumUpdated": "Album updated",
+    "updated": "Album updated successfully",
+    "updatedToFavorites": "Your changes have been saved to your collection.",
     "sort": {
       "title": "Sort by",
       "recent": "Most recent",

@@ -110,7 +110,7 @@ export const AlbumAlreadyFavoriteStep = ({
           </div>
         </div>
       </div>
-      <div className="modal-shell-actions">
+      <div className="modal-shell-actions modal-shell-actions--roomy">
         <button onClick={onEdit} className="modal-action-primary">
           Editar información
         </button>

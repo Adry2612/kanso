@@ -316,6 +316,7 @@ export default function SearchPage() {
                 onClose={() => setOpenModal(false)}
                 album={selectedAlbum}
                 isFavorite={selectedAlbumIsFavorite}
+                startEditing={selectedAlbumIsFavorite}
                 favoriteData={
                   selectedAlbum
                     ? favoritesByAlbum.get(selectedAlbum.id)

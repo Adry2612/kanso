@@ -1,37 +1,16 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
 import { getRecomendationHistory } from "@/lib/api/recomendation";
-import { openSpotify } from "@/lib/spotifyUtils";
-import { formatTime, groupByDate } from "@/utils/dateHelpers";
+import { groupByDate } from "@/utils/dateHelpers";
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Clock3,
-  Headphones,
-  Music2,
-  Search,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { Music2, Search, Sparkles, Users } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
 import { normalizeMoods, type MoodKey } from "@/constants/moods";
 import { Skeleton } from "@/components/Skeleton";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion";
+import { Reveal } from "@/components/motion";
 import { Link } from "next-view-transitions";
-
-type HistoryItem = {
-  id: string;
-  providedAt: string;
-  moods?: string[];
-  album: {
-    id: string;
-    name: string;
-    images: { url: string }[];
-    artists: { name: string }[];
-    external_urls?: { spotify?: string };
-  };
-};
+import HistoryCarousel, { type HistoryItem } from "./HistoryCarousel";
 
 export default function RecomendationHistoryPage() {
   const t = useTranslations("history");
@@ -278,7 +257,7 @@ export default function RecomendationHistoryPage() {
             </div>
 
             {moods.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="history-filter-rail mt-3">
                 <button
                   type="button"
                   aria-pressed={moodFilter === null}
@@ -336,104 +315,7 @@ export default function RecomendationHistoryPage() {
           ) : (
             <div className="mt-10 space-y-10">
               {Object.entries(groups).map(([date, items]) => (
-                <section key={date}>
-                  <div className="flex items-end justify-between gap-4 border-b border-[var(--kanso-line)] pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[var(--kanso-mint)]" />
-                      <h2 className="text-xs font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
-                        {date}
-                      </h2>
-                    </div>
-                    <span className="text-xs text-[var(--kanso-muted)]">
-                      {items.length}{" "}
-                      {t(
-                        items.length === 1 ? "stats.totalOne" : "stats.total",
-                      ).toLowerCase()}
-                    </span>
-                  </div>
-
-                  <Stagger
-                    className="mt-5 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4"
-                    stagger={0.03}
-                    onMount
-                  >
-                    {items.map((recomendation) => {
-                      const itemMoods = normalizeMoods(
-                        recomendation.moods ?? [],
-                      );
-                      return (
-                        <StaggerItem key={recomendation.id} y={12}>
-                          <article className="group min-w-0">
-                            <div className="relative aspect-square overflow-hidden rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-2)]">
-                              <Link
-                                href={`/albums/${recomendation.album.id}`}
-                                className="absolute inset-0 z-10"
-                                aria-label={recomendation.album.name}
-                              />
-                              <img
-                                loading="lazy"
-                                decoding="async"
-                                src={recomendation.album.images[0]?.url}
-                                alt={recomendation.album.name}
-                                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                              />
-                              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
-                              <span className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/15 bg-black/35 px-2 py-1 text-[10px] font-semibold text-white/90 backdrop-blur">
-                                <Clock3
-                                  className="h-3 w-3"
-                                  aria-hidden="true"
-                                />
-                                {formatTime(recomendation.providedAt)}
-                              </span>
-                              <div className="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap gap-1.5 pr-10">
-                                {itemMoods.slice(0, 2).map((mood) => (
-                                  <span
-                                    key={mood}
-                                    className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur"
-                                  >
-                                    {tMoods(mood)}
-                                  </span>
-                                ))}
-                                {itemMoods.length > 2 && (
-                                  <span className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur">
-                                    +{itemMoods.length - 2}
-                                  </span>
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openSpotify(
-                                    recomendation.album.external_urls?.spotify,
-                                  )
-                                }
-                                aria-label={t("listen")}
-                                className="absolute bottom-3 right-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/35 text-white backdrop-blur transition hover:bg-[var(--kanso-mint)] hover:text-[var(--background)]"
-                              >
-                                <Headphones
-                                  className="h-4 w-4"
-                                  aria-hidden="true"
-                                />
-                              </button>
-                            </div>
-                            <div className="mt-3 min-w-0">
-                              <Link
-                                href={`/albums/${recomendation.album.id}`}
-                                className="block truncate text-sm font-semibold text-[var(--foreground)] transition hover:text-[var(--kanso-mint)]"
-                              >
-                                {recomendation.album.name}
-                              </Link>
-                              <p className="mt-1 truncate text-xs text-[var(--kanso-muted)]">
-                                {recomendation.album.artists[0]?.name ||
-                                  t("unknownArtist")}
-                              </p>
-                            </div>
-                          </article>
-                        </StaggerItem>
-                      );
-                    })}
-                  </Stagger>
-                </section>
+                <HistoryCarousel key={date} date={date} items={items} />
               ))}
             </div>
           )}

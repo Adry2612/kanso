@@ -34,6 +34,7 @@ export default function SelectedAlbumModal({
   const [isSaved, setIsSaved] = useState(false);
   const [feelings, setFeelings] = useState<Array<Moods>>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [savedAsEdit, setSavedAsEdit] = useState(false);
 
   // Las claves guardadas son canónicas: resolvemos la marca (emoji/símbolo) del
   // catálogo para que la burbuja muestre la etiqueta traducida y no la clave.
@@ -57,6 +58,7 @@ export default function SelectedAlbumModal({
       document.body.style.overflow = "hidden";
       setIsSaved(false);
       setIsEditing(startEditing);
+      setSavedAsEdit(false);
       setFeelings([]);
     } else {
       document.body.style.overflow = "";
@@ -88,6 +90,7 @@ export default function SelectedAlbumModal({
             onClose={onClose}
             album={album}
             feelings={feelings}
+            isEditing={savedAsEdit}
           />
         ) : isFavorite && !isEditing ? (
           <AlbumAlreadyFavoriteStep
@@ -115,7 +118,9 @@ export default function SelectedAlbumModal({
                 : ["digital"]
             }
             initialTags={isEditing ? favoriteData?.tags || [] : []}
+            isEditing={isEditing}
             onSave={(savedData) => {
+              setSavedAsEdit(isEditing);
               setIsSaved(true);
               setIsEditing(false);
               onSaved?.(

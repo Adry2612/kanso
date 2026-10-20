@@ -28,6 +28,7 @@ type SaveAlbumModalProps = {
   initialActivities?: string[];
   initialFormat?: FavoriteFormat[];
   initialTags?: FavoriteTag[];
+  isEditing?: boolean;
 };
 
 const steps = ["Sensaciones", "Actividades", "Formato"];
@@ -43,6 +44,7 @@ export const SaveAlbumModal = ({
   initialActivities = [],
   initialFormat = ["digital"],
   initialTags = [],
+  isEditing = false,
 }: SaveAlbumModalProps) => {
   const t = useTranslations("modal");
   const tTags = useTranslations("tags");
@@ -111,7 +113,7 @@ export const SaveAlbumModal = ({
           </div>
           <div className="save-album-modal-aside-content">
             <span className="modal-shell-hero-badge self-start">
-              Nueva incorporación
+              {isEditing ? t("editingBadge") : t("newAlbum")}
             </span>
             <div className="save-album-modal-identity mt-auto">
               <img
@@ -323,7 +325,7 @@ export const SaveAlbumModal = ({
             </p>
           )}
 
-          <footer className="modal-shell-actions">
+          <footer className="modal-shell-actions modal-shell-actions--roomy">
             <button
               type="button"
               onClick={() =>
@@ -345,7 +347,9 @@ export const SaveAlbumModal = ({
                 ? "Guardando..."
                 : step < 2
                   ? "Continuar →"
-                  : "Guardar álbum"}
+                  : isEditing
+                    ? t("saveChanges")
+                    : "Guardar álbum"}
             </button>
           </footer>
         </div>

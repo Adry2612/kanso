@@ -739,6 +739,29 @@ body.theme-light {
   flex: 1 1 0;
 }
 
+/* Las modales de finalización respiran más: los botones no quedan pegados al
+   borde redondeado del panel. */
+.modal-shell-actions--roomy {
+  padding: 20px 28px 28px;
+}
+
+.modal-shell-undo {
+  display: flex;
+  justify-content: center;
+  padding: 0 28px 28px;
+}
+
+@media (max-width: 520px) {
+  .modal-shell-actions--roomy {
+    flex-direction: column;
+    padding: 18px 20px 24px;
+  }
+
+  .modal-shell-undo {
+    padding: 0 20px 24px;
+  }
+}
+
 .modal-shell-eyebrow {
   color: var(--kanso-mint);
   font-size: 0.65rem;
@@ -1749,4 +1772,97 @@ body::after {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--kanso-line-strong) transparent;
+}
+
+/* ==========================================================================
+   Historial — carrusel por fecha
+   Una sola fila por día mantiene la cronología sin llenar la pantalla de
+   tarjetas. En táctil se desliza; con ratón hay flechas en la cabecera.
+   ========================================================================== */
+
+.history-rail {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 0.25rem;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.history-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.history-rail-track {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+.history-rail-track > * {
+  flex: 0 0 clamp(10.5rem, 68vw, 14rem);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+  .history-rail-track > * {
+    flex-basis: 14rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .history-rail-track > * {
+    flex-basis: 17rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .history-rail-track > * {
+    flex-basis: 22rem;
+  }
+}
+
+.history-rail-control {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--kanso-line);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  color: var(--foreground);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.history-rail-control:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--kanso-mint) 60%, transparent);
+  background: color-mix(in srgb, var(--kanso-mint) 14%, transparent);
+}
+
+.history-rail-control:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.history-filter-rail {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.history-filter-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.history-filter-rail > * {
+  flex: none;
 }

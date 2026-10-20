@@ -18,6 +18,7 @@ interface SuccessModalProps {
   onClose: () => void;
   album: Album;
   feelings: Array<any>;
+  isEditing?: boolean;
 }
 
 export const SuccessModal = ({
@@ -25,6 +26,7 @@ export const SuccessModal = ({
   onClose,
   album,
   feelings,
+  isEditing = false,
 }: SuccessModalProps) => {
   const t = useTranslations("modal");
   const router = useRouter();
@@ -54,7 +56,9 @@ export const SuccessModal = ({
             className="album-art-modal-floating-cover"
           />
           <div className="album-modal-album-meta">
-            <p className="album-action-modal-eyebrow">Álbum guardado</p>
+            <p className="album-action-modal-eyebrow">
+              {isEditing ? t("albumUpdated") : "Álbum guardado"}
+            </p>
             <h2 className="mt-1 truncate text-2xl font-semibold tracking-[-.05em]">
               {album.name}
             </h2>
@@ -73,10 +77,10 @@ export const SuccessModal = ({
               id="saved-album-title"
               className="mt-1 text-2xl font-semibold tracking-[-.06em]"
             >
-              {t("success")}
+              {t(isEditing ? "updated" : "success")}
             </h2>
             <p className="album-action-modal-muted mt-1 text-sm">
-              {t("savedToFavorites")}
+              {t(isEditing ? "updatedToFavorites" : "savedToFavorites")}
             </p>
           </div>
         </div>
@@ -91,9 +95,9 @@ export const SuccessModal = ({
           </div>
         )}
       </div>
-      <div className="modal-shell-actions">
+      <div className="modal-shell-actions modal-shell-actions--roomy">
         <button className="modal-action-secondary" onClick={onClose}>
-          {t("addAnother")}
+          {t(isEditing ? "close" : "addAnother")}
         </button>
         <button
           className="modal-action-primary"
@@ -102,14 +106,18 @@ export const SuccessModal = ({
           {t("viewCollection")}
         </button>
       </div>
-      <button
-        className="modal-action-danger mx-auto my-4 w-auto px-4 py-2 text-xs"
-        disabled={loading}
-        onClick={() => removeFavorite(album).then(() => onClose())}
-      >
-        <LuUndo2 />
-        {loading ? "Quitando..." : t("undo")}
-      </button>
+      {!isEditing && (
+        <div className="modal-shell-undo">
+          <button
+            className="modal-action-danger w-auto px-4 py-2 text-xs"
+            disabled={loading}
+            onClick={() => removeFavorite(album).then(() => onClose())}
+          >
+            <LuUndo2 />
+            {loading ? "Quitando..." : t("undo")}
+          </button>
+        </div>
+      )}
     </ModalShell>
   );
 };
