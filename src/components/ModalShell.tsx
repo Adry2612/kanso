@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { IoClose } from "react-icons/io5";
 import { AnimatePresence, motion } from "./motion";
 
-type ModalShellSize = "md" | "lg";
+type ModalShellSize = "md" | "lg" | "xl";
 
 interface ModalShellProps {
   isOpen: boolean;
@@ -60,7 +60,11 @@ export default function ModalShell({
             aria-modal="true"
             aria-labelledby={labelledBy}
             className={`modal-shell-panel ${
-              size === "lg" ? "modal-shell-panel--lg" : ""
+              size === "lg"
+                ? "modal-shell-panel--lg"
+                : size === "xl"
+                  ? "modal-shell-panel--xl"
+                  : ""
             } ${className}`}
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

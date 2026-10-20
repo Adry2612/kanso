@@ -25,6 +25,7 @@ type HistoryItem = {
   providedAt: string;
   moods?: string[];
   album: {
+    id: string;
     name: string;
     images: { url: string }[];
     artists: { name: string }[];
@@ -115,29 +116,37 @@ export default function RecomendationHistoryPage() {
   );
 
   const hasFilters = Boolean(query.trim() || moodFilter);
+  const totalLabel = t(
+    recomendationHistory.length === 1 ? "stats.totalOne" : "stats.total",
+  ).toLowerCase();
+  const artistsLabel = t(
+    uniqueArtists === 1 ? "stats.artistsOne" : "stats.artists",
+  ).toLowerCase();
+  const moodsLabel = t(
+    moods.length === 1 ? "stats.moodsOne" : "stats.moods",
+  ).toLowerCase();
 
   if (!mounted || loading) {
     return (
       <main className="kanso-main min-h-screen">
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="mt-4 h-14 w-80 max-w-full" />
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="mt-4 h-12 w-56 max-w-full" />
         <Skeleton className="mt-4 h-4 w-full max-w-xl" />
-        <div className="mt-10 grid gap-3 sm:grid-cols-3">
+        <div className="mt-6 flex gap-4">
           {[0, 1, 2].map((index) => (
-            <Skeleton key={index} className="h-24 rounded-2xl" />
+            <Skeleton key={index} className="h-4 w-24" />
           ))}
         </div>
-        <div className="mt-10 border-t border-[var(--kanso-line)]">
-          {[...Array(4)].map((_, index) => (
-            <div
-              key={`history-skeleton-${index}`}
-              className="flex items-center gap-4 border-b border-[var(--kanso-line)] py-4"
-            >
-              <Skeleton className="h-14 w-14 rounded-lg md:h-[70px] md:w-[70px]" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-48 max-w-full" />
-                <Skeleton className="h-3 w-32 max-w-full" />
-              </div>
+        <div className="mt-8 flex flex-col gap-3 md:flex-row">
+          <Skeleton className="h-10 flex-1 rounded-xl" />
+          <Skeleton className="h-10 w-28 rounded-xl" />
+        </div>
+        <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, index) => (
+            <div key={`history-skeleton-${index}`} className="space-y-3">
+              <Skeleton className="aspect-square w-full rounded-2xl" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
             </div>
           ))}
         </div>
@@ -152,12 +161,54 @@ export default function RecomendationHistoryPage() {
           <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
             {t("eyebrow")}
           </p>
-          <h1 className="mt-3 break-words text-4xl font-semibold tracking-tight text-[var(--foreground)] sm:text-5xl md:text-6xl">
-            {t("title")}
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-[var(--foreground)] sm:text-5xl">
+            {t("pageTitle")}
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)]">
             {t("subtitle")}
           </p>
+          {recomendationHistory.length > 0 && (
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--kanso-muted)]">
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles
+                  className="h-3.5 w-3.5 text-[var(--kanso-mint)]"
+                  aria-hidden="true"
+                />
+                <strong className="font-semibold text-[var(--foreground)]">
+                  {recomendationHistory.length}
+                </strong>
+                {totalLabel}
+              </span>
+              <span
+                className="hidden h-3 w-px bg-[var(--kanso-line)] sm:block"
+                aria-hidden="true"
+              />
+              <span className="inline-flex items-center gap-1.5">
+                <Users
+                  className="h-3.5 w-3.5 text-[var(--kanso-mint)]"
+                  aria-hidden="true"
+                />
+                <strong className="font-semibold text-[var(--foreground)]">
+                  {uniqueArtists}
+                </strong>
+                {artistsLabel}
+              </span>
+              <span
+                className="hidden h-3 w-px bg-[var(--kanso-line)] sm:block"
+                aria-hidden="true"
+              />
+              <span className="inline-flex items-center gap-1.5">
+                <Music2
+                  className="h-3.5 w-3.5 text-[var(--kanso-mint)]"
+                  aria-hidden="true"
+                />
+                <strong className="font-semibold text-[var(--foreground)]">
+                  {moods.length}
+                </strong>
+                {moodsLabel}
+              </span>
+            </div>
+          )}
         </section>
       </Reveal>
 
@@ -197,48 +248,7 @@ export default function RecomendationHistoryPage() {
         </section>
       ) : (
         <>
-          <section className="mt-10 grid gap-3 sm:grid-cols-3">
-            {[
-              {
-                key: "total",
-                label: t("stats.total"),
-                value: recomendationHistory.length,
-                icon: Sparkles,
-              },
-              {
-                key: "artists",
-                label: t("stats.artists"),
-                value: uniqueArtists,
-                icon: Users,
-              },
-              {
-                key: "moods",
-                label: t("stats.moods"),
-                value: moods.length,
-                icon: Music2,
-              },
-            ].map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div
-                  key={stat.key}
-                  className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-4"
-                >
-                  <div className="flex items-center gap-2 text-[var(--kanso-muted)]">
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                    <p className="text-[10px] font-bold uppercase tracking-[.16em]">
-                      {stat.label}
-                    </p>
-                  </div>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
-                    {stat.value}
-                  </p>
-                </div>
-              );
-            })}
-          </section>
-
-          <section className="mt-6 rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-3 sm:p-4">
+          <section className="mt-8">
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <div className="relative flex-1">
                 <Search
@@ -253,17 +263,18 @@ export default function RecomendationHistoryPage() {
                   className="kanso-input w-full py-2.5 pl-10 pr-3 text-sm"
                 />
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setMoodFilter(null);
-                }}
-                disabled={!hasFilters}
-                className="rounded-xl border border-[var(--kanso-line)] px-4 py-2.5 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {t("clearFilters")}
-              </button>
+              {hasFilters && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setMoodFilter(null);
+                  }}
+                  className="rounded-xl border border-[var(--kanso-line)] px-4 py-2.5 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--foreground)]"
+                >
+                  {t("clearFilters")}
+                </button>
+              )}
             </div>
 
             {moods.length > 0 && (
@@ -323,92 +334,104 @@ export default function RecomendationHistoryPage() {
               </button>
             </section>
           ) : (
-            <div className="mt-8">
+            <div className="mt-10 space-y-10">
               {Object.entries(groups).map(([date, items]) => (
-                <section key={date} className="mt-8 first:mt-0">
-                  <div className="flex items-center gap-3">
-                    <span className="h-2 w-2 rounded-full bg-[var(--kanso-mint)]" />
-                    <h2 className="text-xs font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
-                      {date}
-                    </h2>
+                <section key={date}>
+                  <div className="flex items-end justify-between gap-4 border-b border-[var(--kanso-line)] pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[var(--kanso-mint)]" />
+                      <h2 className="text-xs font-bold uppercase tracking-[.16em] text-[var(--kanso-mint)]">
+                        {date}
+                      </h2>
+                    </div>
                     <span className="text-xs text-[var(--kanso-muted)]">
-                      {items.length}
+                      {items.length}{" "}
+                      {t(
+                        items.length === 1 ? "stats.totalOne" : "stats.total",
+                      ).toLowerCase()}
                     </span>
                   </div>
+
                   <Stagger
-                    className="mt-2 border-t border-[var(--kanso-line)]"
-                    stagger={0.04}
+                    className="mt-5 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4"
+                    stagger={0.03}
                     onMount
                   >
-                    {items.map((recomendation) => (
-                      <StaggerItem key={recomendation.id} y={12}>
-                        <article className="grid grid-cols-[56px_minmax(0,1fr)] items-center gap-4 border-b border-[var(--kanso-line)] py-4 md:grid-cols-[70px_minmax(0,1fr)_auto] md:gap-5">
-                          <img
-                            loading="lazy"
-                            decoding="async"
-                            src={recomendation.album.images[0]?.url}
-                            alt={recomendation.album.name}
-                            className="h-14 w-14 rounded-lg object-cover md:h-[70px] md:w-[70px]"
-                          />
-                          <div className="min-w-0">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-[var(--foreground)] md:text-base">
-                                  {recomendation.album.name}
-                                </p>
-                                <p className="mt-1 truncate text-xs text-[var(--kanso-muted)]">
-                                  {recomendation.album.artists[0]?.name ||
-                                    t("unknownArtist")}
-                                </p>
-                              </div>
-                              <span className="hidden shrink-0 items-center gap-1 text-xs text-[var(--kanso-muted)] md:flex">
+                    {items.map((recomendation) => {
+                      const itemMoods = normalizeMoods(
+                        recomendation.moods ?? [],
+                      );
+                      return (
+                        <StaggerItem key={recomendation.id} y={12}>
+                          <article className="group min-w-0">
+                            <div className="relative aspect-square overflow-hidden rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-2)]">
+                              <Link
+                                href={`/albums/${recomendation.album.id}`}
+                                className="absolute inset-0 z-10"
+                                aria-label={recomendation.album.name}
+                              />
+                              <img
+                                loading="lazy"
+                                decoding="async"
+                                src={recomendation.album.images[0]?.url}
+                                alt={recomendation.album.name}
+                                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                              />
+                              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                              <span className="pointer-events-none absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/15 bg-black/35 px-2 py-1 text-[10px] font-semibold text-white/90 backdrop-blur">
                                 <Clock3
-                                  className="h-3.5 w-3.5"
+                                  className="h-3 w-3"
                                   aria-hidden="true"
                                 />
                                 {formatTime(recomendation.providedAt)}
                               </span>
-                            </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                              {normalizeMoods(recomendation.moods ?? []).map(
-                                (mood) => (
+                              <div className="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap gap-1.5 pr-10">
+                                {itemMoods.slice(0, 2).map((mood) => (
                                   <span
                                     key={mood}
-                                    className="rounded-full bg-[var(--kanso-mint)]/10 px-2 py-0.5 text-[10px] font-semibold text-[var(--kanso-mint)]"
+                                    className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur"
                                   >
                                     {tMoods(mood)}
                                   </span>
-                                ),
-                              )}
-                              <span className="flex items-center gap-1 text-xs text-[var(--kanso-muted)] md:hidden">
-                                <Clock3
-                                  className="h-3.5 w-3.5"
+                                ))}
+                                {itemMoods.length > 2 && (
+                                  <span className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur">
+                                    +{itemMoods.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openSpotify(
+                                    recomendation.album.external_urls?.spotify,
+                                  )
+                                }
+                                aria-label={t("listen")}
+                                className="absolute bottom-3 right-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/35 text-white backdrop-blur transition hover:bg-[var(--kanso-mint)] hover:text-[var(--background)]"
+                              >
+                                <Headphones
+                                  className="h-4 w-4"
                                   aria-hidden="true"
                                 />
-                                {formatTime(recomendation.providedAt)}
-                              </span>
+                              </button>
                             </div>
-                          </div>
-                          <div className="col-span-2 md:col-span-1 md:self-center">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openSpotify(
-                                  recomendation.album.external_urls?.spotify,
-                                )
-                              }
-                              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-2.5 text-xs font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)] md:w-auto"
-                            >
-                              <Headphones
-                                className="h-3.5 w-3.5"
-                                aria-hidden="true"
-                              />
-                              {t("listen")}
-                            </button>
-                          </div>
-                        </article>
-                      </StaggerItem>
-                    ))}
+                            <div className="mt-3 min-w-0">
+                              <Link
+                                href={`/albums/${recomendation.album.id}`}
+                                className="block truncate text-sm font-semibold text-[var(--foreground)] transition hover:text-[var(--kanso-mint)]"
+                              >
+                                {recomendation.album.name}
+                              </Link>
+                              <p className="mt-1 truncate text-xs text-[var(--kanso-muted)]">
+                                {recomendation.album.artists[0]?.name ||
+                                  t("unknownArtist")}
+                              </p>
+                            </div>
+                          </article>
+                        </StaggerItem>
+                      );
+                    })}
                   </Stagger>
                 </section>
               ))}

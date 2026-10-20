@@ -128,13 +128,14 @@
       "genre": "Genre",
       "other": "Other"
     },
-    "customPlaceholder": "Add another language or genre…",
+    "customPlaceholder": "Another language or genre…",
     "add": "Add",
     "selected": "Selected",
     "remove": "Remove {tag}"
   },
   "history": {
     "title": "Recommendation history",
+    "pageTitle": "History",
     "eyebrow": "Your musical memory",
     "subtitle": "Every album that reached you, with its date and the feelings it left behind.",
     "noHistory": "You don't have any recommendations yet",
@@ -147,8 +148,11 @@
     "moods": "Moods",
     "stats": {
       "total": "Recommendations",
+      "totalOne": "Recommendation",
       "artists": "Artists",
-      "moods": "Moods"
+      "artistsOne": "Artist",
+      "moods": "Moods",
+      "moodsOne": "Mood"
     },
     "searchPlaceholder": "Search by album or artist…",
     "clearFilters": "Clear filters",

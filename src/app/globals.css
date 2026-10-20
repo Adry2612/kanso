@@ -630,6 +630,10 @@ body.theme-light {
   width: min(42rem, calc(100vw - 2rem));
 }
 
+.modal-shell-panel--xl {
+  width: min(64rem, calc(100vw - 2rem));
+}
+
 .modal-shell-close {
   position: absolute;
   top: 0.85rem;
@@ -913,6 +917,223 @@ body.theme-light {
 
 .album-action-modal-muted {
   color: var(--kanso-muted);
+}
+
+/* ==========================================================================
+   Save album wizard — split layout
+   The album identity stays in a cinematic aside while the personalisation
+   steps breathe in the right column. On small screens the aside becomes a
+   compact header and the step area keeps its own scroll.
+   ========================================================================== */
+
+.save-album-modal-shell {
+  height: min(88vh, 46rem);
+}
+
+.save-album-modal-split {
+  display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.save-album-modal-aside {
+  position: relative;
+  min-height: 270px;
+  overflow: hidden;
+  background: #173021;
+}
+
+.save-album-modal-aside::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(180deg, rgba(7, 17, 11, 0.16), rgba(7, 17, 11, 0.9)),
+    linear-gradient(90deg, rgba(7, 17, 11, 0.45), transparent 72%);
+  pointer-events: none;
+}
+
+.save-album-modal-aside-media {
+  position: absolute;
+  inset: 0;
+}
+
+.save-album-modal-aside-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100%;
+  min-height: 270px;
+  flex-direction: column;
+  padding: 1.1rem 1.25rem 1rem;
+  color: #fff;
+}
+
+.save-album-modal-cover {
+  width: 82px;
+  height: 82px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
+}
+
+.save-album-modal-steps {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.save-album-modal-steps li {
+  flex: 1 1 0;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+  padding-top: 8px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.save-album-modal-steps li[data-state="done"],
+.save-album-modal-steps li[data-state="active"] {
+  border-color: var(--kanso-mint);
+  color: var(--kanso-mint);
+}
+
+.save-album-modal-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.save-album-modal-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 1.5rem 1.25rem 1.25rem;
+}
+
+.save-album-modal-step-split {
+  display: grid;
+  min-width: 0;
+  gap: 1.5rem;
+}
+
+.save-album-modal-moods [role="group"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.save-album-modal-moods [role="group"] > button {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.save-album-modal-tags {
+  border-top: 1px solid var(--kanso-line);
+  padding-top: 1.25rem;
+}
+
+@media (max-width: 1023px) {
+  .save-album-modal-aside,
+  .save-album-modal-aside-content {
+    min-height: 158px;
+  }
+
+  .save-album-modal-aside-content {
+    padding: 0.75rem 0.9rem 0.65rem;
+  }
+
+  .save-album-modal-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .save-album-modal-cover {
+    width: 64px;
+    height: 64px;
+    flex: 0 0 auto;
+    border-width: 2px;
+  }
+
+  .save-album-modal-identity p:first-child {
+    margin-top: 0;
+  }
+
+  .save-album-modal-identity h2 {
+    margin-top: 0.15rem;
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+
+  .save-album-modal-steps {
+    margin-top: 0.55rem;
+  }
+
+  .save-album-modal-steps li {
+    font-size: 9px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .save-album-modal-split {
+    grid-template-columns: 18rem minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .save-album-modal-aside,
+  .save-album-modal-aside-content {
+    min-height: 0;
+  }
+
+  .save-album-modal-aside-content {
+    padding: 1.35rem 1.4rem 1.25rem;
+  }
+
+  .save-album-modal-cover {
+    width: 154px;
+    height: 154px;
+  }
+
+  .save-album-modal-steps {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .save-album-modal-steps li {
+    flex: 0 0 auto;
+    border-top: 0;
+    border-left: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 2px 0 2px 12px;
+  }
+
+  .save-album-modal-scroll {
+    padding: 1.75rem 1.75rem 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .save-album-modal-step-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .save-album-modal-tags {
+    border-top: 0;
+    border-left: 1px solid var(--kanso-line);
+    padding-top: 0;
+    padding-left: 1.5rem;
+  }
 }
 
 /* ==========================================================================

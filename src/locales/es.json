@@ -128,13 +128,14 @@
       "genre": "Género",
       "other": "Otra"
     },
-    "customPlaceholder": "Añade otro idioma o género…",
+    "customPlaceholder": "Otro idioma o género…",
     "add": "Añadir",
     "selected": "Seleccionadas",
     "remove": "Quitar {tag}"
   },
   "history": {
     "title": "Histórico de recomendaciones",
+    "pageTitle": "Historial",
     "eyebrow": "Tu memoria musical",
     "subtitle": "Cada disco que llegó a ti, con su fecha y las emociones que dejó.",
     "noHistory": "No tienes recomendaciones todavía",
@@ -147,8 +148,11 @@
     "moods": "Estados de ánimo",
     "stats": {
       "total": "Recomendaciones",
+      "totalOne": "Recomendación",
       "artists": "Artistas",
-      "moods": "Emociones"
+      "artistsOne": "Artista",
+      "moods": "Emociones",
+      "moodsOne": "Emoción"
     },
     "searchPlaceholder": "Buscar por álbum o artista…",
     "clearFilters": "Limpiar filtros",

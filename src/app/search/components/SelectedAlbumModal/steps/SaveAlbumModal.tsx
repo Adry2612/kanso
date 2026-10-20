@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MoodSelector from "@/components/MoodSelector";
 import { useAuth } from "@/context/AuthContext";
 import { Album } from "../../../../../../models/album";
@@ -53,6 +53,7 @@ export const SaveAlbumModal = ({
   const [activities, setActivities] = useState<string[]>([]);
   const [format, setFormat] = useState<FavoriteFormat[]>(["digital"]);
   const [tags, setTags] = useState<FavoriteTag[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -65,6 +66,11 @@ export const SaveAlbumModal = ({
     // solo debe re-inicializarse al abrirse o al cambiar de álbum.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, album.id]);
+
+  // Cada paso empieza arriba: en móvil el contenido es más alto que el panel.
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [step]);
 
   const save = async () => {
     if (!user?.uid) return;
@@ -90,233 +96,260 @@ export const SaveAlbumModal = ({
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
-      size="lg"
+      size="xl"
+      className="save-album-modal-shell"
       labelledBy="save-album-title"
       closeLabel={t("close")}
-      hero={
-        <ArtistBackdrop
-          artistId={album.artists[0]?.id}
-          artistName={album.artists[0]?.name}
-        />
-      }
-      heroBadge="Nueva incorporación"
     >
-      <div className="album-art-modal-body !pb-0">
-        <div className="album-modal-album-row">
-          <img
-            loading="lazy"
-            decoding="async"
-            src={album.images[0]?.url}
-            alt={album.name}
-            className="album-art-modal-floating-cover"
-          />
-          <div className="album-modal-album-meta">
-            <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
-              Álbum
-            </p>
-            <h2
-              id="save-album-title"
-              className="mt-1 truncate text-2xl font-semibold tracking-[-.05em]"
-            >
-              {album.name}
-            </h2>
-            <p className="album-action-modal-muted mt-1 truncate text-sm">
-              {album.artists.map((artist: any) => artist.name).join(", ")}
-            </p>
+      <div className="save-album-modal-split">
+        <aside className="save-album-modal-aside">
+          <div className="save-album-modal-aside-media">
+            <ArtistBackdrop
+              artistId={album.artists[0]?.id}
+              artistName={album.artists[0]?.name}
+            />
           </div>
-        </div>
-        <div className="mt-5 grid grid-cols-3 gap-2 border-[var(--kanso-line)] pt-4">
-          {steps.map((label, index) => (
-            <div
-              key={label}
-              className={`pb-4 pt-2 text-[10px] font-bold uppercase tracking-[.12em] transition ${index <= step ? "border-t-2 border-[var(--kanso-mint)] text-[var(--kanso-mint)]" : "border-t-2 border-[var(--kanso-line)] text-[var(--kanso-muted)]"}`}
-            >
-              <span className="mr-1">0{index + 1}</span>
-              {label}
+          <div className="save-album-modal-aside-content">
+            <span className="modal-shell-hero-badge self-start">
+              Nueva incorporación
+            </span>
+            <div className="save-album-modal-identity mt-auto">
+              <img
+                loading="lazy"
+                decoding="async"
+                src={album.images[0]?.url}
+                alt={album.name}
+                className="save-album-modal-cover"
+              />
+              <div className="min-w-0">
+                <p className="mt-3 text-[10px] font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
+                  Álbum
+                </p>
+                <h2
+                  id="save-album-title"
+                  className="mt-1 line-clamp-2 text-2xl font-semibold tracking-[-.05em]"
+                >
+                  {album.name}
+                </h2>
+                <p className="mt-1 line-clamp-2 text-sm text-white/70">
+                  {album.artists.map((artist: any) => artist.name).join(", ")}
+                </p>
+              </div>
             </div>
-          ))}
+            <ol className="save-album-modal-steps" aria-label="Pasos">
+              {steps.map((label, index) => (
+                <li
+                  key={label}
+                  data-state={
+                    index < step
+                      ? "done"
+                      : index === step
+                        ? "active"
+                        : "pending"
+                  }
+                >
+                  <span className="mr-1">0{index + 1}</span>
+                  {label}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </aside>
+
+        <div className="save-album-modal-main">
+          <div ref={scrollRef} className="save-album-modal-scroll">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.22, ease: EASE_OUT }}
+              >
+                {step === 0 && (
+                  <section>
+                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
+                      Paso 1
+                    </p>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
+                      ¿Qué te hace sentir?
+                    </h3>
+                    <p className="album-action-modal-muted mt-2 text-sm">
+                      Selecciona una o varias emociones para recordar por qué
+                      guardas este disco.
+                    </p>
+                    <div className="save-album-modal-step-split mt-5">
+                      <div>
+                        <div className="save-album-modal-moods rounded-xl border border-[var(--kanso-line)] p-2">
+                          <MoodSelector
+                            onChange={setFeelings}
+                            initialSelectedMoods={initialFeelings}
+                          />
+                        </div>
+                        <p className="album-action-modal-muted mt-3 text-xs">
+                          {feelings.length
+                            ? `${feelings.length} ${feelings.length === 1 ? "sensación" : "sensaciones"} seleccionada${feelings.length === 1 ? "" : "s"}`
+                            : "Puedes continuar sin seleccionar ninguna."}
+                        </p>
+                      </div>
+
+                      <div className="save-album-modal-tags">
+                        <h4 className="text-sm font-semibold">
+                          {tTags("title")}
+                        </h4>
+                        <p className="album-action-modal-muted mt-1 text-xs">
+                          {tTags("description")}
+                        </p>
+                        <div className="mt-3">
+                          <TagEditor tags={tags} onChange={setTags} />
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                )}
+                {step === 1 && (
+                  <section>
+                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
+                      Paso 2
+                    </p>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
+                      ¿Cuándo lo escuchas?
+                    </h3>
+                    <p className="album-action-modal-muted mt-2 text-sm">
+                      Añade actividades para encontrarlo más fácilmente después.
+                    </p>
+                    <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                      {activityOptions.map(({ emoji, id: activity }) => {
+                        const selected = activities.includes(activity);
+                        return (
+                          <button
+                            key={activity}
+                            type="button"
+                            data-selected={selected}
+                            aria-pressed={selected}
+                            onClick={() =>
+                              setActivities((current) =>
+                                selected
+                                  ? current.filter((item) => item !== activity)
+                                  : [...current, activity],
+                              )
+                            }
+                            className="save-album-modal-option flex items-center gap-3 rounded-xl p-3 text-left transition"
+                          >
+                            <Medallion
+                              emoji={emoji}
+                              size="sm"
+                              onAccent={selected}
+                            />
+                            <span className="text-xs font-semibold">
+                              {tActivities(activity)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="album-action-modal-muted mt-3 text-xs">
+                      {activities.length
+                        ? `${activities.length} actividad${activities.length === 1 ? "" : "es"} seleccionada${activities.length === 1 ? "" : "s"}`
+                        : "Puedes continuar sin seleccionar ninguna."}
+                    </p>
+                  </section>
+                )}
+                {step === 2 && (
+                  <section>
+                    <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
+                      Paso 3
+                    </p>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
+                      ¿Cómo forma parte de tu colección?
+                    </h3>
+                    <p className="album-action-modal-muted mt-2 text-sm">
+                      Elige uno o varios formatos para asociar a este álbum.
+                    </p>
+                    <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {(
+                        [
+                          "digital",
+                          "vinyl",
+                          "cd",
+                          "cassette",
+                        ] as FavoriteFormat[]
+                      ).map((item) => {
+                        const selected = format.includes(item);
+                        const label =
+                          item === "vinyl"
+                            ? "Vinilo"
+                            : item === "cassette"
+                              ? "Cassette"
+                              : item === "cd"
+                                ? "CD"
+                                : "Digital";
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            data-selected={selected}
+                            onClick={() =>
+                              setFormat((current) =>
+                                selected
+                                  ? current.filter((value) => value !== item)
+                                  : [...current, item],
+                              )
+                            }
+                            className="save-album-modal-option rounded-xl px-3 py-4 text-center text-sm transition"
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="album-action-modal-muted mt-3 text-xs">
+                      {format.length
+                        ? `${format.length} formato${format.length === 1 ? "" : "s"} seleccionado${format.length === 1 ? "" : "s"}.`
+                        : "Selecciona al menos un formato para guardar el álbum."}
+                    </p>
+                  </section>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {error && (
+            <p
+              role="alert"
+              className="border-t border-[var(--kanso-danger)]/20 bg-[var(--kanso-danger)]/10 px-5 py-3 text-xs text-[var(--kanso-danger)] sm:px-7"
+            >
+              {error}
+            </p>
+          )}
+
+          <footer className="modal-shell-actions">
+            <button
+              type="button"
+              onClick={() =>
+                step === 0 ? onClose() : setStep((current) => current - 1)
+              }
+              className="modal-action-secondary"
+            >
+              {step === 0 ? t("cancel") : "← Atrás"}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                step < 2 ? setStep((current) => current + 1) : save()
+              }
+              disabled={loading || (step === 2 && format.length === 0)}
+              className="modal-action-primary"
+            >
+              {loading
+                ? "Guardando..."
+                : step < 2
+                  ? "Continuar →"
+                  : "Guardar álbum"}
+            </button>
+          </footer>
         </div>
       </div>
-
-      <div className="album-action-modal-soft min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
-            transition={{ duration: 0.22, ease: EASE_OUT }}
-          >
-            {step === 0 && (
-              <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
-                  Paso 1
-                </p>
-                <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
-                  ¿Qué te hace sentir?
-                </h3>
-                <p className="album-action-modal-muted mt-2 text-sm">
-                  Selecciona una o varias emociones para recordar por qué
-                  guardas este disco.
-                </p>
-                <div className="mt-5 rounded-xl border border-[var(--kanso-line)] p-2">
-                  <MoodSelector
-                    onChange={setFeelings}
-                    initialSelectedMoods={initialFeelings}
-                  />
-                </div>
-                <p className="album-action-modal-muted mt-3 text-xs">
-                  {feelings.length
-                    ? `${feelings.length} sensación${feelings.length === 1 ? "" : "es"} seleccionada${feelings.length === 1 ? "" : "s"}`
-                    : "Puedes continuar sin seleccionar ninguna."}
-                </p>
-                <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
-                  <h4 className="text-sm font-semibold">{tTags("title")}</h4>
-                  <p className="album-action-modal-muted mt-1 text-xs">
-                    {tTags("description")}
-                  </p>
-                  <div className="mt-3">
-                    <TagEditor tags={tags} onChange={setTags} />
-                  </div>
-                </div>
-              </section>
-            )}
-            {step === 1 && (
-              <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
-                  Paso 2
-                </p>
-                <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
-                  ¿Cuándo lo escuchas?
-                </h3>
-                <p className="album-action-modal-muted mt-2 text-sm">
-                  Añade actividades para encontrarlo más fácilmente después.
-                </p>
-                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {activityOptions.map(({ emoji, id: activity }) => {
-                    const selected = activities.includes(activity);
-                    return (
-                      <button
-                        key={activity}
-                        type="button"
-                        data-selected={selected}
-                        aria-pressed={selected}
-                        onClick={() =>
-                          setActivities((current) =>
-                            selected
-                              ? current.filter((item) => item !== activity)
-                              : [...current, activity],
-                          )
-                        }
-                        className="save-album-modal-option flex items-center gap-3 rounded-xl p-3 text-left transition"
-                      >
-                        <Medallion
-                          emoji={emoji}
-                          size="sm"
-                          onAccent={selected}
-                        />
-                        <span className="text-xs font-semibold">
-                          {tActivities(activity)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="album-action-modal-muted mt-3 text-xs">
-                  {activities.length
-                    ? `${activities.length} actividad${activities.length === 1 ? "" : "es"} seleccionada${activities.length === 1 ? "" : "s"}`
-                    : "Puedes continuar sin seleccionar ninguna."}
-                </p>
-              </section>
-            )}
-            {step === 2 && (
-              <section>
-                <p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
-                  Paso 3
-                </p>
-                <h3 className="mt-2 text-2xl font-semibold tracking-[-.04em]">
-                  ¿Cómo forma parte de tu colección?
-                </h3>
-                <p className="album-action-modal-muted mt-2 text-sm">
-                  Elige uno o varios formatos para asociar a este álbum.
-                </p>
-                <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {(
-                    ["digital", "vinyl", "cd", "cassette"] as FavoriteFormat[]
-                  ).map((item) => {
-                    const selected = format.includes(item);
-                    const label =
-                      item === "vinyl"
-                        ? "Vinilo"
-                        : item === "cassette"
-                          ? "Cassette"
-                          : item === "cd"
-                            ? "CD"
-                            : "Digital";
-                    return (
-                      <button
-                        key={item}
-                        type="button"
-                        data-selected={selected}
-                        onClick={() =>
-                          setFormat((current) =>
-                            selected
-                              ? current.filter((value) => value !== item)
-                              : [...current, item],
-                          )
-                        }
-                        className="save-album-modal-option rounded-xl px-3 py-4 text-center text-sm transition"
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="album-action-modal-muted mt-3 text-xs">
-                  {format.length
-                    ? `${format.length} formato${format.length === 1 ? "" : "s"} seleccionado${format.length === 1 ? "" : "s"}.`
-                    : "Selecciona al menos un formato para guardar el álbum."}
-                </p>
-              </section>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {error && (
-        <p
-          role="alert"
-          className="border-t border-[var(--kanso-danger)]/20 bg-[var(--kanso-danger)]/10 px-5 py-3 text-xs text-[var(--kanso-danger)] sm:px-7"
-        >
-          {error}
-        </p>
-      )}
-
-      <footer className="modal-shell-actions">
-        <button
-          type="button"
-          onClick={() =>
-            step === 0 ? onClose() : setStep((current) => current - 1)
-          }
-          className="modal-action-secondary"
-        >
-          {step === 0 ? t("cancel") : "← Atrás"}
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            step < 2 ? setStep((current) => current + 1) : save()
-          }
-          disabled={loading || (step === 2 && format.length === 0)}
-          className="modal-action-primary"
-        >
-          {loading
-            ? "Guardando..."
-            : step < 2
-              ? "Continuar →"
-              : "Guardar álbum"}
-        </button>
-      </footer>
     </ModalShell>
   );
 };
