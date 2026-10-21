@@ -241,7 +241,7 @@ export default function Header() {
           type="button"
           onClick={closeMobile}
           aria-label={t("closeMenu")}
-          className="absolute right-2 top-3 flex h-11 w-11 items-center justify-center rounded-xl text-[var(--kanso-muted)] transition hover:text-[var(--foreground)] lg:hidden"
+          className="kanso-drawer-close absolute right-2 top-3 flex h-11 w-11 items-center justify-center rounded-xl text-[var(--kanso-muted)] transition hover:text-[var(--foreground)] lg:hidden"
         >
           <X className="h-5 w-5" aria-hidden="true" />
         </button>

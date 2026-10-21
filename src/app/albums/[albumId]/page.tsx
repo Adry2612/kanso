@@ -187,7 +187,7 @@ export default function AlbumDetail() {
         }}
       ></div>
 
-      <div className="relative pt-12 md:pt-16">
+      <div className="relative pt-5 md:pt-16">
         <button
           onClick={() => router.back()}
           className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--kanso-mint)] transition hover:text-[var(--foreground)]"
@@ -200,7 +200,7 @@ export default function AlbumDetail() {
           transition={{ duration: 0.6, ease: EASE_OUT }}
           className="grid w-full items-start gap-8 border-b border-[var(--kanso-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16"
         >
-          <div className="flex w-full flex-col items-start">
+          <div className="flex w-full flex-col items-center md:items-start">
             <img
               fetchPriority="high"
               decoding="async"

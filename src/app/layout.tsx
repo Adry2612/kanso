@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ViewTransitions } from "next-view-transitions";
@@ -37,6 +37,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Kanso",
   description: "Your music collection manager",
+};
+
+// `viewport-fit=cover` deja que la app pinte también bajo el notch y el
+// indicador de inicio; las franjas se compensan con `env(safe-area-inset-*)`.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
