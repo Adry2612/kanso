@@ -10,14 +10,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth, authPersistenceReady } from "../../lib/firebase";
-import {
-  signInAsGuest,
-  signInWithApple,
-  signInWithGoogle,
-} from "../../lib/firebaseAuth";
+import { signInAsGuest, signInWithGoogle } from "../../lib/firebaseAuth";
 import { getAuthErrorMessage } from "@/lib/authErrorMessage";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
-import { AppleIcon, GoogleIcon } from "@/components/BrandIcons";
+import { GoogleIcon } from "@/components/BrandIcons";
 import ErrorState from "@/components/ErrorState";
 
 function LoginForm() {
@@ -26,9 +22,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [guestError, setGuestError] = useState<string | null>(null);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(
-    null,
-  );
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isStartingGuest, setIsStartingGuest] = useState(false);
   const oauthTimeoutRef = useRef<number | null>(null);
@@ -92,38 +86,29 @@ function LoginForm() {
     }
   };
 
-  const handleOAuthLogin = async (provider: "google" | "apple") => {
-    if (oauthLoading) return;
+  const handleGoogleLogin = async () => {
+    if (isLoggingIn) return;
 
     setError(null);
-    setOauthLoading(provider);
+    setIsLoggingIn(true);
     // Red de seguridad: si el popup nunca resuelve, se libera el botón.
     oauthTimeoutRef.current = window.setTimeout(() => {
-      setOauthLoading(null);
+      setIsLoggingIn(false);
     }, 90_000);
 
     try {
-      const user =
-        provider === "google"
-          ? await signInWithGoogle()
-          : await signInWithApple();
-
+      const user = await signInWithGoogle();
       if (user) router.replace(destination);
     } catch (err: unknown) {
       setError(
-        getAuthErrorMessage(
-          err,
-          provider === "google"
-            ? "No hemos podido iniciar sesión con Google."
-            : "No hemos podido iniciar sesión con Apple.",
-        ),
+        getAuthErrorMessage(err, "No hemos podido iniciar sesión con Google."),
       );
     } finally {
       if (oauthTimeoutRef.current) {
         window.clearTimeout(oauthTimeoutRef.current);
         oauthTimeoutRef.current = null;
       }
-      setOauthLoading(null);
+      setIsLoggingIn(false);
     }
   };
 
@@ -276,28 +261,16 @@ function LoginForm() {
             </span>
             <span className="h-px flex-1 bg-[var(--kanso-line)]" />
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => void handleOAuthLogin("google")}
-              disabled={oauthLoading !== null}
-              aria-busy={oauthLoading === "google"}
-              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <GoogleIcon className="h-[18px] w-[18px] shrink-0" />
-              {oauthLoading === "google" ? "Cargando..." : "Google"}
-            </button>
-            <button
-              type="button"
-              onClick={() => void handleOAuthLogin("apple")}
-              disabled={oauthLoading !== null}
-              aria-busy={oauthLoading === "apple"}
-              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <AppleIcon className="h-[19px] w-[19px] shrink-0" />
-              {oauthLoading === "apple" ? "Cargando..." : "Apple"}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => void handleGoogleLogin()}
+            disabled={isLoggingIn}
+            aria-busy={isLoggingIn}
+            className="public-button-secondary inline-flex w-full items-center justify-center gap-2 px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <GoogleIcon className="h-[18px] w-[18px] shrink-0" />
+            {isLoggingIn ? "Cargando..." : "Google"}
+          </button>
           <button
             type="button"
             onClick={handleGuestLogin}

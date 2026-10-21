@@ -1,18 +1,11 @@
 import { auth, authPersistenceReady } from "./firebase";
 import {
   GoogleAuthProvider,
-  OAuthProvider,
   signInAnonymously,
   signInWithPopup,
 } from "firebase/auth";
 
 const googleProvider = new GoogleAuthProvider();
-// Apple necesita un Service ID, Team ID, Key ID y la clave .p8 configurados
-// en Firebase Authentication. Sin esas credenciales Firebase devuelve
-// auth/operation-not-allowed antes de abrir el popup.
-const appleProvider = new OAuthProvider("apple.com");
-appleProvider.addScope("email");
-appleProvider.addScope("name");
 
 let isSigningIn = false;
 
@@ -61,8 +54,4 @@ async function signInWithProvider(provider, providerName) {
 
 export async function signInWithGoogle() {
   return signInWithProvider(googleProvider, "Google");
-}
-
-export async function signInWithApple() {
-  return signInWithProvider(appleProvider, "Apple");
 }
