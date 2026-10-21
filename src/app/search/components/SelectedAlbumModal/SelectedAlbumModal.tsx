@@ -67,7 +67,10 @@ export default function SelectedAlbumModal({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen, startEditing]);
+    // Solo al abrir: cuando el padre actualiza `startEditing` después de
+    // guardar, el modal debe pasar al éxito y no volver al paso de edición.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const stepKey = isSaved
     ? "success"
