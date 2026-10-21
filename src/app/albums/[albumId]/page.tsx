@@ -11,7 +11,7 @@ import { MdEdit } from "react-icons/md";
 import AlbumTracklist from "@/components/AlbumTracklist";
 import { useTranslations } from "@/context/I18nContext";
 import { FastAverageColor } from "fast-average-color";
-import { ChevronDown, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
 import { useAuth } from "@/context/AuthContext";
 import { undoFavorite } from "@/lib/api/favorites";
@@ -28,12 +28,7 @@ type FavoriteRecord = {
   tags?: Tag[];
 };
 import { useTransitionRouter } from "next-view-transitions";
-import {
-  AnimatePresence,
-  EASE_OUT,
-  motion,
-  useReducedMotion,
-} from "@/components/motion";
+import { EASE_OUT, motion, useReducedMotion } from "@/components/motion";
 
 type TrackArtist = {
   name: string;
@@ -78,7 +73,6 @@ export default function AlbumDetail() {
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const [recordOpen, setRecordOpen] = useState(false);
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tTags = useTranslations("tags");
@@ -182,16 +176,6 @@ export default function AlbumDetail() {
     };
     return t(keys[format]);
   };
-  const recordSummary = [
-    ...savedMoods
-      .slice(0, 2)
-      .map((mood) => `${getMood(mood)?.symbol ?? ""} ${tMoods(mood)}`.trim()),
-    ...(favorite?.activities ?? [])
-      .slice(0, 2)
-      .map((activity) => tActivities(activity)),
-    ...savedFormats.map((format) => formatLabel(format)),
-    ...(favorite?.tags ?? []).slice(0, 2).map((tag) => tag.value),
-  ].join(" · ");
   const removeFromCollection = async () => {
     if (!user?.uid) return;
     setRemoving(true);
@@ -287,138 +271,104 @@ export default function AlbumDetail() {
                   </button>
                 ))}
             </div>
-            {favorite && (
-              <div className="mt-7 border-t border-[var(--kanso-line)]">
-                <button
-                  type="button"
-                  id="album-record-toggle"
-                  aria-expanded={recordOpen}
-                  aria-controls="album-record"
-                  onClick={() => setRecordOpen((open) => !open)}
-                  className="flex w-full items-center justify-between gap-4 py-4 text-left"
-                >
-                  <span className="min-w-0">
-                    <span className="block text-[10px] font-bold uppercase tracking-[.18em] text-[var(--kanso-muted)]">
-                      {t("myRecord")}
-                    </span>
-                    <span className="mt-1 block truncate text-xs text-[var(--kanso-muted)]">
-                      {recordSummary || t("recordSummaryEmpty")}
-                    </span>
-                  </span>
-                  <ChevronDown
-                    aria-hidden="true"
-                    className={`h-4 w-4 shrink-0 text-[var(--kanso-muted)] transition-transform duration-200 ${
-                      recordOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {recordOpen && (
-                    <motion.div
-                      id="album-record"
-                      role="region"
-                      aria-labelledby="album-record-toggle"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{
-                        duration: reduceMotion ? 0 : 0.24,
-                        ease: EASE_OUT,
-                      }}
-                      className="overflow-hidden"
-                    >
-                      <div className="grid grid-cols-1 gap-x-10 gap-y-5 pb-5 pt-1 sm:grid-cols-2">
-                        <section>
-                          <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-                            {t("emotions")}
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {savedMoods.length ? (
-                              savedMoods.map((mood) => {
-                                const item = getMood(mood);
-                                return (
-                                  <span
-                                    key={mood}
-                                    className="rounded-full bg-[var(--kanso-mint)]/10 px-3 py-1.5 text-xs text-[var(--kanso-mint)]"
-                                  >
-                                    {item?.symbol} {tMoods(mood)}
-                                  </span>
-                                );
-                              })
-                            ) : (
-                              <span className="text-xs text-[var(--kanso-muted)]">
-                                {t("noEmotions")}
-                              </span>
-                            )}
-                          </div>
-                        </section>
-
-                        <section>
-                          <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-                            {t("activities")}
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {favorite.activities?.length ? (
-                              favorite.activities.map((activity: string) => (
-                                <span
-                                  key={activity}
-                                  className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
-                                >
-                                  {tActivities(activity)}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-xs text-[var(--kanso-muted)]">
-                                {t("noActivities")}
-                              </span>
-                            )}
-                          </div>
-                        </section>
-
-                        <section>
-                          <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-                            {t("format")}
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {savedFormats.length ? (
-                              savedFormats.map((format) => (
-                                <span
-                                  key={format}
-                                  className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
-                                >
-                                  {formatLabel(format)}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-xs text-[var(--kanso-muted)]">
-                                {t("noFormat")}
-                              </span>
-                            )}
-                          </div>
-                        </section>
-
-                        <section>
-                          <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-                            {tTags("title")}
-                          </p>
-                          {favorite.tags?.length ? (
-                            <TagList tags={favorite.tags} showCategory />
-                          ) : (
-                            <span className="text-xs text-[var(--kanso-muted)]">
-                              {t("noTags")}
-                            </span>
-                          )}
-                        </section>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
           </div>
         </motion.section>
-        <AlbumTracklist tracks={albumTracklist} loading={!mounted} />
+        <div className="mt-10 grid gap-8 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start xl:gap-12">
+          <AlbumTracklist
+            tracks={albumTracklist}
+            loading={!mounted}
+            className="max-w-none"
+          />
+          {favorite && (
+            <aside
+              aria-labelledby="album-record-title"
+              className="order-first xl:order-none xl:sticky xl:top-8"
+            >
+              <p
+                id="album-record-title"
+                className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--kanso-muted)]"
+              >
+                {t("myRecord")}
+              </p>
+              <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
+                {savedMoods.length > 0 && (
+                  <section>
+                    <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
+                      {t("emotions")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {savedMoods.map((mood) => {
+                        const item = getMood(mood);
+                        return (
+                          <span
+                            key={mood}
+                            className="rounded-full bg-[var(--kanso-mint)]/10 px-3 py-1.5 text-xs text-[var(--kanso-mint)]"
+                          >
+                            {item?.symbol} {tMoods(mood)}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+
+                {!!favorite.activities?.length && (
+                  <section>
+                    <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
+                      {t("activities")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(favorite.activities ?? []).map((activity: string) => (
+                        <span
+                          key={activity}
+                          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
+                        >
+                          {tActivities(activity)}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {savedFormats.length > 0 && (
+                  <section>
+                    <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
+                      {t("format")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {savedFormats.map((format) => (
+                        <span
+                          key={format}
+                          className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
+                        >
+                          {formatLabel(format)}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {!!favorite.tags?.length && (
+                  <section>
+                    <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
+                      {tTags("title")}
+                    </p>
+                    <TagList tags={favorite.tags} showCategory />
+                  </section>
+                )}
+
+                {!savedMoods.length &&
+                  !favorite.activities?.length &&
+                  !savedFormats.length &&
+                  !favorite.tags?.length && (
+                    <p className="text-xs text-[var(--kanso-muted)]">
+                      {t("recordSummaryEmpty")}
+                    </p>
+                  )}
+              </div>
+            </aside>
+          )}
+        </div>
       </div>
       {modalOpen && (
         <SelectedAlbumModal

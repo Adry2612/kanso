@@ -16,11 +16,13 @@ type TrackListItem = {
 type AlbumTracklistProps = {
   tracks: TrackListItem[] | null;
   loading?: boolean;
+  className?: string;
 };
 
 export default function AlbumTracklist({
   tracks,
   loading = false,
+  className = "mt-10 max-w-2xl",
 }: AlbumTracklistProps) {
   const t = useTranslations("album");
 
@@ -45,7 +47,7 @@ export default function AlbumTracklist({
   }
 
   return (
-    <div className="mt-10 max-w-2xl">
+    <div className={className}>
       <h2 className="mb-3 text-lg font-semibold tracking-tight text-[var(--foreground)]">
         {t("tracklist")}{" "}
         <span className="text-xs font-normal text-[var(--kanso-muted)]">
