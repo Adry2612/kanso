@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import {
-  OAuthProvider,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
@@ -12,7 +10,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth, authPersistenceReady } from "../../lib/firebase";
-import { signInAsGuest, signInWithGoogle } from "../../lib/firebaseAuth";
+import {
+  signInAsGuest,
+  signInWithApple,
+  signInWithGoogle,
+} from "../../lib/firebaseAuth";
+import { getAuthErrorMessage } from "@/lib/authErrorMessage";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
 import { AppleIcon, GoogleIcon } from "@/components/BrandIcons";
 import ErrorState from "@/components/ErrorState";
@@ -23,10 +26,12 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [guestError, setGuestError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isStartingGuest, setIsStartingGuest] = useState(false);
-  const googleTimeoutRef = useRef<number | null>(null);
+  const oauthTimeoutRef = useRef<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegisterMode = searchParams.get("mode") !== "login";
@@ -44,8 +49,7 @@ function LoginForm() {
   // debe quedar deshabilitado para siempre.
   useEffect(
     () => () => {
-      if (googleTimeoutRef.current)
-        window.clearTimeout(googleTimeoutRef.current);
+      if (oauthTimeoutRef.current) window.clearTimeout(oauthTimeoutRef.current);
     },
     [],
   );
@@ -72,41 +76,55 @@ function LoginForm() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+      // Esperar a que el contexto de autenticación reciba al usuario antes de
+      // navegar evita que la pantalla de destino arranque sin sesión.
+      await auth.authStateReady();
       router.replace(destination);
-    } catch (err: any) {
-      setError(err?.message || "No hemos podido completar la operación.");
+    } catch (err: unknown) {
+      setError(
+        getAuthErrorMessage(
+          err,
+          "No hemos podido completar la operación. Inténtalo de nuevo.",
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    if (isLoggingIn) return;
-    setError(null);
-    try {
-      setIsLoggingIn(true);
-      // Red de seguridad: si el popup nunca resuelve, se libera el botón.
-      googleTimeoutRef.current = window.setTimeout(() => {
-        setIsLoggingIn(false);
-      }, 90_000);
-      const user = await signInWithGoogle();
-      if (user) router.replace(destination);
-    } catch {
-      setError("No hemos podido iniciar sesión con Google.");
-    } finally {
-      if (googleTimeoutRef.current) {
-        window.clearTimeout(googleTimeoutRef.current);
-        googleTimeoutRef.current = null;
-      }
-      setIsLoggingIn(false);
-    }
-  };
+  const handleOAuthLogin = async (provider: "google" | "apple") => {
+    if (oauthLoading) return;
 
-  const handleAppleLogin = async () => {
     setError(null);
-    const provider = new OAuthProvider("apple.com");
-    void provider;
-    setError("El acceso con Apple estará disponible próximamente.");
+    setOauthLoading(provider);
+    // Red de seguridad: si el popup nunca resuelve, se libera el botón.
+    oauthTimeoutRef.current = window.setTimeout(() => {
+      setOauthLoading(null);
+    }, 90_000);
+
+    try {
+      const user =
+        provider === "google"
+          ? await signInWithGoogle()
+          : await signInWithApple();
+
+      if (user) router.replace(destination);
+    } catch (err: unknown) {
+      setError(
+        getAuthErrorMessage(
+          err,
+          provider === "google"
+            ? "No hemos podido iniciar sesión con Google."
+            : "No hemos podido iniciar sesión con Apple.",
+        ),
+      );
+    } finally {
+      if (oauthTimeoutRef.current) {
+        window.clearTimeout(oauthTimeoutRef.current);
+        oauthTimeoutRef.current = null;
+      }
+      setOauthLoading(null);
+    }
   };
 
   const handleGuestLogin = async () => {
@@ -213,6 +231,7 @@ function LoginForm() {
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -227,6 +246,10 @@ function LoginForm() {
               <input
                 id="password"
                 type="password"
+                autoComplete={
+                  isRegisterMode ? "new-password" : "current-password"
+                }
+                minLength={6}
                 required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -256,20 +279,23 @@ function LoginForm() {
           <div className="grid gap-3 sm:grid-cols-2">
             <button
               type="button"
-              onClick={handleGoogleLogin}
-              disabled={isLoggingIn}
-              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm disabled:opacity-60"
+              onClick={() => void handleOAuthLogin("google")}
+              disabled={oauthLoading !== null}
+              aria-busy={oauthLoading === "google"}
+              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
               <GoogleIcon className="h-[18px] w-[18px] shrink-0" />
-              {isLoggingIn ? "Cargando..." : "Google"}
+              {oauthLoading === "google" ? "Cargando..." : "Google"}
             </button>
             <button
               type="button"
-              onClick={handleAppleLogin}
-              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm"
+              onClick={() => void handleOAuthLogin("apple")}
+              disabled={oauthLoading !== null}
+              aria-busy={oauthLoading === "apple"}
+              className="public-button-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
             >
               <AppleIcon className="h-[19px] w-[19px] shrink-0" />
-              Apple
+              {oauthLoading === "apple" ? "Cargando..." : "Apple"}
             </button>
           </div>
           <button
