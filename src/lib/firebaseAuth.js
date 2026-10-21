@@ -1,4 +1,4 @@
-import { auth } from "./firebase";
+import { auth, authPersistenceReady } from "./firebase";
 import {
   GoogleAuthProvider,
   signInAnonymously,
@@ -9,6 +9,7 @@ const provider = new GoogleAuthProvider();
 let isSigningIn = false;
 
 export async function signInAsGuest() {
+  await authPersistenceReady;
   await auth.authStateReady();
   if (auth.currentUser) return auth.currentUser;
 
@@ -25,6 +26,7 @@ export async function signInWithGoogle() {
 
   try {
     isSigningIn = true;
+    await authPersistenceReady;
     const result = await signInWithPopup(auth, provider);
 
     // El perfil no se escribe desde el cliente: las reglas de Firestore deniegan

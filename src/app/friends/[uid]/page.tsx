@@ -28,6 +28,7 @@ import { formatTime, groupByDate } from "@/utils/dateHelpers";
 import { openSpotify } from "@/lib/spotifyUtils";
 import { getMood } from "@/constants/moods";
 import InlineEmoji from "@/components/InlineEmoji";
+import ErrorState from "@/components/ErrorState";
 
 function loginHref(uid: string, mode: "login" | "register") {
   const next = `/friends/${uid}`;
@@ -254,21 +255,13 @@ export default function SharedFriendProfilePage() {
           {t("profile.back")}
         </Link>
 
-        <section className="kanso-panel mt-8 max-w-2xl p-6 md:p-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
-            {t("loadError")}
-          </h1>
-          <p role="alert" className="mt-2 text-sm text-[var(--kanso-danger)]">
-            {error ?? t("loadError")}
-          </p>
-          <button
-            type="button"
-            onClick={() => void loadLibrary()}
-            className="mt-5 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
-          >
-            {t("profile.retry")}
-          </button>
-        </section>
+        <ErrorState
+          className="mt-8"
+          title={t("loadError")}
+          description={error ?? t("loadErrorDescription")}
+          onRetry={() => void loadLibrary()}
+          retryLabel={t("profile.retry")}
+        />
       </main>
     );
   }

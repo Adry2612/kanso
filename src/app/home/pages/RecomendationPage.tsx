@@ -18,6 +18,7 @@ import { Reveal } from "@/components/motion";
 import { getMood } from "@/constants/moods";
 import { getActivity } from "@/constants/activities";
 import InlineEmoji from "@/components/InlineEmoji";
+import ErrorState from "@/components/ErrorState";
 import { Skeleton } from "@/components/Skeleton";
 import { openSpotify } from "@/lib/spotifyUtils";
 import React, { useEffect, useState } from "react";
@@ -190,19 +191,21 @@ export default function RecomendationPage({
   if (activeError) {
     return (
       <main className="kanso-main min-h-screen">
-        <div className="pt-16" role="alert">
-          <p className="text-[11px] font-bold uppercase tracking-[.2em] text-red-400">
-            {tRecomendation("empty.errorTitle")}
-          </p>
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-[var(--kanso-muted)]">
-            {activeError}
-          </p>
-          <button
-            onClick={() => window.history.back()}
-            className="mt-7 rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
-          >
-            ← {tRecomendation("empty.back")}
-          </button>
+        <div className="pt-12 md:pt-16">
+          <ErrorState
+            variant="page"
+            title={tRecomendation("empty.errorTitle")}
+            description={activeError}
+            onRetry={() => window.location.reload()}
+            action={
+              <button
+                onClick={() => window.history.back()}
+                className="rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
+              >
+                ← {tRecomendation("empty.back")}
+              </button>
+            }
+          />
         </div>
       </main>
     );

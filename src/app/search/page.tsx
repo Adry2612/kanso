@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { getMood, normalizeMoods } from "@/constants/moods";
 import InlineEmoji from "@/components/InlineEmoji";
+import ErrorState from "@/components/ErrorState";
 import { Link } from "next-view-transitions";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { authFetch } from "@/lib/api/authFetch";
@@ -35,6 +36,7 @@ export default function SearchPage() {
   const [favoritesError, setFavoritesError] = useState(false);
   const [communitySearches, setCommunitySearches] = useState<string[]>([]);
   const [communityAlbums, setCommunityAlbums] = useState<any[]>([]);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
@@ -201,7 +203,7 @@ export default function SearchPage() {
     fetchData();
 
     return () => controller.abort();
-  }, [debouncedQuery]);
+  }, [debouncedQuery, reloadToken]);
 
   return (
     <main className="kanso-main min-h-screen">
@@ -226,7 +228,15 @@ export default function SearchPage() {
         className="kanso-input mt-8 mb-10 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--kanso-muted)]"
       />
 
-      {error && <p className="text-sm text-[var(--kanso-danger)]">{error}</p>}
+      {error && (
+        <ErrorState
+          variant="inline"
+          className="mb-6"
+          title={t("error")}
+          description={t("errorDescription")}
+          onRetry={() => setReloadToken((value) => value + 1)}
+        />
+      )}
 
       <div className="w-full max-w-6xl pb-16">
         {loading && (
@@ -433,12 +443,12 @@ export default function SearchPage() {
                 </div>
               )}
               {favoritesError && (
-                <p
-                  role="alert"
-                  className="mt-5 text-sm text-[var(--kanso-danger)]"
-                >
-                  {t("collectionLoadError")}
-                </p>
+                <ErrorState
+                  variant="inline"
+                  className="mt-5"
+                  title={t("collectionLoadError")}
+                  onRetry={() => window.location.reload()}
+                />
               )}
               {favoritesLoaded &&
                 !favoritesError &&

@@ -22,6 +22,8 @@ import { FavoriteFormat } from "@/types/favorites";
 import type { Album } from "../../../../models/album";
 import TagList, { type Tag } from "@/components/TagList";
 import InlineEmoji from "@/components/InlineEmoji";
+import ErrorState from "@/components/ErrorState";
+import { AlbumDetailSkeleton } from "@/components/ContentSkeletons";
 
 type FavoriteRecord = {
   labeledFeelings?: string[];
@@ -157,9 +159,26 @@ export default function AlbumDetail() {
     }
   }, [album, mounted]);
 
-  if (isLoading || !mounted)
-    return <div className="text-[var(--foreground)]">{tCommon("loading")}</div>;
-  if (error) return <div className="text-red-500">{t("error")}</div>;
+  if (isLoading || !mounted) {
+    return (
+      <div role="status" aria-busy="true">
+        <span className="sr-only">{tCommon("loading")}</span>
+        <AlbumDetailSkeleton />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <main className="kanso-main min-h-screen">
+        <ErrorState
+          variant="page"
+          title={t("error")}
+          description={t("errorDescription")}
+          onRetry={() => window.location.reload()}
+        />
+      </main>
+    );
+  }
   if (!album) return null;
 
   const savedMoods = normalizeMoods(favorite?.labeledFeelings || []);
@@ -278,7 +297,7 @@ export default function AlbumDetail() {
         <div className="mt-10 grid gap-8 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start xl:gap-12">
           <AlbumTracklist
             tracks={albumTracklist}
-            loading={!mounted}
+            loading={!mounted || albumTracklist === null}
             className="max-w-none"
           />
           {favorite && (

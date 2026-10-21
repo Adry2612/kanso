@@ -11,6 +11,7 @@ import { Camera, Check, Loader2, Trash2 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { motion, Reveal } from "@/components/motion";
 import FriendAvatar from "@/components/FriendAvatar";
+import ErrorState from "@/components/ErrorState";
 import { removeAvatar, uploadAvatar } from "@/lib/api/profile";
 import { resizeImageToAvatarDataUrl } from "@/lib/avatarImage";
 
@@ -277,12 +278,11 @@ export default function SettingsPage() {
                 />
 
                 {avatarError && (
-                  <p
-                    role="alert"
-                    className="mt-3 text-xs text-[var(--kanso-danger)]"
-                  >
-                    {avatarError}
-                  </p>
+                  <ErrorState
+                    variant="inline"
+                    className="mt-3"
+                    title={avatarError}
+                  />
                 )}
                 {avatarSuccess && (
                   <p
@@ -377,9 +377,11 @@ export default function SettingsPage() {
             </div>
           </div>
           {signOutFailed && (
-            <p role="alert" className="mt-3 text-sm text-red-700">
-              {t("signOutError")}
-            </p>
+            <ErrorState
+              variant="inline"
+              className="mt-3"
+              title={t("signOutError")}
+            />
           )}
         </section>
       </Reveal>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import AlbumCard from "@/components/AlbumCard";
 import { Skeleton } from "@/components/Skeleton";
+import ErrorState from "@/components/ErrorState";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { useTranslations } from "@/context/I18nContext";
 import {
@@ -21,6 +22,7 @@ export default function ArtistPage() {
   const [artist, setArtist] = useState<ArtistLite | null>(null);
   const [albums, setAlbums] = useState<ArtistAlbumLite[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     if (!artistId) return;
@@ -45,7 +47,7 @@ export default function ArtistPage() {
     return () => {
       cancelled = true;
     };
-  }, [artistId]);
+  }, [artistId, reloadToken]);
 
   return (
     <main className="kanso-main min-h-screen">
@@ -100,9 +102,11 @@ export default function ArtistPage() {
         </h2>
 
         {error && (
-          <p role="alert" className="text-sm text-[var(--kanso-danger)]">
-            {error}
-          </p>
+          <ErrorState
+            title={t("error")}
+            description={t("errorDescription")}
+            onRetry={() => setReloadToken((value) => value + 1)}
+          />
         )}
 
         {!albums && !error && (

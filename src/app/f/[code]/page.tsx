@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "@/context/I18nContext";
 import FriendAvatar from "@/components/FriendAvatar";
 import { Skeleton } from "@/components/Skeleton";
+import ErrorState from "@/components/ErrorState";
 import { getPublicProfile, sendFriendRequest } from "@/lib/api/friends";
 import type { PublicProfileResponse } from "@/types/friends";
 
@@ -141,23 +142,13 @@ export default function PublicFriendProfilePage() {
 
     if (error || !profile) {
       return (
-        <div className="py-4 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--foreground)]">
-            {t("loadError")}
-          </h1>
-          <p
-            role="alert"
-            className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--kanso-danger)]"
-          >
-            {error ?? t("loadError")}
-          </p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="mt-6 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)]"
-          >
-            {t("retry")}
-          </button>
+        <div className="py-4">
+          <ErrorState
+            title={t("loadError")}
+            description={error ?? t("loadErrorDescription")}
+            onRetry={() => window.location.reload()}
+            retryLabel={t("retry")}
+          />
         </div>
       );
     }
@@ -281,12 +272,12 @@ export default function PublicFriendProfilePage() {
                     {sending ? t("public.adding") : t("public.add")}
                   </button>
                   {actionError && (
-                    <p
-                      role="alert"
-                      className="mx-auto mt-3 max-w-sm text-sm text-[var(--kanso-danger)]"
-                    >
-                      {actionError}
-                    </p>
+                    <ErrorState
+                      variant="inline"
+                      className="mx-auto mt-3 max-w-sm text-left"
+                      title={t("public.error")}
+                      description={actionError}
+                    />
                   )}
                 </div>
               )}

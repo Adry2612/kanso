@@ -11,10 +11,11 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { auth } from "../../lib/firebase";
+import { auth, authPersistenceReady } from "../../lib/firebase";
 import { signInAsGuest, signInWithGoogle } from "../../lib/firebaseAuth";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
 import { AppleIcon, GoogleIcon } from "@/components/BrandIcons";
+import ErrorState from "@/components/ErrorState";
 
 function LoginForm() {
   const [name, setName] = useState("");
@@ -54,6 +55,7 @@ function LoginForm() {
     setError(null);
     setIsSubmitting(true);
     try {
+      await authPersistenceReady;
       if (isRegisterMode) {
         const displayName = name.trim();
         if (!displayName) {
@@ -178,9 +180,12 @@ function LoginForm() {
             </p>
           </div>
           {error && (
-            <div className="mt-5 border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-300">
-              {error}
-            </div>
+            <ErrorState
+              variant="inline"
+              className="mt-5"
+              title="No pudimos completar la operación"
+              description={error}
+            />
           )}
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {isRegisterMode && (
@@ -278,18 +283,20 @@ function LoginForm() {
               : "Probar sin registrarme"}
           </button>
           {guestError && (
-            <div
-              role="alert"
-              className="mt-3 text-sm text-red-600 dark:text-red-300"
-            >
-              <p>{guestError}</p>
-              <Link
-                href={`/login?mode=register${nextQuery}`}
-                className="mt-1 inline-block font-semibold underline"
-              >
-                Crear una cuenta
-              </Link>
-            </div>
+            <ErrorState
+              variant="inline"
+              className="mt-3"
+              title="No pudimos preparar tu sesión de prueba"
+              description={guestError}
+              action={
+                <Link
+                  href={`/login?mode=register${nextQuery}`}
+                  className="text-xs font-semibold text-[var(--kanso-mint)] underline-offset-2 hover:underline"
+                >
+                  Crear una cuenta
+                </Link>
+              }
+            />
           )}
           <p className="public-muted mt-6 text-center text-sm">
             {isRegisterMode ? "¿Ya tienes cuenta?" : "¿Aún no tienes cuenta?"}{" "}

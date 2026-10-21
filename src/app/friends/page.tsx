@@ -17,6 +17,7 @@ import { Reveal } from "@/components/motion";
 import { Skeleton } from "@/components/Skeleton";
 import FriendAvatar from "@/components/FriendAvatar";
 import FriendShareModal from "@/components/FriendShareModal";
+import ErrorState from "@/components/ErrorState";
 import {
   getFriends,
   removeFriend,
@@ -409,23 +410,13 @@ export default function FriendsPage() {
             {t("title")}
           </h1>
         </section>
-        <section className="kanso-panel mt-10 max-w-3xl p-6 md:p-8">
-          <h2 className="text-xl font-semibold text-[var(--foreground)]">
-            {t("loadError")}
-          </h2>
-          {loadError && (
-            <p role="alert" className="mt-2 text-sm text-[var(--kanso-danger)]">
-              {loadError}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={() => void loadFriends()}
-            className="mt-5 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
-          >
-            {t("retry")}
-          </button>
-        </section>
+        <ErrorState
+          className="mt-10"
+          title={t("loadError")}
+          description={loadError ?? t("loadErrorDescription")}
+          onRetry={() => void loadFriends()}
+          retryLabel={t("retry")}
+        />
       </main>
     );
   }
@@ -457,12 +448,14 @@ export default function FriendsPage() {
       </Reveal>
 
       {loadError && (
-        <p
-          role="alert"
-          className="mt-5 rounded-xl border border-[var(--kanso-danger)]/30 bg-[var(--kanso-danger)]/10 px-4 py-3 text-sm text-[var(--kanso-danger)]"
-        >
-          {loadError}
-        </p>
+        <ErrorState
+          variant="inline"
+          className="mt-5 max-w-5xl"
+          title={t("loadError")}
+          description={loadError}
+          onRetry={() => void loadFriends()}
+          retryLabel={t("retry")}
+        />
       )}
 
       <Reveal delay={0.05}>
@@ -579,9 +572,11 @@ export default function FriendsPage() {
           </p>
 
           {sharingError && (
-            <p role="alert" className="mt-3 text-sm text-[var(--kanso-danger)]">
-              {sharingError}
-            </p>
+            <ErrorState
+              variant="inline"
+              className="mt-3 max-w-2xl"
+              title={sharingError}
+            />
           )}
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -635,12 +630,11 @@ export default function FriendsPage() {
       </Reveal>
 
       {actionError && (
-        <p
-          role="alert"
-          className="mt-5 max-w-5xl rounded-xl border border-[var(--kanso-danger)]/30 bg-[var(--kanso-danger)]/10 px-4 py-3 text-sm text-[var(--kanso-danger)]"
-        >
-          {actionError}
-        </p>
+        <ErrorState
+          variant="inline"
+          className="mt-5 max-w-5xl"
+          title={actionError}
+        />
       )}
 
       <div className="mt-7 grid max-w-5xl gap-7 lg:grid-cols-2">
@@ -707,9 +701,7 @@ export default function FriendsPage() {
           </div>
 
           {removeError && (
-            <p role="alert" className="mt-3 text-sm text-[var(--kanso-danger)]">
-              {removeError}
-            </p>
+            <ErrorState variant="inline" className="mt-3" title={removeError} />
           )}
 
           {data.friends.length === 0 ? (

@@ -69,6 +69,54 @@ export function AlbumGridSkeleton({
   );
 }
 
+/** Detalle de un álbum: portada, cabecera, pistas y registro guardado. */
+export function AlbumDetailSkeleton() {
+  return (
+    <main className="kanso-main min-h-screen" aria-hidden="true">
+      <Skeleton className="h-4 w-16" />
+
+      <div className="mt-6 grid w-full items-start gap-8 border-b border-[var(--kanso-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16">
+        <Skeleton className="aspect-square w-full max-w-[320px] rounded-[var(--radius-md)]" />
+        <div className="flex min-w-0 flex-col gap-4 pt-1">
+          <Skeleton className="h-3 w-32" />
+          <Skeleton className="h-14 w-4/5" />
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-full max-w-lg" />
+          <Skeleton className="h-4 w-3/4 max-w-md" />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Skeleton className="h-11 w-40 rounded-xl" />
+            <Skeleton className="h-11 w-44 rounded-xl" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10 grid gap-8 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start xl:gap-12">
+        <div>
+          <Skeleton className="h-6 w-44" />
+          <div className="mt-4 border-t border-[var(--kanso-line)]">
+            {visibleItems(9).map((index) => (
+              <div
+                key={index}
+                className="grid grid-cols-[30px_1fr] items-center gap-3 border-b border-[var(--kanso-line)] px-1 py-3"
+              >
+                <Skeleton className="h-3 w-4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-3.5 w-3/5" />
+                  <Skeleton className="h-2.5 w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="order-first xl:order-none">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="mt-4 h-32 w-full rounded-2xl" />
+        </div>
+      </div>
+    </main>
+  );
+}
+
 /** Chips de emociones y etiquetas de la colección en la búsqueda. */
 export function CollectionSkeleton() {
   return (

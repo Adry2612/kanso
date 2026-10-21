@@ -19,6 +19,7 @@ import {
 import { useTranslations } from "@/context/I18nContext";
 import { getMood, normalizeMoods, type MoodKey } from "@/constants/moods";
 import InlineEmoji from "@/components/InlineEmoji";
+import ErrorState from "@/components/ErrorState";
 import { Skeleton } from "@/components/Skeleton";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Link } from "next-view-transitions";
@@ -217,21 +218,14 @@ export default function RecomendationHistoryPage() {
       </Reveal>
 
       {error ? (
-        <section className="mt-10 max-w-xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-7">
-          <h2 className="text-xl font-semibold text-[var(--foreground)]">
-            {t("error")}
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[var(--kanso-muted)]">
-            {t("errorDescription")}
-          </p>
-          <button
-            type="button"
-            onClick={() => setReloadToken((value) => value + 1)}
-            className="mt-5 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:brightness-105"
-          >
-            {t("retry")}
-          </button>
-        </section>
+        <ErrorState
+          variant="page"
+          className="mt-10"
+          title={t("error")}
+          description={t("errorDescription")}
+          onRetry={() => setReloadToken((value) => value + 1)}
+          retryLabel={t("retry")}
+        />
       ) : recomendationHistory.length === 0 ? (
         <section className="mt-10 max-w-xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-7 text-center">
           <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-2)] text-[var(--kanso-mint)]">

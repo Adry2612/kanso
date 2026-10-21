@@ -4,6 +4,7 @@ import { getRecomendationHistory } from "@/lib/api/recomendation";
 import { authFetch } from "@/lib/api/authFetch";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/Skeleton";
+import ErrorState from "@/components/ErrorState";
 import { useTransitionRouter } from "next-view-transitions";
 import { moodOptions } from "@/constants/moods";
 import { activityOptions } from "@/constants/activities";
@@ -534,12 +535,11 @@ export default function StartPage() {
                 ))}
               </div>
             ) : historyError ? (
-              <p
-                role="alert"
-                className="text-sm leading-relaxed text-[var(--kanso-danger)]"
-              >
-                {historyError}
-              </p>
+              <ErrorState
+                variant="inline"
+                title="No pudimos cargar tus recomendaciones"
+                description={historyError}
+              />
             ) : recentRecommendations.length > 0 ? (
               <Stagger className="grid gap-2" stagger={0.05} onMount>
                 {recentRecommendations.map((item) => (

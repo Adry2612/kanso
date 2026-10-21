@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "@/context/I18nContext";
+import { Skeleton } from "@/components/Skeleton";
 import { Stagger, StaggerItem } from "./motion";
 
 /**
@@ -28,8 +29,26 @@ export default function AlbumTracklist({
 
   if (loading) {
     return (
-      <div className="mt-8 text-sm text-[var(--kanso-muted)]">
-        {t("loading")}
+      <div className={className} aria-busy="true">
+        <span className="sr-only">{t("loading")}</span>
+        <div className="mb-3 flex items-center gap-2">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+        <div className="border-t border-[var(--kanso-line)]">
+          {Array.from({ length: 9 }, (_, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-[30px_1fr] items-center gap-3 border-b border-[var(--kanso-line)] px-1 py-3"
+            >
+              <Skeleton className="h-3 w-4" />
+              <div className="space-y-2">
+                <Skeleton className="h-3.5 w-3/5" />
+                <Skeleton className="h-2.5 w-1/3" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

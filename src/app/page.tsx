@@ -1,12 +1,22 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify */
 import { Link, useTransitionRouter } from "next-view-transitions";
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { signInAsGuest } from "@/lib/firebaseAuth";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
 import { Reveal, Stagger, StaggerItem, motion } from "@/components/motion";
+import { Skeleton } from "@/components/Skeleton";
+import ErrorState from "@/components/ErrorState";
+
+type LandingAlbum = {
+  id: string;
+  name: string;
+  images: { url: string }[];
+  artists: { name: string }[];
+};
 
 const startingPoints = [
   {
@@ -26,26 +36,55 @@ const startingPoints = [
   },
 ];
 
-const albums = [
-  {
-    title: "Soft focus",
-    detail: "Calma · Concentración",
-    color: "var(--kanso-mint)",
-  },
-  {
-    title: "Late afternoon",
-    detail: "Ligero · Descubrimiento",
-    color: "#c8b99a",
-  },
-  { title: "Night drive", detail: "Intenso · Movimiento", color: "#8ca7a0" },
-];
+function LandingAlbumsSkeleton() {
+  return (
+    <div className="divide-y divide-[var(--kanso-line)]" aria-hidden="true">
+      {[0, 1, 2].map((index) => (
+        <div key={index} className="flex items-center gap-4 py-5">
+          <Skeleton className="h-16 w-16 shrink-0 rounded-[var(--radius-xs)]" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+          <Skeleton className="h-4 w-4" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Home() {
   const { user } = useAuth();
   const router = useTransitionRouter();
   const [isStartingGuest, setIsStartingGuest] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
+  const [landingAlbums, setLandingAlbums] = useState<LandingAlbum[] | null>(
+    null,
+  );
+  const [albumsError, setAlbumsError] = useState(false);
   const startHref = user ? "/home" : "/login?mode=register";
+
+  const loadLandingAlbums = useCallback(async () => {
+    setLandingAlbums(null);
+    setAlbumsError(false);
+
+    try {
+      const response = await fetch("/api/communityAlbums", {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("No se pudieron cargar los álbumes");
+
+      const data = await response.json();
+      setLandingAlbums((data.albums ?? []).slice(0, 3));
+    } catch {
+      setLandingAlbums([]);
+      setAlbumsError(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadLandingAlbums();
+  }, [loadLandingAlbums]);
 
   const handleGuestStart = async () => {
     setGuestError(null);
@@ -114,46 +153,45 @@ export default function Home() {
               </p>
             </Reveal>
             <Reveal delay={0.24}>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-                  <Link
-                    href={startHref}
-                    className="public-button px-6 py-3.5 text-sm"
-                  >
-                    Crear mi cuenta
-                  </Link>
-                </motion.div>
-                <motion.button
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href={startHref}
+                  className="public-button inline-flex min-h-12 flex-1 items-center justify-center px-6 py-3.5 text-center text-sm"
+                >
+                  Crear mi cuenta
+                </Link>
+                <button
                   type="button"
                   onClick={handleGuestStart}
                   disabled={isStartingGuest}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="public-button-secondary px-6 py-3.5 text-sm disabled:opacity-60"
+                  className="public-button-secondary inline-flex min-h-12 flex-1 items-center justify-center px-6 py-3.5 text-sm disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isStartingGuest ? "Preparando..." : "Probar sin registrarme"}
-                </motion.button>
-                <Link
-                  href="/login?mode=login"
-                  className="public-button-secondary px-6 py-3.5 text-sm"
-                >
-                  Ya tengo cuenta
-                </Link>
+                </button>
               </div>
+              <Link
+                href="/login?mode=login"
+                className="public-muted mt-4 inline-flex items-center gap-1.5 text-sm font-medium transition hover:text-[var(--foreground)]"
+              >
+                Ya tengo cuenta
+                <span aria-hidden="true">→</span>
+              </Link>
             </Reveal>
             {guestError && (
-              <div
-                role="alert"
-                className="mt-3 text-sm text-red-600 dark:text-red-300"
-              >
-                <p>{guestError}</p>
-                <Link
-                  href="/login?mode=register"
-                  className="mt-1 inline-block font-semibold underline"
-                >
-                  Crear una cuenta
-                </Link>
-              </div>
+              <ErrorState
+                variant="inline"
+                className="mt-4"
+                title="No pudimos preparar tu sesión de prueba"
+                description={guestError}
+                action={
+                  <Link
+                    href="/login?mode=register"
+                    className="text-xs font-semibold text-[var(--kanso-mint)] underline-offset-2 hover:underline"
+                  >
+                    Crear una cuenta
+                  </Link>
+                }
+              />
             )}
           </div>
           <Reveal delay={0.18} y={30}>
@@ -165,44 +203,87 @@ export default function Home() {
                   </p>
                   <h2 className="display mt-2 text-2xl">Para escuchar ahora</h2>
                 </div>
-                <span className="public-muted text-xs">03 álbumes</span>
+                <span className="public-muted text-xs">
+                  {landingAlbums === null
+                    ? "—"
+                    : `${String(landingAlbums.length).padStart(2, "0")} álbumes`}
+                </span>
               </div>
-              <Stagger
-                className="divide-y divide-[var(--kanso-line)]"
-                stagger={0.09}
-              >
-                {albums.map((album, index) => (
-                  <StaggerItem key={album.title}>
-                    <motion.div
-                      whileHover={{ x: 4 }}
-                      className="flex items-center gap-4 py-5"
-                    >
-                      <div
-                        className="flex h-16 w-16 shrink-0 items-end justify-end rounded-[var(--radius-xs)] p-2 shadow-[0_10px_30px_-12px_hsl(var(--shadow-tint)/0.9)]"
-                        style={{
-                          background: `linear-gradient(145deg, ${album.color}, var(--background))`,
-                        }}
+
+              {landingAlbums === null && <LandingAlbumsSkeleton />}
+
+              {albumsError && (
+                <ErrorState
+                  variant="inline"
+                  className="my-5"
+                  title="No pudimos cargar la muestra"
+                  description="La comunidad no responde ahora mismo."
+                  onRetry={() => void loadLandingAlbums()}
+                />
+              )}
+
+              {!albumsError && landingAlbums?.length === 0 && (
+                <div className="py-8">
+                  <p className="public-muted text-sm leading-6">
+                    Todavía no hay álbumes compartidos. Explora el catálogo y
+                    guarda el primero.
+                  </p>
+                  <Link
+                    href="/search"
+                    className="public-accent mt-3 inline-flex text-sm font-semibold"
+                  >
+                    Explorar discos →
+                  </Link>
+                </div>
+              )}
+
+              {!albumsError && landingAlbums && landingAlbums.length > 0 && (
+                <Stagger
+                  className="divide-y divide-[var(--kanso-line)]"
+                  stagger={0.09}
+                >
+                  {landingAlbums.map((album) => (
+                    <StaggerItem key={album.id}>
+                      <Link
+                        href={`/albums/${album.id}`}
+                        className="group flex items-center gap-4 py-5 transition-transform hover:translate-x-1"
                       >
-                        <span className="text-xs font-bold opacity-70">
-                          0{index + 1}
+                        <span className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-[var(--radius-xs)] shadow-[0_10px_30px_-12px_hsl(var(--shadow-tint)/0.9)]">
+                          {album.images[0]?.url ? (
+                            <img
+                              loading="lazy"
+                              decoding="async"
+                              src={album.images[0].url}
+                              alt=""
+                              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center bg-[var(--surface-3)] text-lg text-[var(--kanso-mint)]">
+                              ♪
+                            </span>
+                          )}
                         </span>
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="truncate text-lg font-medium tracking-[-.03em]">
-                          {album.title}
-                        </h3>
-                        <p className="public-muted mt-1 text-sm">
-                          {album.detail}
-                        </p>
-                      </div>
-                      <span className="public-muted ml-auto text-lg">↗</span>
-                    </motion.div>
-                  </StaggerItem>
-                ))}
-              </Stagger>
+                        <span className="min-w-0">
+                          <span className="block truncate text-lg font-medium tracking-[-.03em]">
+                            {album.name}
+                          </span>
+                          <span className="public-muted mt-1 block truncate text-sm">
+                            {album.artists
+                              .map((artist) => artist.name)
+                              .join(", ")}
+                          </span>
+                        </span>
+                        <span className="public-muted ml-auto text-lg transition-transform group-hover:translate-x-0.5">
+                          ↗
+                        </span>
+                      </Link>
+                    </StaggerItem>
+                  ))}
+                </Stagger>
+              )}
               <div className="public-muted flex items-center justify-between border-t border-[var(--kanso-line)] pt-5 text-xs">
-                <span>Basado en tu colección</span>
-                <span className="public-accent">Personalizado</span>
+                <span>Guardados por la comunidad</span>
+                <span className="public-accent">En directo</span>
               </div>
             </div>
           </Reveal>

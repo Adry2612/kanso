@@ -6,6 +6,7 @@ import { useTranslations } from "@/context/I18nContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import ArtistCard from "@/components/ArtistCard";
 import { ArtistGridSkeleton } from "@/components/ContentSkeletons";
+import ErrorState from "@/components/ErrorState";
 import { Stagger, StaggerItem } from "@/components/motion";
 import {
   getUserArtists,
@@ -22,6 +23,7 @@ export default function ArtistsPage() {
   const [results, setResults] = useState<ArtistLite[]>([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const [favorites, setFavorites] = useState<ArtistLite[]>([]);
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
   const hasQuery = query.trim().length > 0;
@@ -69,7 +71,7 @@ export default function ArtistsPage() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery]);
+  }, [debouncedQuery, reloadToken]);
 
   const handleToggle = async (artist: ArtistLite) => {
     if (!user) return;
@@ -116,9 +118,13 @@ export default function ArtistsPage() {
             </div>
           )}
           {error && (
-            <p role="alert" className="text-sm text-[var(--kanso-danger)]">
-              {error}
-            </p>
+            <ErrorState
+              variant="inline"
+              className="mb-5"
+              title={t("error")}
+              description={t("errorDescription")}
+              onRetry={() => setReloadToken((value) => value + 1)}
+            />
           )}
           {!searching && !error && results.length === 0 && (
             <p className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">

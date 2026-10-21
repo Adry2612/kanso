@@ -8,6 +8,7 @@ import { useTranslations } from "@/context/I18nContext";
 import { ReleaseGridSkeleton } from "@/components/ContentSkeletons";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { getArtistReleases, type ArtistRelease } from "@/lib/api/artists";
+import ErrorState from "@/components/ErrorState";
 
 export default function ReleasesPage() {
   const t = useTranslations("releases");
@@ -15,6 +16,7 @@ export default function ReleasesPage() {
   const router = useTransitionRouter();
   const [releases, setReleases] = useState<ArtistRelease[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -40,7 +42,7 @@ export default function ReleasesPage() {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid]);
+  }, [user?.uid, reloadToken]);
 
   const groups = useMemo(() => {
     const byMonth = new Map<string, ArtistRelease[]>();
@@ -93,9 +95,12 @@ export default function ReleasesPage() {
         )}
 
         {error && (
-          <p role="alert" className="mt-9 text-sm text-[var(--kanso-danger)]">
-            {t("error")}
-          </p>
+          <ErrorState
+            className="mt-9"
+            title={t("error")}
+            description={t("errorDescription")}
+            onRetry={() => setReloadToken((value) => value + 1)}
+          />
         )}
 
         {releases !== null && !error && groups.length === 0 && (

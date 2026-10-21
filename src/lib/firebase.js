@@ -1,6 +1,10 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  getAuth,
+  setPersistence,
+} from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -24,3 +28,17 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // const analytics = getAnalytics(app);
 export const auth = getAuth(app);
+
+// La sesión se guarda explícitamente en localStorage para que sobreviva a una
+// recarga (y a las pestañas nuevas) también en navegadores donde IndexedDB se
+// limpia con más agresividad. Firebase ya usa persistencia local por defecto,
+// pero fijarla aquí evita depender de esa heurística del SDK.
+export const authPersistenceReady = setPersistence(
+  auth,
+  browserLocalPersistence,
+).catch((error) => {
+  console.error(
+    "No se pudo activar la persistencia local de la sesión:",
+    error,
+  );
+});

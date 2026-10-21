@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { authFetch } from "@/lib/api/authFetch";
 import { getMood } from "@/constants/moods";
 import InlineEmoji from "@/components/InlineEmoji";
+import ErrorState from "@/components/ErrorState";
 
 export default function UserFavorites() {
   const t = useTranslations("favorites");
@@ -124,24 +125,13 @@ export default function UserFavorites() {
   if (error) {
     return (
       <main className="kanso-main min-h-screen">
-        <section className="mt-20 max-w-xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-7">
-          <h1 className="text-xl font-semibold text-[var(--foreground)]">
-            No pudimos cargar tu colección
-          </h1>
-          <p
-            role="alert"
-            className="mt-2 text-sm leading-relaxed text-[var(--kanso-danger)]"
-          >
-            {error}
-          </p>
-          <button
-            type="button"
-            onClick={() => user?.uid && fetchFavorites()}
-            className="mt-5 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)]"
-          >
-            Reintentar
-          </button>
-        </section>
+        <ErrorState
+          variant="page"
+          className="mt-20"
+          title={t("error")}
+          description={t("errorDescription")}
+          onRetry={() => user?.uid && fetchFavorites()}
+        />
       </main>
     );
   }
