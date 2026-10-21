@@ -176,7 +176,20 @@
     "track": "Track",
     "duration": "Duration",
     "artist": "Artist",
-    "releaseDate": "Release date"
+    "releaseDate": "Release date",
+    "myRecord": "Your record",
+    "recordSummaryEmpty": "Nothing saved yet",
+    "emotions": "Moods",
+    "activities": "Activities",
+    "format": "Format",
+    "noEmotions": "No moods associated",
+    "noActivities": "No activities associated",
+    "noFormat": "No format associated",
+    "noTags": "No language or genre",
+    "formatDigital": "Digital",
+    "formatVinyl": "Vinyl",
+    "formatCd": "CD",
+    "formatCassette": "Cassette"
   },
   "modal": {
     "close": "Close",

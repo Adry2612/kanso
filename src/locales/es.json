@@ -176,7 +176,20 @@
     "track": "Pista",
     "duration": "Duración",
     "artist": "Artista",
-    "releaseDate": "Fecha de lanzamiento"
+    "releaseDate": "Fecha de lanzamiento",
+    "myRecord": "Tu registro",
+    "recordSummaryEmpty": "Sin datos guardados",
+    "emotions": "Emociones",
+    "activities": "Actividades",
+    "format": "Formato",
+    "noEmotions": "Sin emociones asociadas",
+    "noActivities": "Sin actividades asociadas",
+    "noFormat": "Sin formato asociado",
+    "noTags": "Sin idioma ni género",
+    "formatDigital": "Digital",
+    "formatVinyl": "Vinilo",
+    "formatCd": "CD",
+    "formatCassette": "Cassette"
   },
   "modal": {
     "close": "Cerrar",
