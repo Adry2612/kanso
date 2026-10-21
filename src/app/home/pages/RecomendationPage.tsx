@@ -16,6 +16,7 @@ import { useTranslations } from "@/context/I18nContext";
 import { useTransitionRouter } from "next-view-transitions";
 import { Reveal } from "@/components/motion";
 import { getMood } from "@/constants/moods";
+import { getActivity } from "@/constants/activities";
 import { Skeleton } from "@/components/Skeleton";
 import { openSpotify } from "@/lib/spotifyUtils";
 import React, { useEffect, useState } from "react";
@@ -54,6 +55,7 @@ export default function RecomendationPage({
   const activityLabel = activity
     ? getActivityLabel(activity, tActivities)
     : null;
+  const activityEmoji = activity ? getActivity(activity)?.emoji : undefined;
   const [recomendedAlbum, setRecomendedAlbum] = useState<RecommendedAlbum>();
   const [albumTracklist, setAlbumTracklist] = useState<Track[] | null>(null);
   const [tracklistLoading, setTracklistLoading] = useState(false);
@@ -232,7 +234,7 @@ export default function RecomendationPage({
                         aria-hidden="true"
                         className="text-[var(--kanso-mint)]"
                       >
-                        {option?.symbol ?? "✦"}
+                        {option?.emoji ?? "🎵"}
                       </span>
                       {option ? tMoods(option.key) : mood}
                     </span>
@@ -295,7 +297,7 @@ export default function RecomendationPage({
             <p className="mt-6 max-w-lg text-sm leading-relaxed text-[var(--kanso-muted)]">
               Un álbum seleccionado a partir de tu{" "}
               {activity
-                ? `actividad: ${activityLabel || activity}`
+                ? `actividad: ${activityEmoji ? `${activityEmoji} ` : ""}${activityLabel || activity}`
                 : "estado de ánimo y tus favoritos"}
               .
             </p>

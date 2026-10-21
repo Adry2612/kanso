@@ -291,7 +291,7 @@ export default function SearchPage() {
                             onClick={() => setQuery(item?.label || mood)}
                             className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                           >
-                            {item?.symbol} {item?.label}
+                            {item?.emoji} {item?.label}
                           </button>
                         );
                       })}
@@ -397,7 +397,7 @@ export default function SearchPage() {
                           onClick={() => setQuery(item?.label || mood)}
                           className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                         >
-                          {item?.symbol} {item?.label}
+                          {item?.emoji} {item?.label}
                         </button>
                       );
                     })}

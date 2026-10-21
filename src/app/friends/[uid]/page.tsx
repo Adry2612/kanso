@@ -26,6 +26,7 @@ import type {
 } from "@/lib/friendLibrary";
 import { formatTime, groupByDate } from "@/utils/dateHelpers";
 import { openSpotify } from "@/lib/spotifyUtils";
+import { getMood } from "@/constants/moods";
 
 function loginHref(uid: string, mode: "login" | "register") {
   const next = `/friends/${uid}`;
@@ -42,6 +43,7 @@ export default function SharedFriendProfilePage() {
   const uid = String(params?.uid ?? "");
   const { user, loading: authLoading } = useAuth();
   const t = useTranslations("friends");
+  const tMoods = useTranslations("moods");
   const tRef = useRef(t);
   tRef.current = t;
 
@@ -453,8 +455,12 @@ export default function SharedFriendProfilePage() {
                                   {formatTime(item.providedAt)}
                                 </span>
                                 {item.moods.length > 0 && (
-                                  <span className="text-xs text-[var(--kanso-muted)]">
-                                    {item.moods.join(", ")}
+                                  <span className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-[var(--kanso-muted)]">
+                                    {item.moods.map((mood) => (
+                                      <span key={mood}>
+                                        {getMood(mood)?.emoji} {tMoods(mood)}
+                                      </span>
+                                    ))}
                                   </span>
                                 )}
                               </div>

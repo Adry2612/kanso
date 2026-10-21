@@ -8,6 +8,7 @@ import ArtistBackdrop from "./ArtistBackdrop";
 import MoodBubble from "@/components/MoodBubble";
 import ModalShell from "@/components/ModalShell";
 import { useTranslations } from "@/context/I18nContext";
+import { getActivity } from "@/constants/activities";
 
 interface AlbumAlreadyFavoriteStepProps {
   isOpen: boolean;
@@ -98,7 +99,7 @@ export const AlbumAlreadyFavoriteStep = ({
                     key={activity}
                     className="rounded-full border border-[var(--kanso-line-strong)] px-3 py-1.5 text-xs text-[var(--kanso-muted)]"
                   >
-                    {tActivities(activity)}
+                    {getActivity(activity)?.emoji} {tActivities(activity)}
                   </span>
                 ))
               ) : (

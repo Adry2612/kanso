@@ -5,6 +5,8 @@ import { Music2 } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
 import { openSpotify } from "@/lib/spotifyUtils";
 import type { SharedCollectionAlbum } from "@/lib/friendLibrary";
+import { getMood } from "@/constants/moods";
+import { getActivity } from "@/constants/activities";
 
 interface SharedAlbumCardProps {
   item: SharedCollectionAlbum;
@@ -58,7 +60,7 @@ export default function SharedAlbumCard({ item }: SharedAlbumCardProps) {
                 key={`mood-${mood}`}
                 className="rounded-full bg-[var(--kanso-mint)]/10 px-2 py-0.5 text-[10px] font-semibold text-[var(--kanso-mint)]"
               >
-                {tMoods(mood)}
+                {getMood(mood)?.emoji} {tMoods(mood)}
               </span>
             ))}
             {item.activities.map((activity) => (
@@ -66,7 +68,7 @@ export default function SharedAlbumCard({ item }: SharedAlbumCardProps) {
                 key={`activity-${activity}`}
                 className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[var(--kanso-muted)]"
               >
-                {tActivities(activity)}
+                {getActivity(activity)?.emoji} {tActivities(activity)}
               </span>
             ))}
           </div>

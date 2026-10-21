@@ -9,3 +9,9 @@ export const activityOptions = [
   { id: "chores", icon: "＋", emoji: "🧹" },
   { id: "party", icon: "♪", emoji: "🎉" },
 ] as const;
+
+/** Resuelve una actividad guardada a su entrada canónica del catálogo. */
+export function getActivity(id: unknown) {
+  if (typeof id !== "string") return undefined;
+  return activityOptions.find((activity) => activity.id === id);
+}

@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { undoFavorite } from "@/lib/api/favorites";
 import { authFetch } from "@/lib/api/authFetch";
 import { getMood, normalizeMoods } from "@/constants/moods";
+import { getActivity } from "@/constants/activities";
 import { FavoriteFormat } from "@/types/favorites";
 import type { Album } from "../../../../models/album";
 import TagList, { type Tag } from "@/components/TagList";
@@ -304,7 +305,7 @@ export default function AlbumDetail() {
                             key={mood}
                             className="rounded-full bg-[var(--kanso-mint)]/10 px-3 py-1.5 text-xs text-[var(--kanso-mint)]"
                           >
-                            {item?.symbol} {tMoods(mood)}
+                            {item?.emoji} {tMoods(mood)}
                           </span>
                         );
                       })}
@@ -323,7 +324,7 @@ export default function AlbumDetail() {
                           key={activity}
                           className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
                         >
-                          {tActivities(activity)}
+                          {getActivity(activity)?.emoji} {tActivities(activity)}
                         </span>
                       ))}
                     </div>
