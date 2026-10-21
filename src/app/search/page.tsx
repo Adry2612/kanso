@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { getMood, normalizeMoods } from "@/constants/moods";
+import InlineEmoji from "@/components/InlineEmoji";
 import { Link } from "next-view-transitions";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { authFetch } from "@/lib/api/authFetch";
@@ -291,7 +292,8 @@ export default function SearchPage() {
                             onClick={() => setQuery(item?.label || mood)}
                             className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                           >
-                            {item?.emoji} {item?.label}
+                            <InlineEmoji emoji={item?.emoji} />
+                            {item?.label}
                           </button>
                         );
                       })}
@@ -397,7 +399,8 @@ export default function SearchPage() {
                           onClick={() => setQuery(item?.label || mood)}
                           className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                         >
-                          {item?.emoji} {item?.label}
+                          <InlineEmoji emoji={item?.emoji} />
+                          {item?.label}
                         </button>
                       );
                     })}

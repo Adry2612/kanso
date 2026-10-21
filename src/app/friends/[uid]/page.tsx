@@ -27,6 +27,7 @@ import type {
 import { formatTime, groupByDate } from "@/utils/dateHelpers";
 import { openSpotify } from "@/lib/spotifyUtils";
 import { getMood } from "@/constants/moods";
+import InlineEmoji from "@/components/InlineEmoji";
 
 function loginHref(uid: string, mode: "login" | "register") {
   const next = `/friends/${uid}`;
@@ -458,7 +459,10 @@ export default function SharedFriendProfilePage() {
                                   <span className="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-[var(--kanso-muted)]">
                                     {item.moods.map((mood) => (
                                       <span key={mood}>
-                                        {getMood(mood)?.emoji} {tMoods(mood)}
+                                        <InlineEmoji
+                                          emoji={getMood(mood)?.emoji}
+                                        />
+                                        {tMoods(mood)}
                                       </span>
                                     ))}
                                   </span>

@@ -159,6 +159,13 @@ button:active {
   right: max(1rem, env(safe-area-inset-right));
 }
 
+/* Separación uniforme entre un emoji y su etiqueta en chips y listas. */
+.emoji-inline {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding-right: 0.1rem;
+}
+
 /* Cajón de pantallas estrechas. `visibility` —y no solo el desplazamiento— deja
    el panel fuera del orden de tabulación mientras está cerrado; se retrasa para
    que la salida se vea. */

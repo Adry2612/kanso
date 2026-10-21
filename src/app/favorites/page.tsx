@@ -17,6 +17,7 @@ import { normalizeTagCategory, tagKey } from "@/lib/tags";
 import { Skeleton } from "@/components/Skeleton";
 import { authFetch } from "@/lib/api/authFetch";
 import { getMood } from "@/constants/moods";
+import InlineEmoji from "@/components/InlineEmoji";
 
 export default function UserFavorites() {
   const t = useTranslations("favorites");
@@ -215,7 +216,8 @@ export default function UserFavorites() {
               key={mood}
               className="px-3 py-1 bg-green-900/30 text-green-400 text-sm rounded-full border border-green-400/30 flex items-center gap-2"
             >
-              {getMood(mood)?.emoji} {tMoods(mood)}
+              <InlineEmoji emoji={getMood(mood)?.emoji} />
+              {tMoods(mood)}
               <button
                 onClick={() => {
                   const newMoods = filters.moods.filter((m) => m !== mood);

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
 import { getMood, normalizeMoods, type MoodKey } from "@/constants/moods";
+import InlineEmoji from "@/components/InlineEmoji";
 import { Skeleton } from "@/components/Skeleton";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Link } from "next-view-transitions";
@@ -330,7 +331,8 @@ export default function RecomendationHistoryPage() {
                         : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]/50"
                     }`}
                   >
-                    {getMood(mood)?.emoji} {tMoods(mood)}
+                    <InlineEmoji emoji={getMood(mood)?.emoji} />
+                    {tMoods(mood)}
                   </button>
                 ))}
               </div>
@@ -415,7 +417,10 @@ export default function RecomendationHistoryPage() {
                                       key={mood}
                                       className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur"
                                     >
-                                      {getMood(mood)?.emoji} {tMoods(mood)}
+                                      <InlineEmoji
+                                        emoji={getMood(mood)?.emoji}
+                                      />
+                                      {tMoods(mood)}
                                     </span>
                                   ))}
                                   {itemMoods.length > 2 && (
@@ -510,7 +515,10 @@ export default function RecomendationHistoryPage() {
                                       key={mood}
                                       className="rounded-full bg-[var(--kanso-mint)]/10 px-2 py-0.5 text-[10px] font-semibold text-[var(--kanso-mint)]"
                                     >
-                                      {getMood(mood)?.emoji} {tMoods(mood)}
+                                      <InlineEmoji
+                                        emoji={getMood(mood)?.emoji}
+                                      />
+                                      {tMoods(mood)}
                                     </span>
                                   ))}
                                   {itemMoods.length > 3 && (

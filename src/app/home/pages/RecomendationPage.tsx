@@ -17,6 +17,7 @@ import { useTransitionRouter } from "next-view-transitions";
 import { Reveal } from "@/components/motion";
 import { getMood } from "@/constants/moods";
 import { getActivity } from "@/constants/activities";
+import InlineEmoji from "@/components/InlineEmoji";
 import { Skeleton } from "@/components/Skeleton";
 import { openSpotify } from "@/lib/spotifyUtils";
 import React, { useEffect, useState } from "react";
@@ -317,7 +318,7 @@ export default function RecomendationPage({
                     key={feeling.label}
                     className="rounded-full border border-[var(--kanso-line)] px-3 py-1.5 text-xs text-[var(--kanso-muted)]"
                   >
-                    {feeling.emoji}{" "}
+                    <InlineEmoji emoji={feeling.emoji} />
                     {tMoods(moodLabelToKey[feeling.label] ?? feeling.label)}
                   </span>
                 ))}

@@ -21,6 +21,7 @@ import { getActivity } from "@/constants/activities";
 import { FavoriteFormat } from "@/types/favorites";
 import type { Album } from "../../../../models/album";
 import TagList, { type Tag } from "@/components/TagList";
+import InlineEmoji from "@/components/InlineEmoji";
 
 type FavoriteRecord = {
   labeledFeelings?: string[];
@@ -305,7 +306,8 @@ export default function AlbumDetail() {
                             key={mood}
                             className="rounded-full bg-[var(--kanso-mint)]/10 px-3 py-1.5 text-xs text-[var(--kanso-mint)]"
                           >
-                            {item?.emoji} {tMoods(mood)}
+                            <InlineEmoji emoji={item?.emoji} />
+                            {tMoods(mood)}
                           </span>
                         );
                       })}
@@ -324,7 +326,8 @@ export default function AlbumDetail() {
                           key={activity}
                           className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
                         >
-                          {getActivity(activity)?.emoji} {tActivities(activity)}
+                          <InlineEmoji emoji={getActivity(activity)?.emoji} />
+                          {tActivities(activity)}
                         </span>
                       ))}
                     </div>
