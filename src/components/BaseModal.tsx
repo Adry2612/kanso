@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { BaseModalProps } from "@/types/components";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import ModalShell from "./ModalShell";
 
 export default function BaseModal({
@@ -11,20 +11,7 @@ export default function BaseModal({
   children,
   footer,
 }: BaseModalProps) {
-  useEffect(() => {
-    if (isOpen) {
-      // Bloquear scroll del body cuando el modal está abierto
-      document.body.style.overflow = "hidden";
-    } else {
-      // Restaurar scroll del body cuando el modal se cierra
-      document.body.style.overflow = "unset";
-    }
-
-    // Cleanup: restaurar scroll al desmontar
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   return (
     <ModalShell isOpen={isOpen} onClose={onClose} size="md">

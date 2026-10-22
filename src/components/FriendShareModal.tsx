@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import ModalShell from "@/components/ModalShell";
 import { useTranslations } from "@/context/I18nContext";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import type { FriendProfile } from "@/types/friends";
 
 type FriendShareModalProps = {
@@ -22,6 +23,7 @@ export default function FriendShareModal({
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useScrollLock(isOpen);
 
   const link = profile ? `${origin}/f/${profile.friendCode}` : "";
 
@@ -32,12 +34,6 @@ export default function FriendShareModal({
     setCopied(false);
     setError(null);
     setCanShare(typeof navigator.share === "function");
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
   }, [isOpen]);
 
   useEffect(() => {
