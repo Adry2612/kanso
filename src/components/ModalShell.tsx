@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { IoClose } from "react-icons/io5";
 import { AnimatePresence, motion } from "./motion";
 
@@ -43,6 +43,37 @@ export default function ModalShell({
   closeLabel = "Cerrar",
   className = "",
 }: ModalShellProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Al abrir, el foco entra en el modal; al cerrar, vuelve al disparador.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previous =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onCloseRef.current();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previous?.focus();
+    };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -72,6 +103,7 @@ export default function ModalShell({
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
           >
             <button
+              ref={closeButtonRef}
               type="button"
               onClick={onClose}
               aria-label={closeLabel}

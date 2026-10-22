@@ -4,8 +4,14 @@ import { Album } from "../../../../../models/album";
 import { SuccessModal } from "./steps/SuccessAlbumModal";
 import { SaveAlbumModal } from "./steps/SaveAlbumModal";
 import { AlbumAlreadyFavoriteStep } from "./steps/AlbumAlreadyFavoriteStep";
+import { AlbumAlreadyPendingStep } from "./steps/AlbumAlreadyPendingStep";
 import { getMood } from "@/constants/moods";
-import { FavoriteFormat } from "@/types/favorites";
+import {
+  AlbumSaveDestination,
+  FavoriteFormat,
+  ListenLaterAlbum,
+  SaveAlbumResult,
+} from "@/types/favorites";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
@@ -14,9 +20,15 @@ interface ModalProps {
   onClose: () => void;
   album: Album;
   isFavorite?: boolean;
+  isPending?: boolean;
+  pendingData?: ListenLaterAlbum | null;
   onSaved?: (favoriteData: any) => void;
+  onPendingSaved?: (pendingAlbum: ListenLaterAlbum | null) => void;
+  onPendingRemoved?: () => void;
   favoriteData?: any;
   startEditing?: boolean;
+  /** Abre directamente el formulario de colección para mover un pendiente. */
+  startMovingToCollection?: boolean;
 }
 interface Moods {
   label: string;
@@ -28,14 +40,24 @@ export default function SelectedAlbumModal({
   onClose,
   album,
   isFavorite = false,
+  isPending = false,
+  pendingData = null,
   onSaved,
+  onPendingSaved,
+  onPendingRemoved,
   favoriteData,
   startEditing = false,
+  startMovingToCollection = false,
 }: ModalProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [feelings, setFeelings] = useState<Array<Moods>>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [savedAsEdit, setSavedAsEdit] = useState(false);
+  const [savedDestination, setSavedDestination] =
+    useState<AlbumSaveDestination>("collection");
+  const [forceCollection, setForceCollection] = useState(
+    startMovingToCollection && isPending,
+  );
   useScrollLock(isOpen);
 
   // Las claves guardadas son canónicas: resolvemos la marca (emoji/símbolo) del
@@ -60,6 +82,8 @@ export default function SelectedAlbumModal({
       setIsSaved(false);
       setIsEditing(startEditing);
       setSavedAsEdit(false);
+      setSavedDestination("collection");
+      setForceCollection(startMovingToCollection && isPending);
       setFeelings([]);
     }
 
@@ -70,9 +94,31 @@ export default function SelectedAlbumModal({
 
   const stepKey = isSaved
     ? "success"
-    : isFavorite && !isEditing
+    : isFavorite && !isEditing && !forceCollection
       ? "favorite"
-      : "save";
+      : isPending && !isEditing && !forceCollection
+        ? "pending"
+        : "save";
+
+  const handleSave = (savedData: SaveAlbumResult) => {
+    setSavedDestination(savedData.destination);
+    setSavedAsEdit(isEditing && savedData.destination === "collection");
+    setIsSaved(true);
+    setIsEditing(false);
+    setForceCollection(false);
+
+    if (savedData.destination === "pending") {
+      onPendingSaved?.(savedData.listenLater ?? null);
+      return;
+    }
+
+    onSaved?.({ ...savedData, labeledFeelings: savedData.feelings });
+  };
+
+  const handlePendingRemoved = () => {
+    onPendingRemoved?.();
+    onClose();
+  };
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -90,8 +136,10 @@ export default function SelectedAlbumModal({
             album={album}
             feelings={feelings}
             isEditing={savedAsEdit}
+            destination={savedDestination}
+            onPendingRemoved={onPendingRemoved}
           />
-        ) : isFavorite && !isEditing ? (
+        ) : isFavorite && !isEditing && !forceCollection ? (
           <AlbumAlreadyFavoriteStep
             isOpen={isOpen}
             onClose={onClose}
@@ -99,6 +147,15 @@ export default function SelectedAlbumModal({
             feelings={savedFeelings}
             activities={favoriteData?.activities || []}
             onEdit={() => setIsEditing(true)}
+          />
+        ) : isPending && !isEditing && !forceCollection ? (
+          <AlbumAlreadyPendingStep
+            isOpen={isOpen}
+            onClose={onClose}
+            album={album}
+            pendingData={pendingData}
+            onMoveToCollection={() => setForceCollection(true)}
+            onRemoved={handlePendingRemoved}
           />
         ) : (
           <SaveAlbumModal
@@ -118,17 +175,8 @@ export default function SelectedAlbumModal({
             }
             initialTags={isEditing ? favoriteData?.tags || [] : []}
             isEditing={isEditing}
-            onSave={(savedData) => {
-              setSavedAsEdit(isEditing);
-              setIsSaved(true);
-              setIsEditing(false);
-              onSaved?.(
-                savedData || {
-                  albumId: album.id,
-                  labeledFeelings: feelings,
-                },
-              );
-            }}
+            forceCollection={forceCollection}
+            onSave={handleSave}
           />
         )}
       </motion.div>

@@ -15,10 +15,11 @@ import { Trash2Icon } from "lucide-react";
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
 import { useAuth } from "@/context/AuthContext";
 import { undoFavorite } from "@/lib/api/favorites";
+import { getListenLater, removeFromListenLater } from "@/lib/api/listenLater";
 import { authFetch } from "@/lib/api/authFetch";
 import { getMood, normalizeMoods } from "@/constants/moods";
 import { getActivity } from "@/constants/activities";
-import { FavoriteFormat } from "@/types/favorites";
+import { FavoriteFormat, ListenLaterAlbum } from "@/types/favorites";
 import type { Album } from "../../../../models/album";
 import TagList, { type Tag } from "@/components/TagList";
 import InlineEmoji from "@/components/InlineEmoji";
@@ -74,9 +75,11 @@ export default function AlbumDetail() {
   const imgRef = useRef<HTMLImageElement>(null);
   const { user } = useAuth();
   const [favorite, setFavorite] = useState<FavoriteRecord | null>(null);
+  const [pending, setPending] = useState<ListenLaterAlbum | null>(null);
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [removingPending, setRemovingPending] = useState(false);
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tTags = useTranslations("tags");
@@ -122,23 +125,42 @@ export default function AlbumDetail() {
   useEffect(() => {
     if (!user?.uid || !albumId) {
       setFavorite(null);
+      setPending(null);
       setCollectionLoading(false);
       return;
     }
 
     setCollectionLoading(true);
-    authFetch("/api/userFavorites")
-      .then((response) => (response.ok ? response.json() : { favorites: [] }))
-      .then((data) => {
+    const loadCollectionState = async () => {
+      try {
+        const [favoritesResponse, pendingAlbums] = await Promise.all([
+          authFetch("/api/userFavorites"),
+          getListenLater().catch(() => []),
+        ]);
+        const data = favoritesResponse.ok
+          ? await favoritesResponse.json()
+          : { favorites: [] };
+
         setFavorite(
           (data.favorites || []).find(
             (item: { album?: { id?: string }; albumId?: string }) =>
               (item.album?.id || item.albumId) === albumId,
           ) || null,
         );
-      })
-      .catch(() => setFavorite(null))
-      .finally(() => setCollectionLoading(false));
+        setPending(
+          pendingAlbums.find(
+            (item) => (item.album?.id || item.albumId) === albumId,
+          ) || null,
+        );
+      } catch {
+        setFavorite(null);
+        setPending(null);
+      } finally {
+        setCollectionLoading(false);
+      }
+    };
+
+    loadCollectionState();
   }, [albumId, user?.uid]);
 
   useEffect(() => {
@@ -205,6 +227,17 @@ export default function AlbumDetail() {
       setFavorite(null);
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const removeFromPending = async () => {
+    if (!user?.uid) return;
+    setRemovingPending(true);
+    try {
+      await removeFromListenLater(album as Album);
+      setPending(null);
+    } finally {
+      setRemovingPending(false);
     }
   };
 
@@ -281,6 +314,25 @@ export default function AlbumDetail() {
                     >
                       <Trash2Icon size={17} />
                       {removing ? "Eliminando..." : "Eliminar de la colección"}
+                    </button>
+                  </>
+                ) : pending ? (
+                  <>
+                    <button
+                      onClick={() => setModalOpen(true)}
+                      className="flex items-center justify-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)]"
+                    >
+                      {tModal("moveToCollection")}
+                    </button>
+                    <button
+                      onClick={removeFromPending}
+                      disabled={removingPending}
+                      className="flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-danger)]/40 px-4 py-3 text-sm text-[var(--kanso-danger)] transition hover:bg-[var(--kanso-danger)]/10 disabled:opacity-60"
+                    >
+                      <Trash2Icon size={17} />
+                      {removingPending
+                        ? tModal("removing")
+                        : tModal("removeFromPending")}
                     </button>
                   </>
                 ) : (
@@ -391,6 +443,22 @@ export default function AlbumDetail() {
               </div>
             </aside>
           )}
+          {pending && !favorite && (
+            <aside
+              aria-labelledby="album-pending-title"
+              className="order-first xl:order-none xl:sticky xl:top-8"
+            >
+              <p
+                id="album-pending-title"
+                className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--kanso-muted)]"
+              >
+                {tModal("pendingBadge")}
+              </p>
+              <p className="mt-4 text-sm leading-6 text-[var(--kanso-muted)]">
+                {tModal("pendingDescription")}
+              </p>
+            </aside>
+          )}
         </div>
       </div>
       {modalOpen && (
@@ -399,11 +467,17 @@ export default function AlbumDetail() {
           onClose={() => setModalOpen(false)}
           album={album as Album}
           isFavorite={Boolean(favorite)}
+          isPending={Boolean(pending) && !favorite}
+          pendingData={pending}
           favoriteData={favorite}
           startEditing={Boolean(favorite)}
-          onSaved={(savedFavorite) =>
-            setFavorite((current) => ({ ...current, ...savedFavorite }))
-          }
+          startMovingToCollection={Boolean(pending) && !favorite}
+          onSaved={(savedFavorite) => {
+            setFavorite((current) => ({ ...current, ...savedFavorite }));
+            setPending(null);
+          }}
+          onPendingSaved={(pendingAlbum) => setPending(pendingAlbum)}
+          onPendingRemoved={() => setPending(null)}
         />
       )}
     </main>

@@ -8,9 +8,11 @@ import { LuUndo2 } from "react-icons/lu";
 import { Album } from "../../../../../../models/album";
 import { useFetch } from "@/hooks/useFetch";
 import { undoFavorite } from "@/lib/api/favorites";
+import { removeFromListenLater } from "@/lib/api/listenLater";
 import { useTranslations } from "@/context/I18nContext";
 import MoodBubble from "@/components/MoodBubble";
 import ModalShell from "@/components/ModalShell";
+import type { AlbumSaveDestination } from "@/types/favorites";
 import ArtistBackdrop from "./ArtistBackdrop";
 
 interface SuccessModalProps {
@@ -19,6 +21,8 @@ interface SuccessModalProps {
   album: Album;
   feelings: Array<any>;
   isEditing?: boolean;
+  destination?: AlbumSaveDestination;
+  onPendingRemoved?: () => void;
 }
 
 export const SuccessModal = ({
@@ -27,10 +31,32 @@ export const SuccessModal = ({
   album,
   feelings,
   isEditing = false,
+  destination = "collection",
+  onPendingRemoved,
 }: SuccessModalProps) => {
   const t = useTranslations("modal");
   const router = useRouter();
-  const { execute: removeFavorite, loading } = useFetch(undoFavorite);
+  const { execute: removeFavorite, loading: removingFavorite } =
+    useFetch(undoFavorite);
+  const { execute: removePending, loading: removingPending } = useFetch(
+    removeFromListenLater,
+  );
+  const isPending = destination === "pending";
+  const loading = isPending ? removingPending : removingFavorite;
+
+  const undo = async () => {
+    if (isPending) {
+      const result = await removePending(album);
+      if (result !== null) {
+        onPendingRemoved?.();
+        onClose();
+      }
+      return;
+    }
+
+    await removeFavorite(album);
+    onClose();
+  };
 
   return (
     <ModalShell
@@ -44,7 +70,7 @@ export const SuccessModal = ({
           artistName={album.artists[0]?.name}
         />
       }
-      heroBadge="En tu colección"
+      heroBadge={isPending ? t("pendingBadge") : "En tu colección"}
     >
       <div className="album-art-modal-body">
         <div className="album-modal-album-row border-b border-[var(--kanso-line)] pb-5">
@@ -57,7 +83,11 @@ export const SuccessModal = ({
           />
           <div className="album-modal-album-meta">
             <p className="album-action-modal-eyebrow">
-              {isEditing ? t("albumUpdated") : "Álbum guardado"}
+              {isPending
+                ? t("pendingEyebrow")
+                : isEditing
+                  ? t("albumUpdated")
+                  : "Álbum guardado"}
             </p>
             <h2 className="mt-1 truncate text-2xl font-semibold tracking-[-.05em]">
               {album.name}
@@ -72,19 +102,33 @@ export const SuccessModal = ({
             <FaRegCheckCircle />
           </div>
           <div>
-            <p className="album-action-modal-eyebrow">Colección actualizada</p>
+            <p className="album-action-modal-eyebrow">
+              {isPending ? t("pendingBadge") : "Colección actualizada"}
+            </p>
             <h2
               id="saved-album-title"
               className="mt-1 text-2xl font-semibold tracking-[-.06em]"
             >
-              {t(isEditing ? "updated" : "success")}
+              {t(
+                isPending
+                  ? "pendingSuccess"
+                  : isEditing
+                    ? "updated"
+                    : "success",
+              )}
             </h2>
             <p className="album-action-modal-muted mt-1 text-sm">
-              {t(isEditing ? "updatedToFavorites" : "savedToFavorites")}
+              {t(
+                isPending
+                  ? "savedToListenLater"
+                  : isEditing
+                    ? "updatedToFavorites"
+                    : "savedToFavorites",
+              )}
             </p>
           </div>
         </div>
-        {feelings.length > 0 && (
+        {!isPending && feelings.length > 0 && (
           <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
             <p className="text-sm font-semibold">{t("relatedEmotions")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -97,13 +141,17 @@ export const SuccessModal = ({
       </div>
       <div className="modal-shell-actions modal-shell-actions--roomy">
         <button className="modal-action-secondary" onClick={onClose}>
-          {t(isEditing ? "close" : "addAnother")}
+          {isPending || isEditing ? t("close") : t("addAnother")}
         </button>
         <button
           className="modal-action-primary"
-          onClick={() => router.push("/favorites")}
+          onClick={() =>
+            router.push(
+              isPending ? "/favorites?tab=listen-later" : "/favorites",
+            )
+          }
         >
-          {t("viewCollection")}
+          {t(isPending ? "viewListenLater" : "viewCollection")}
         </button>
       </div>
       {!isEditing && (
@@ -111,7 +159,7 @@ export const SuccessModal = ({
           <button
             className="modal-action-danger w-auto px-4 py-2 text-xs"
             disabled={loading}
-            onClick={() => removeFavorite(album).then(() => onClose())}
+            onClick={undo}
           >
             <LuUndo2 />
             {loading ? "Quitando..." : t("undo")}
