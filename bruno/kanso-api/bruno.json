@@ -1,0 +1,7 @@
+{
+  "version": "1",
+  "name": "Kanso API",
+  "type": "collection",
+  "defaultEnvironment": "Local",
+  "ignore": ["node_modules", ".git"]
+}

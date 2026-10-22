@@ -1,0 +1,24 @@
+meta {
+  name: Remove from listen later
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/listenLater
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "album": {
+      "id": "{{albumId}}"
+    }
+  }
+}

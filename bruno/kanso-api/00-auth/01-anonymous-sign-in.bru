@@ -1,0 +1,31 @@
+meta {
+  name: Anonymous sign in
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{identityToolkitUrl}}/accounts:signUp?key={{firebaseApiKey}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "returnSecureToken": true
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  if (data?.idToken) {
+    bru.setEnvVar("idToken", data.idToken, { persist: true });
+  }
+  if (data?.localId) {
+    bru.setEnvVar("uid", data.localId, { persist: true });
+  }
+}

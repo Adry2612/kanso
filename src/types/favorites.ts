@@ -46,6 +46,47 @@ export interface FavoriteAlbum {
   userId: string;
 }
 
+export type AlbumSaveDestination = "collection" | "pending";
+
+export interface ListenLaterAlbum {
+  /** Identificador del documento en `users/{uid}/listenLater`. */
+  id: string;
+  /** Identificador del documento en el catálogo global `albums`. */
+  albumId: string;
+  addedAt: string | Date;
+  album: SpotifyAlbum;
+}
+
+export interface ListenLaterResponse {
+  albums: ListenLaterAlbum[];
+}
+
+export interface SaveListenLaterResponse {
+  message: string;
+  alreadyPending: boolean;
+  album: ListenLaterAlbum;
+}
+
+export interface RemoveListenLaterResponse {
+  message: string;
+  removed: boolean;
+}
+
+/**
+ * Resultado normalizado del guardado, independientemente del destino elegido.
+ * Los pendientes no tienen emociones ni metadatos de colección.
+ */
+export interface SaveAlbumResult {
+  destination: AlbumSaveDestination;
+  albumId: string;
+  feelings: string[];
+  activities: string[];
+  format: FavoriteFormat[];
+  tags: FavoriteTag[];
+  addedAt?: string | Date;
+  listenLater?: ListenLaterAlbum;
+}
+
 /**
  * Respuesta de recomendaciones basadas en actividad
  */

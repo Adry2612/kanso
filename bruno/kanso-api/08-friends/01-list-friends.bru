@@ -1,0 +1,14 @@
+meta {
+  name: List friends and requests
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/friends
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}

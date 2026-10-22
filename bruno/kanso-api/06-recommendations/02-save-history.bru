@@ -1,0 +1,28 @@
+meta {
+  name: Save recommendation history
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/saveRecomendationHistory
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "albumId": "{{albumDocId}}",
+    "moods": ["{{collectionMood}}"]
+  }
+}
+
+docs {
+  `albumId` es el ID del documento de Firestore en `albums/{id}`, no el ID
+  de Spotify.
+}

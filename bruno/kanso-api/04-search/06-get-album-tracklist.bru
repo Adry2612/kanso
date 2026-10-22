@@ -1,0 +1,16 @@
+meta {
+  name: Get album tracklist
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/getAlbumTracklist?id={{albumDocId}}
+  auth: none
+}
+
+docs {
+  `id` es el ID del documento de Firestore en `albums/{id}`, no el ID de
+  Spotify. Puedes obtenerlo del campo `id` de un favorito en
+  `GET /api/userFavorites`.
+}

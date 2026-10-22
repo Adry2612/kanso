@@ -1,0 +1,14 @@
+meta {
+  name: Get friend library
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/friends/{{friendUid}}/library
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}

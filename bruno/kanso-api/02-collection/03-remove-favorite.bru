@@ -1,0 +1,24 @@
+meta {
+  name: Remove favorite
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/removeFavorite
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "album": {
+      "id": "{{albumId}}"
+    }
+  }
+}

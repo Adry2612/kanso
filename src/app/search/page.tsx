@@ -20,6 +20,8 @@ import ErrorState from "@/components/ErrorState";
 import { Link } from "next-view-transitions";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { authFetch } from "@/lib/api/authFetch";
+import { getListenLater } from "@/lib/api/listenLater";
+import type { ListenLaterAlbum } from "@/types/favorites";
 
 export default function SearchPage() {
   const t = useTranslations("search");
@@ -41,9 +43,15 @@ export default function SearchPage() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
   const [selectedAlbumIsFavorite, setSelectedAlbumIsFavorite] = useState(false);
+  const [selectedAlbumIsPending, setSelectedAlbumIsPending] = useState(false);
+  const [selectedPendingData, setSelectedPendingData] =
+    useState<ListenLaterAlbum | null>(null);
   const [favoritesByAlbum, setFavoritesByAlbum] = useState<Map<string, any>>(
     new Map(),
   );
+  const [pendingByAlbum, setPendingByAlbum] = useState<
+    Map<string, ListenLaterAlbum>
+  >(new Map());
 
   useEffect(() => {
     setMounted(true);
@@ -82,6 +90,36 @@ export default function SearchPage() {
         setFavoritesError(true);
         setFavoritesLoaded(true);
       });
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setPendingByAlbum(new Map());
+      return;
+    }
+
+    let cancelled = false;
+
+    getListenLater()
+      .then((albums) => {
+        if (cancelled) return;
+
+        const pending = new Map<string, ListenLaterAlbum>();
+        albums.forEach((pendingAlbum) => {
+          const albumId = pendingAlbum.album?.id || pendingAlbum.albumId;
+          if (albumId) pending.set(albumId, pendingAlbum);
+        });
+        setPendingByAlbum(pending);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        console.error("Error al cargar pendientes:", error);
+        setPendingByAlbum(new Map());
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.uid]);
 
   useEffect(() => {
@@ -163,6 +201,8 @@ export default function SearchPage() {
     setOpenModal((prev) => !prev);
     setSelectedAlbum(album);
     setSelectedAlbumIsFavorite(favoritesByAlbum.has(album.id));
+    setSelectedAlbumIsPending(pendingByAlbum.has(album.id));
+    setSelectedPendingData(pendingByAlbum.get(album.id) ?? null);
   };
 
   useEffect(() => {
@@ -264,6 +304,10 @@ export default function SearchPage() {
                     <AlbumCard
                       album={album}
                       isFavorite={favoritesByAlbum.has(album.id)}
+                      isPending={
+                        !favoritesByAlbum.has(album.id) &&
+                        pendingByAlbum.has(album.id)
+                      }
                       onAdd={() => handleOpenModal(album)}
                     />
                   </StaggerItem>
@@ -328,6 +372,8 @@ export default function SearchPage() {
                 onClose={() => setOpenModal(false)}
                 album={selectedAlbum}
                 isFavorite={selectedAlbumIsFavorite}
+                isPending={selectedAlbumIsPending}
+                pendingData={selectedPendingData}
                 startEditing={selectedAlbumIsFavorite}
                 favoriteData={
                   selectedAlbum
@@ -341,7 +387,35 @@ export default function SearchPage() {
                       next.set(selectedAlbum.id, savedFavorite);
                       return next;
                     });
+                    setPendingByAlbum((current) => {
+                      const next = new Map(current);
+                      next.delete(selectedAlbum.id);
+                      return next;
+                    });
                   }
+                }}
+                onPendingSaved={(pendingAlbum) => {
+                  if (!selectedAlbum?.id) return;
+                  setPendingByAlbum((current) => {
+                    const next = new Map(current);
+                    if (pendingAlbum) {
+                      next.set(selectedAlbum.id, pendingAlbum);
+                    }
+                    return next;
+                  });
+                  setFavoritesByAlbum((current) => {
+                    const next = new Map(current);
+                    next.delete(selectedAlbum.id);
+                    return next;
+                  });
+                }}
+                onPendingRemoved={() => {
+                  if (!selectedAlbum?.id) return;
+                  setPendingByAlbum((current) => {
+                    const next = new Map(current);
+                    next.delete(selectedAlbum.id);
+                    return next;
+                  });
                 }}
               />
             )}

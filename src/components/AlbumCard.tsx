@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify; la optimización de imágenes se decide en improve-performance */
 import React from "react";
 import { useTransitionRouter } from "next-view-transitions";
-import { Check, Plus } from "lucide-react";
+import { Check, Clock, Plus } from "lucide-react";
+import { useTranslations } from "@/context/I18nContext";
 import { motion } from "./motion";
 
 interface AlbumCardProps {
@@ -14,6 +15,7 @@ interface AlbumCardProps {
   onClick?: () => void;
   onAdd?: () => void;
   isFavorite?: boolean;
+  isPending?: boolean;
 }
 
 const AlbumCard: React.FC<AlbumCardProps> = ({
@@ -21,8 +23,10 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
   onClick,
   onAdd,
   isFavorite = false,
+  isPending = false,
 }) => {
   const router = useTransitionRouter();
+  const t = useTranslations("common");
 
   return (
     <motion.article
@@ -63,16 +67,24 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
             className={`mt-3 flex w-full items-center justify-center gap-2 rounded-[var(--radius-xs)] border px-2 py-2 text-center text-xs font-semibold transition ${
               isFavorite
                 ? "border-[var(--kanso-mint)]/60 bg-[var(--kanso-mint)]/15 text-[var(--kanso-mint)] hover:bg-[var(--kanso-mint)]/25"
-                : "border-[var(--kanso-line)] text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60 hover:bg-[var(--kanso-mint)]/10"
+                : isPending
+                  ? "border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 text-[var(--foreground)] hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
+                  : "border-[var(--kanso-line)] text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60 hover:bg-[var(--kanso-mint)]/10"
             }`}
           >
             {isFavorite ? (
               <Check className="h-3.5 w-3.5" strokeWidth={2.25} />
+            ) : isPending ? (
+              <Clock className="h-3.5 w-3.5" strokeWidth={2.25} />
             ) : (
               <Plus className="h-3.5 w-3.5" strokeWidth={2.25} />
             )}
             <span>
-              {isFavorite ? "Ya está en tu colección" : "Añadir a mi colección"}
+              {isFavorite
+                ? t("alreadyInCollection")
+                : isPending
+                  ? t("inListenLater")
+                  : t("addToCollection")}
             </span>
           </button>
         )}

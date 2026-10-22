@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
     const db = adminDb();
     const albumsCollection = db.collection("albums");
     const favoritesCollection = db.collection(`users/${uid}/favorites`);
+    const listenLaterCollection = db.collection(`users/${uid}/listenLater`);
 
     const res = await albumsCollection.where("id", "==", album.id).get();
 
@@ -95,9 +96,12 @@ export async function POST(request: NextRequest) {
     const favoriteRes = await favoritesCollection
       .where("albumId", "==", albumDocId)
       .get();
+    const pendingRef = listenLaterCollection.doc(albumDocId);
 
     if (!favoriteRes.empty) {
-      await favoriteRes.docs[0].ref.set(
+      const batch = db.batch();
+      batch.set(
+        favoriteRes.docs[0].ref,
         {
           labeledFeelings: normalizedFeelings,
           activities,
@@ -107,6 +111,9 @@ export async function POST(request: NextRequest) {
         },
         { merge: true },
       );
+      batch.delete(pendingRef);
+      await batch.commit();
+
       return NextResponse.json(
         {
           message: "Favorito actualizado",
@@ -120,7 +127,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await favoritesCollection.doc(albumDocId).set({
+    const batch = db.batch();
+    batch.set(favoritesCollection.doc(albumDocId), {
       albumId: albumDocId,
       labeledFeelings: normalizedFeelings,
       activities,
@@ -128,6 +136,8 @@ export async function POST(request: NextRequest) {
       tags: normalizedTags,
       addedAt: FieldValue.serverTimestamp(),
     });
+    batch.delete(pendingRef);
+    await batch.commit();
 
     // Feed global y anónimo de últimos álbumes añadidos por la comunidad.
     // No bloquea el guardado: si falla, el favorito ya está guardado.

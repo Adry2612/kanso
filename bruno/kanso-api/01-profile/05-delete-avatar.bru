@@ -1,0 +1,14 @@
+meta {
+  name: Delete avatar
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/profile/avatar
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}

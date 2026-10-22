@@ -1,0 +1,24 @@
+meta {
+  name: Update sharing settings
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/api/friends/sharing
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "collection": true,
+    "recommendations": true,
+    "artists": true
+  }
+}

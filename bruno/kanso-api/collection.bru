@@ -1,0 +1,110 @@
+meta {
+  name: Kanso API
+}
+
+script:pre-request {
+  const requestUrl = req.getUrl();
+  const requestName = req.getName();
+
+  // Las peticiones de Firebase Auth no deben autenticarse a sí mismas.
+  if (
+    requestUrl.includes("identitytoolkit.googleapis.com") ||
+    requestName === "Clear session vars"
+  ) {
+    return;
+  }
+
+  const tokenIsExpired = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return (
+        typeof payload.exp === "number" &&
+        payload.exp * 1000 <= Date.now() + 30000
+      );
+    } catch {
+      // Si no se puede decodificar, dejamos que la API valide el token.
+      return false;
+    }
+  };
+
+  const requestAuth = async (url, data) => {
+    try {
+      const response = await bru.sendRequest({
+        method: "POST",
+        url,
+        headers: { "Content-Type": "application/json" },
+        data,
+      });
+      return response?.data ?? response?.body ?? {};
+    } catch {
+      // `bru.sendRequest` lanza en respuestas 4xx/5xx. El siguiente intento
+      // decide si la cuenta ya existía o si hay que crearla.
+      return {};
+    }
+  };
+
+  const signIn = async () => {
+    const apiKey = bru.getEnvVar("firebaseApiKey");
+    if (!apiKey) {
+      throw new Error("Falta firebaseApiKey en el entorno Local.");
+    }
+
+    const email = bru.getEnvVar("testEmail");
+    const password = bru.getEnvVar("testPassword");
+    const useEmail = Boolean(email && password);
+    const authBase = "https://identitytoolkit.googleapis.com/v1/accounts";
+    let body;
+
+    if (useEmail) {
+      // Primero intentamos crear la cuenta de prueba; si ya existe, entramos.
+      body = await requestAuth(`${authBase}:signUp?key=${apiKey}`, {
+        email,
+        password,
+        returnSecureToken: true,
+      });
+
+      if (!body?.idToken) {
+        body = await requestAuth(
+          `${authBase}:signInWithPassword?key=${apiKey}`,
+          { email, password, returnSecureToken: true },
+        );
+      }
+    } else {
+      body = await requestAuth(`${authBase}:signUp?key=${apiKey}`, {
+        returnSecureToken: true,
+      });
+    }
+
+    if (!body?.idToken) {
+      throw new Error(
+        "No se pudo autenticar en Firebase. Revisa firebaseApiKey, testEmail y testPassword, y que Email/Password esté habilitado.",
+      );
+    }
+
+    bru.setEnvVar("idToken", body.idToken, { persist: true });
+    if (body.localId) {
+      bru.setEnvVar("uid", body.localId, { persist: true });
+    }
+
+    return body.idToken;
+  };
+
+  let token = bru.getEnvVar("idToken");
+  if (!token || tokenIsExpired(token)) {
+    token = await signIn();
+  }
+
+  req.setHeader("Authorization", `Bearer ${token}`);
+}
+
+script:post-response {
+  // Si el token ha caducado, se limpia para que la siguiente petición
+  // vuelva a autenticarse automáticamente.
+  if (
+    res.getStatus() === 401 &&
+    !res.getUrl().includes("identitytoolkit.googleapis.com")
+  ) {
+    bru.setEnvVar("idToken", "", { persist: true });
+    bru.setEnvVar("uid", "", { persist: true });
+  }
+}

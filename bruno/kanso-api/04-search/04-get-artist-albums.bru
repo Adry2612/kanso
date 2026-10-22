@@ -1,0 +1,10 @@
+meta {
+  name: Get artist albums
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/getArtistAlbums?id={{artistId}}
+  auth: none
+}
