@@ -128,7 +128,7 @@ function LoginForm() {
 
   return (
     <main className="public-page relative flex items-center">
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl gap-12 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_420px] lg:gap-24 lg:px-12 lg:py-16">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 gap-12 px-5 py-10 sm:px-8 lg:grid-cols-[1fr_420px] lg:gap-24 lg:px-12 lg:py-16">
         <section className="hidden self-center lg:block">
           <Link
             href="/"

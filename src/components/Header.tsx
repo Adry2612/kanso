@@ -21,6 +21,7 @@ import {
 import { useTranslations } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import FriendAvatar from "@/components/FriendAvatar";
 import { motion } from "@/components/motion";
 
@@ -32,6 +33,7 @@ export default function Header() {
   const { profile } = useProfile();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  useScrollLock(mobileOpen);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -107,14 +109,12 @@ export default function Header() {
     return () => desktop.removeEventListener("change", handleChange);
   }, []);
 
-  // Cajón abierto: bloquea el scroll del fondo, lleva el foco dentro, lo encierra
-  // con Tab/Mayús+Tab y lo libera con Escape.
+  // Cajón abierto: lleva el foco dentro, lo encierra con Tab/Mayús+Tab y lo
+  // libera con Escape. El scroll del fondo lo bloquea `useScrollLock`.
   useEffect(() => {
     if (!mobileOpen) return;
 
     const drawer = drawerRef.current;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
 
     const focusables = () =>
@@ -150,7 +150,6 @@ export default function Header() {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
     };
   }, [mobileOpen]);
 

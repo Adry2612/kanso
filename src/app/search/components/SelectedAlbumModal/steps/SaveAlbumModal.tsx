@@ -100,6 +100,7 @@ export const SaveAlbumModal = ({
       isOpen={isOpen}
       onClose={onClose}
       size="lg"
+      className="save-album-modal"
       labelledBy="save-album-title"
       closeLabel={t("close")}
       hero={

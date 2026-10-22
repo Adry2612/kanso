@@ -96,6 +96,11 @@ button:active {
   transition: margin-left 0.25s ease;
 }
 
+/* Cajón o modal abierto: el bloqueo se aplica al scroller que corresponda. */
+html.scroll-locked body {
+  overflow: hidden;
+}
+
 /* Las páginas públicas no tienen panel: el contenido ocupa todo el ancho. */
 .public-shell .app-content {
   margin-left: 0;
@@ -156,6 +161,11 @@ button:active {
 
 .kanso-toast-stack {
   bottom: max(1rem, env(safe-area-inset-bottom));
+  bottom: calc(
+    100dvh - var(--visual-viewport-top, 0px) -
+      var(--visual-viewport-height, 100dvh) +
+      max(1rem, env(safe-area-inset-bottom))
+  );
   right: max(1rem, env(safe-area-inset-right));
 }
 
@@ -170,38 +180,100 @@ button:active {
    el panel fuera del orden de tabulación mientras está cerrado; se retrasa para
    que la salida se vea. */
 @media (max-width: 1023px) {
-  /* Barra superior: va en el flujo (sticky), así que ocupa su altura real y no
-     hace falta compensarla con un padding inventado. El CSS propio no está en
-     una capa de Tailwind, así que se acota aquí: si no, ganaría a `lg:hidden`. */
+  /* Marco móvil: el documento deja de ser el scroller. Así el rebote de iOS no
+     puede mover la barra ni descubrir el fondo por encima de ella. */
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .app-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  html.scroll-locked .app-content {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* En el marco móvil las páginas no reservan la altura del viewport grande:
+     llenan el scroller y crecen con su contenido. */
+  .app-content .min-h-screen,
+  .app-content .public-page {
+    min-height: 100%;
+  }
+
+  .app-content > main {
+    min-height: 100%;
+  }
+
+  /* iOS amplía la página al enfocar un campo de menos de 16 px. El umbral se
+     aplica a todos los campos y el `!important` queda acotado a móvil para
+     ganar a utilidades como `.text-sm`; `max(16px, 1em)` no reduce los que ya
+     eran mayores. No se usa `maximum-scale`: el zoom manual sigue disponible. */
+  input,
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: max(16px, 1em) !important;
+  }
+
+  /* Barra superior: hijo flex del marco, fuera del scroller. Ocupa su altura
+     real y no se mueve con el contenido. El CSS propio no está en una capa de
+     Tailwind, así que se acota aquí: si no, ganaría a `lg:hidden`. */
   .kanso-mobile-bar {
-    position: sticky;
-    top: 0;
+    position: relative;
+    top: auto;
     z-index: 30;
     display: flex;
+    flex: none;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
     border-bottom: 1px solid var(--kanso-line);
-    background: color-mix(in srgb, var(--background) 88%, transparent);
+    background: color-mix(in srgb, var(--background) 96%, transparent);
     padding-top: max(0.55rem, env(safe-area-inset-top));
     padding-right: max(1rem, env(safe-area-inset-right));
     padding-bottom: 0.55rem;
     padding-left: max(1rem, env(safe-area-inset-left));
     backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 
-  /* El contenido respira dentro del área segura, no debajo del notch ni del
-     indicador de inicio. */
+  /* El área segura inferior se centraliza en `.app-content`; aquí solo queda el
+     ritmo de la página. */
   .kanso-main {
     padding-right: max(var(--page-gutter), env(safe-area-inset-right));
-    padding-bottom: calc(var(--page-bottom) + env(safe-area-inset-bottom));
+    padding-bottom: var(--page-bottom);
     padding-left: max(var(--page-gutter), env(safe-area-inset-left));
   }
 
   .kanso-sidebar {
     z-index: 50;
+    top: 0;
+    bottom: auto;
+    height: 100vh;
+    height: 100dvh;
     visibility: hidden;
     transform: translateX(-100%);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding-top: max(1rem, env(safe-area-inset-top));
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
     padding-left: max(0.5rem, env(safe-area-inset-left));
@@ -221,6 +293,143 @@ button:active {
     transition:
       transform 0.3s ease,
       visibility 0s;
+  }
+
+  /* Asistente de incorporación a la colección. En móvil la cabecera del álbum
+     y la barra de acciones fija dejaban el área de interacción en ~200 px (y
+     ~48 px con el teclado abierto). El panel ocupa todo el alto disponible, la
+     cabecera se compacta y las acciones pasan a una fila, para que las
+     emociones, actividades y etiquetas tengan espacio real. */
+  .modal-shell-panel.save-album-modal {
+    height: 100%;
+    max-height: 100%;
+  }
+
+  .save-album-modal .modal-shell-hero {
+    min-height: 128px;
+    padding: 14px 16px;
+  }
+
+  .save-album-modal .modal-shell-hero-content {
+    min-height: 96px;
+  }
+
+  .save-album-modal .album-art-modal-floating-cover {
+    width: 88px;
+    height: 88px;
+    margin-top: -14px;
+    border-width: 3px;
+  }
+
+  .save-album-modal .album-art-modal-body {
+    padding: 0 16px 14px;
+  }
+
+  .save-album-modal .album-modal-album-row {
+    gap: 12px;
+  }
+
+  .save-album-modal .album-modal-album-row h2 {
+    font-size: 1.15rem;
+    line-height: 1.2;
+  }
+
+  .save-album-modal .album-art-modal-body > ol {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+  }
+
+  .save-album-modal .album-art-modal-body > ol > li {
+    min-width: 0;
+    overflow: hidden;
+    padding-top: 0.375rem;
+    padding-bottom: 0.5rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .save-album-modal .album-action-modal-soft {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  /* Cuando el paso cabe, el contenido se centra en el alto disponible; si no
+     cabe, los márgenes automáticos se resuelven a 0 y el cuerpo sigue
+     empezando arriba y haciendo scroll. */
+  .save-album-modal .album-action-modal-soft > * {
+    flex: 0 0 auto;
+    margin-block: auto;
+  }
+
+  .save-album-modal .modal-shell-actions--roomy {
+    flex-direction: row;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .save-album-modal .modal-shell-actions--roomy > * {
+    min-height: 3rem;
+  }
+
+  .save-album-modal .save-album-modal-option {
+    min-height: 3.25rem;
+  }
+
+  .save-album-modal .mood-carousel .option-carousel__rail > button,
+  .save-album-modal .activity-carousel .option-carousel__rail > button {
+    min-height: 3.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .save-album-modal .option-carousel__control {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+/* Con el teclado abierto (o el móvil en horizontal) el alto visible baja de
+   620 px. Se compacta la cabecera y se oculta el indicador de pasos, que ya
+   aparece como “Paso N” dentro del contenido, para no dejar los controles en
+   una franja de unos pocos píxeles. */
+@media (max-width: 1023px) {
+  html[data-visual-viewport="short"] .save-album-modal .modal-shell-hero {
+    min-height: 64px;
+    padding: 8px 12px;
+  }
+
+  html[data-visual-viewport="short"]
+    .save-album-modal
+    .modal-shell-hero-content {
+    min-height: 48px;
+  }
+
+  html[data-visual-viewport="short"]
+    .save-album-modal
+    .album-art-modal-floating-cover {
+    width: 64px;
+    height: 64px;
+    margin-top: -8px;
+    border-width: 2px;
+  }
+
+  html[data-visual-viewport="short"] .save-album-modal .album-art-modal-body {
+    padding: 0 12px 10px;
+  }
+
+  html[data-visual-viewport="short"]
+    .save-album-modal
+    .album-modal-album-row
+    h2 {
+    font-size: 1rem;
+  }
+
+  html[data-visual-viewport="short"]
+    .save-album-modal
+    .album-art-modal-body
+    > ol {
+    display: none;
   }
 }
 
@@ -614,9 +823,14 @@ body.theme-light {
 
 .modal-shell-overlay {
   position: fixed;
-  inset: 0;
+  top: var(--visual-viewport-top, 0);
+  right: 0;
+  bottom: auto;
+  left: 0;
   z-index: 50;
   display: flex;
+  height: 100vh;
+  height: var(--visual-viewport-height, 100dvh);
   align-items: center;
   justify-content: center;
   overflow-y: auto;
@@ -635,6 +849,7 @@ body.theme-light {
   flex-direction: column;
   width: min(34rem, calc(100vw - 2rem));
   max-height: min(88vh, 46rem);
+  max-height: min(88%, 46rem);
   overflow: hidden;
   border: 1px solid var(--kanso-line);
   border-radius: var(--radius-lg);

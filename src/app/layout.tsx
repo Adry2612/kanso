@@ -12,6 +12,7 @@ import { I18nProvider } from "@/context/I18nContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/motion";
 import ViewTransitionGuard from "@/components/ViewTransitionGuard";
+import MobileViewport from "@/components/MobileViewport";
 
 const themeInitScript = `
 (function () {
@@ -61,6 +62,7 @@ export default function RootLayout({
         >
           <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
           <ViewTransitionGuard />
+          <MobileViewport />
           <I18nProvider>
             <ThemeProvider>
               <AuthProvider>

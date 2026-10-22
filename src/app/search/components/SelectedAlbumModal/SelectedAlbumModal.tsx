@@ -6,6 +6,7 @@ import { SaveAlbumModal } from "./steps/SaveAlbumModal";
 import { AlbumAlreadyFavoriteStep } from "./steps/AlbumAlreadyFavoriteStep";
 import { getMood } from "@/constants/moods";
 import { FavoriteFormat } from "@/types/favorites";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { AnimatePresence, EASE_OUT, motion } from "@/components/motion";
 
 interface ModalProps {
@@ -35,6 +36,7 @@ export default function SelectedAlbumModal({
   const [feelings, setFeelings] = useState<Array<Moods>>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [savedAsEdit, setSavedAsEdit] = useState(false);
+  useScrollLock(isOpen);
 
   // Las claves guardadas son canónicas: resolvemos la marca (emoji/símbolo) del
   // catálogo para que la burbuja muestre la etiqueta traducida y no la clave.
@@ -55,18 +57,12 @@ export default function SelectedAlbumModal({
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
       setIsSaved(false);
       setIsEditing(startEditing);
       setSavedAsEdit(false);
       setFeelings([]);
-    } else {
-      document.body.style.overflow = "";
     }
 
-    return () => {
-      document.body.style.overflow = "";
-    };
     // Solo al abrir: cuando el padre actualiza `startEditing` después de
     // guardar, el modal debe pasar al éxito y no volver al paso de edición.
     // eslint-disable-next-line react-hooks/exhaustive-deps

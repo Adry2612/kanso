@@ -133,8 +133,8 @@ export default function Home() {
           </nav>
         </header>
 
-        <section className="grid items-center gap-14 border-b border-[var(--kanso-line)] py-16 lg:min-h-[610px] lg:grid-cols-[.95fr_1.05fr] lg:gap-24 lg:py-20">
-          <div className="max-w-xl">
+        <section className="grid grid-cols-1 items-center gap-14 border-b border-[var(--kanso-line)] py-16 lg:min-h-[610px] lg:grid-cols-[.95fr_1.05fr] lg:gap-24 lg:py-20">
+          <div className="min-w-0 max-w-xl">
             <Reveal delay={0.02}>
               <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
                 Tu colección, con más posibilidades
@@ -174,7 +174,7 @@ export default function Home() {
                 className="public-muted mt-4 inline-flex items-center gap-1.5 text-sm font-medium transition hover:text-[var(--foreground)]"
               >
                 Ya tengo cuenta
-                <span aria-hidden="true">→</span>
+                <span aria-hidden="true">{"\u2192\uFE0E"}</span>
               </Link>
             </Reveal>
             {guestError && (
@@ -194,7 +194,7 @@ export default function Home() {
               />
             )}
           </div>
-          <Reveal delay={0.18} y={30}>
+          <Reveal delay={0.18} y={30} className="min-w-0">
             <div className="surface-raised public-card overflow-hidden p-5 sm:p-7">
               <div className="flex items-start justify-between border-b border-[var(--kanso-line)] pb-5">
                 <div>
@@ -232,7 +232,8 @@ export default function Home() {
                     href="/search"
                     className="public-accent mt-3 inline-flex text-sm font-semibold"
                   >
-                    Explorar discos →
+                    Explorar discos{" "}
+                    <span aria-hidden="true">{"\u2192\uFE0E"}</span>
                   </Link>
                 </div>
               )}
@@ -274,7 +275,7 @@ export default function Home() {
                           </span>
                         </span>
                         <span className="public-muted ml-auto text-lg transition-transform group-hover:translate-x-0.5">
-                          ↗
+                          {"\u2197\uFE0E"}
                         </span>
                       </Link>
                     </StaggerItem>
@@ -290,7 +291,7 @@ export default function Home() {
         </section>
 
         <section className="py-14 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr] lg:gap-20">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[.7fr_1.3fr] lg:gap-20">
             <Reveal>
               <div>
                 <p className="public-accent text-xs font-bold uppercase tracking-[.2em]">
@@ -306,7 +307,10 @@ export default function Home() {
                 </p>
               </div>
             </Reveal>
-            <Stagger className="grid gap-7 sm:grid-cols-3" stagger={0.1}>
+            <Stagger
+              className="grid grid-cols-1 gap-7 sm:grid-cols-3"
+              stagger={0.1}
+            >
               {startingPoints.map((point) => (
                 <StaggerItem key={point.number}>
                   <motion.div whileHover={{ y: -4 }} whileTap={{ scale: 0.99 }}>
@@ -324,7 +328,7 @@ export default function Home() {
                         {point.body}
                       </p>
                       <span className="mt-6 block text-lg transition group-hover:translate-x-1">
-                        →
+                        {"\u2192\uFE0E"}
                       </span>
                     </Link>
                   </motion.div>
