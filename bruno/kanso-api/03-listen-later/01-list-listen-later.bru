@@ -1,0 +1,14 @@
+meta {
+  name: List listen later
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/listenLater
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}

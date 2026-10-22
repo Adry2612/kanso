@@ -1,0 +1,26 @@
+meta {
+  name: Respond to friend request
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/api/friends/requests/{{friendRequestId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "action": "{{friendRequestAction}}"
+  }
+}
+
+docs {
+  `friendRequestAction` debe ser `accept` o `reject`.
+}

@@ -1,0 +1,14 @@
+meta {
+  name: List recommendation history
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/getRecomendationHistory
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}

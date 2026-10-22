@@ -1,0 +1,14 @@
+meta {
+  name: List friend notifications
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/friends/notifications
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}

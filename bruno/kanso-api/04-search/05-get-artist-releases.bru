@@ -1,0 +1,14 @@
+meta {
+  name: Get releases from favorite artists
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/artistReleases
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Toggle favorite artist
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/toggleArtistFavorite
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "artist": {
+      "id": "{{artistId}}",
+      "name": "Radiohead",
+      "images": [],
+      "genres": ["alternative rock"],
+      "followers": {
+        "total": 0
+      }
+    }
+  }
+}

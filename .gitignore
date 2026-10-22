@@ -38,6 +38,9 @@ firebase-debug.log*
 .env*
 !.env.example
 
+# Bruno local environment (generated from .env; may contain session tokens)
+/bruno/kanso-api/environments/Local.bru
+
 # Firebase service account keys (server-only credentials)
 serviceAccount*.json
 *service-account*.json

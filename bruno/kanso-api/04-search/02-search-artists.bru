@@ -1,0 +1,10 @@
+meta {
+  name: Search artists
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/searchArtists?q={{searchTerm}}
+  auth: none
+}

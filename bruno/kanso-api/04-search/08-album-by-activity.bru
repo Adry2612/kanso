@@ -1,0 +1,25 @@
+meta {
+  name: Get album by activity
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/getRecommendedAlbumByActivity
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "activity": "{{activity}}",
+    "format": "all",
+    "requiredMoods": [],
+    "requiredTags": []
+  }
+}

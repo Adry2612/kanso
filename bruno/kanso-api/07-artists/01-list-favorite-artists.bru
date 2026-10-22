@@ -1,0 +1,14 @@
+meta {
+  name: List favorite artists
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/userArtists
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}
