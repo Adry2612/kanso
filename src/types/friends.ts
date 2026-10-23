@@ -1,5 +1,7 @@
 /** Tipos compartidos por la API y la UI de amigos. */
 
+import type { FavoriteFormat } from "./favorites";
+
 export type FriendPerson = {
   uid: string;
   displayName: string;
@@ -53,3 +55,46 @@ export type FriendRequestResult = {
 };
 
 export type FriendRequestAction = "accept" | "reject";
+
+/** Proyección mínima de un álbum para la biblioteca compartida. */
+export type SharedAlbumSummary = {
+  id: string;
+  name: string;
+  images: { url: string }[];
+  artists: { name: string }[];
+  releaseDate: string | null;
+  spotifyUrl: string | null;
+};
+
+export type SharedRecommendation = {
+  id: string;
+  providedAt: string | null;
+  moods: string[];
+  album: SharedAlbumSummary | null;
+};
+
+export type SharedCollectionAlbum = {
+  id: string;
+  addedAt: string | null;
+  labeledFeelings: string[];
+  activities: string[];
+  format: FavoriteFormat[];
+  album: SharedAlbumSummary | null;
+};
+
+export type SharedArtist = {
+  id: string;
+  name: string;
+  images: { url: string }[];
+  genres: string[];
+  addedAt: string | null;
+};
+
+/** Respuesta de `GET /api/friends/[uid]/library`. */
+export type FriendLibraryResponse = {
+  profile: { displayName: string; photoURL: string | null };
+  sharing: FriendSharingSettings;
+  recommendations?: SharedRecommendation[];
+  collection?: SharedCollectionAlbum[];
+  artists?: SharedArtist[];
+};

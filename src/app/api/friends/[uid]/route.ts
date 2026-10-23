@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure, requireRegistered } from "@/lib/apiAuth";
 import { isValidUid, requestDocumentId } from "@/lib/friends";
+import { reportApiError } from "@/lib/sentry";
 
 type RouteContext = { params: Promise<{ uid: string }> };
 
@@ -40,7 +41,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ status: "removed" });
   } catch (error) {
-    console.error("Error eliminando una amistad:", error);
+    reportApiError(error, "friends/[uid]");
     return NextResponse.json(
       { error: "No se pudo eliminar la amistad." },
       { status: 500 },

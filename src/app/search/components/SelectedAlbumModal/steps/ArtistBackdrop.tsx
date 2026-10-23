@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useArtistBackdrop } from "@/hooks/client/useArtistBackdrop";
+import { getArtistInitial } from "@/utils/artists";
 
 type ArtistBackdropProps = {
   artistId?: string;
@@ -12,25 +13,7 @@ export default function ArtistBackdrop({
   artistId,
   artistName,
 }: ArtistBackdropProps) {
-  const [image, setImage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!artistId) return;
-
-    let cancelled = false;
-    fetch(`/api/getArtist?id=${encodeURIComponent(artistId)}`)
-      .then((response) => (response.ok ? response.json() : null))
-      .then((artist) => {
-        if (!cancelled) setImage(artist?.images?.[0]?.url || null);
-      })
-      .catch(() => {
-        if (!cancelled) setImage(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [artistId]);
+  const image = useArtistBackdrop(artistId);
 
   return image ? (
     <img
@@ -42,7 +25,7 @@ export default function ArtistBackdrop({
     />
   ) : (
     <div className="album-art-modal-artist-fallback" aria-hidden="true">
-      <span>{artistName?.slice(0, 1).toUpperCase() || "A"}</span>
+      <span>{getArtistInitial(artistName)}</span>
     </div>
   );
 }

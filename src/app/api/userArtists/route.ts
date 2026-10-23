@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
+import { reportApiError } from "@/lib/sentry";
 
 export async function GET(request: NextRequest) {
   const auth = await authenticate(request);
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ artists });
   } catch (error) {
-    console.error("Error obteniendo artistas favoritos:", error);
+    reportApiError(error, "userArtists");
     return NextResponse.json(
       { error: "No se pudieron obtener tus artistas" },
       { status: 500 },

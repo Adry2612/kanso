@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
+import { reportApiError } from "@/lib/sentry";
 
 export async function POST(req: Request) {
   const auth = await authenticate(req);
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
       recommendationId: docRef.id,
     });
   } catch (error) {
-    console.error("Error saving recommendation:", error);
+    reportApiError(error, "saveRecomendationHistory");
     return NextResponse.json(
       { error: "No se pudo guardar la recomendación" },
       { status: 500 },

@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/api/search/route.ts
 
-import { searchStuff } from "../../../../services/spotify";
+import { searchStuff } from "@/services/server/spotify";
+import { reportApiError } from "@/lib/sentry";
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -39,9 +39,10 @@ export async function GET(request: Request): Promise<Response> {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    reportApiError(error, "search");
     return new Response(
-      JSON.stringify({ error: error.message || "Internal Server Error" }),
+      JSON.stringify({ error: "No se pudo completar la búsqueda" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },

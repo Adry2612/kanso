@@ -1,4 +1,5 @@
-import { searchArtists } from "../../../../services/spotify";
+import { searchArtists } from "@/services/server/spotify";
+import { reportApiError } from "@/lib/sentry";
 
 export async function GET(request: Request): Promise<Response> {
   const query = new URL(request.url).searchParams.get("q");
@@ -11,8 +12,10 @@ export async function GET(request: Request): Promise<Response> {
     const results = await searchArtists(query);
     return Response.json(results);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error al buscar artistas";
-    return Response.json({ error: message }, { status: 500 });
+    reportApiError(error, "searchArtists");
+    return Response.json(
+      { error: "No se pudo buscar artistas" },
+      { status: 500 },
+    );
   }
 }

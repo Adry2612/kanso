@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link } from "next-view-transitions";
 import {
   Inbox,
@@ -18,313 +17,55 @@ import { Skeleton } from "@/components/Skeleton";
 import FriendAvatar from "@/components/FriendAvatar";
 import FriendShareModal from "@/components/FriendShareModal";
 import ErrorState from "@/components/ErrorState";
-import {
-  getFriends,
-  removeFriend,
-  respondToFriendRequest,
-  sendFriendRequest,
-  updateSharing,
-} from "@/lib/api/friends";
-import type {
-  FriendEntry,
-  FriendRequestEntry,
-  FriendsResponse,
-  FriendSharingSettings,
-} from "@/types/friends";
-
-function loginHref(mode: "login" | "register") {
-  return `/login?mode=${mode}&next=${encodeURIComponent("/friends")}`;
-}
-
-const SHARING_SECTIONS: (keyof FriendSharingSettings)[] = [
-  "recommendations",
-  "collection",
-  "artists",
-];
+import { useFriendsPage } from "@/hooks/client/useFriendsPage";
+import { useFriendSharing } from "@/hooks/client/useFriendSharing";
+import { friendLoginHref, SHARING_SECTIONS } from "@/utils/friends";
+import FriendList from "./components/FriendList";
+import FriendRequestList from "./components/FriendRequestList";
 
 export default function FriendsPage() {
   const { user, loading: authLoading } = useAuth();
   const t = useTranslations("friends");
 
-  const [data, setData] = useState<FriendsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [shareOpen, setShareOpen] = useState(false);
+  const {
+    data,
+    loading,
+    error: loadError,
+    shareOpen,
+    openShare,
+    closeShare,
+    code,
+    setCode,
+    submitting,
+    formError,
+    formSuccess,
+    busyRequestId,
+    busyAction,
+    actionError,
+    confirmRemoveUid,
+    removingUid,
+    removeError,
+    loadFriends,
+    addFriend,
+    respondToRequest,
+    askRemoveFriend,
+    cancelRemoveFriend,
+    confirmRemoveFriend,
+    applySharing,
+  } = useFriendsPage({
+    invalidCode: t("add.invalidCode"),
+    addSent: t("add.sent"),
+    addAccepted: t("add.accepted"),
+    addError: t("add.error"),
+    requestError: t("actionError"),
+    removeError: t("list.removeError"),
+  });
 
-  const [code, setCode] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState<string | null>(null);
-
-  const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
-  const [busyAction, setBusyAction] = useState<"accept" | "reject" | null>(
-    null,
-  );
-  const [actionError, setActionError] = useState<string | null>(null);
-
-  const [confirmRemoveUid, setConfirmRemoveUid] = useState<string | null>(null);
-  const [removingUid, setRemovingUid] = useState<string | null>(null);
-  const [removeError, setRemoveError] = useState<string | null>(null);
-
-  const [sharingBusy, setSharingBusy] = useState<
-    keyof FriendSharingSettings | null
-  >(null);
-  const [sharingError, setSharingError] = useState<string | null>(null);
-
-  const loadFriends = useCallback(async () => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      setData(await getFriends());
-    } catch (error) {
-      setLoadError(
-        error instanceof Error
-          ? error.message
-          : "No pudimos cargar tus amigos.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!user || user.isAnonymous) {
-      setLoading(false);
-      setData(null);
-      return;
-    }
-
-    void loadFriends();
-  }, [authLoading, user, loadFriends]);
-
-  const handleAdd = async (event: FormEvent) => {
-    event.preventDefault();
-    setFormError(null);
-    setFormSuccess(null);
-
-    const normalized = code.replace(/[\s-]/g, "").toUpperCase();
-    if (normalized.length !== 8) {
-      setFormError(t("add.invalidCode"));
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const result = await sendFriendRequest(normalized);
-      setFormSuccess(
-        result.status === "accepted" ? t("add.accepted") : t("add.sent"),
-      );
-      setCode("");
-      await loadFriends();
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : t("add.error"));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleRequest = async (
-    requestId: string,
-    action: "accept" | "reject",
-  ) => {
-    setBusyRequestId(requestId);
-    setBusyAction(action);
-    setActionError(null);
-    try {
-      await respondToFriendRequest(requestId, action);
-      await loadFriends();
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : t("actionError"));
-    } finally {
-      setBusyRequestId(null);
-      setBusyAction(null);
-    }
-  };
-
-  const handleRemove = async (friendUid: string) => {
-    setRemovingUid(friendUid);
-    setRemoveError(null);
-    try {
-      await removeFriend(friendUid);
-      setConfirmRemoveUid(null);
-      await loadFriends();
-    } catch (error) {
-      setRemoveError(
-        error instanceof Error ? error.message : t("list.removeError"),
-      );
-    } finally {
-      setRemovingUid(null);
-    }
-  };
-
-  const handleSharingChange = async (
-    section: keyof FriendSharingSettings,
-    value: boolean,
-  ) => {
-    if (!data || sharingBusy) return;
-
-    const previous = data.profile.sharing;
-    const next = { ...previous, [section]: value };
-
-    // Guardado optimista: el interruptor responde al instante y se revierte
-    // si la API rechaza el cambio.
-    setData({ ...data, profile: { ...data.profile, sharing: next } });
-    setSharingBusy(section);
-    setSharingError(null);
-
-    try {
-      const saved = await updateSharing({ [section]: value });
-      setData((current) =>
-        current
-          ? { ...current, profile: { ...current.profile, sharing: saved } }
-          : current,
-      );
-    } catch (error) {
-      setData((current) =>
-        current
-          ? { ...current, profile: { ...current.profile, sharing: previous } }
-          : current,
-      );
-      setSharingError(
-        error instanceof Error ? error.message : t("privacy.error"),
-      );
-    } finally {
-      setSharingBusy(null);
-    }
-  };
-
-  const renderRequest = (
-    request: FriendRequestEntry,
-    direction: "incoming" | "outgoing",
-  ) => {
-    const isBusy = busyRequestId === request.id;
-
-    return (
-      <div
-        key={request.id}
-        className="flex flex-col gap-3 rounded-xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/55 p-3.5 sm:flex-row sm:items-center"
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <FriendAvatar
-            displayName={request.person.displayName}
-            photoURL={request.person.photoURL}
-            size="sm"
-          />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[var(--foreground)]">
-              {request.person.displayName}
-            </p>
-            <p className="truncate text-xs text-[var(--kanso-muted)]">
-              {direction === "incoming" ? t("incoming.from") : t("outgoing.to")}
-            </p>
-          </div>
-        </div>
-
-        {direction === "incoming" ? (
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={isBusy}
-              onClick={() => handleRequest(request.id, "accept")}
-              className="rounded-lg bg-[var(--kanso-mint)] px-3 py-2 text-xs font-bold text-[var(--background)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isBusy && busyAction === "accept"
-                ? t("incoming.accepting")
-                : t("incoming.accept")}
-            </button>
-            <button
-              type="button"
-              disabled={isBusy}
-              onClick={() => handleRequest(request.id, "reject")}
-              className="rounded-lg border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-danger)]/50 hover:text-[var(--kanso-danger)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isBusy && busyAction === "reject"
-                ? t("incoming.rejecting")
-                : t("incoming.reject")}
-            </button>
-          </div>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-[var(--kanso-line)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[var(--kanso-muted)] sm:self-auto">
-            <Loader2 className="h-3 w-3" aria-hidden="true" />
-            {t("outgoing.pending")}
-          </span>
-        )}
-      </div>
-    );
-  };
-
-  const renderFriend = (friend: FriendEntry) => {
-    const isConfirming = confirmRemoveUid === friend.uid;
-    const isRemoving = removingUid === friend.uid;
-
-    return (
-      <div
-        key={friend.uid}
-        className="flex flex-col gap-3 rounded-xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/55 p-3.5 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <FriendAvatar
-            displayName={friend.displayName}
-            photoURL={friend.photoURL}
-            size="sm"
-          />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[var(--foreground)]">
-              {friend.displayName}
-            </p>
-            <p className="text-xs text-[var(--kanso-muted)]">
-              {t("list.friendLabel")}
-            </p>
-          </div>
-        </div>
-
-        {isConfirming ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-[var(--kanso-muted)]">
-              {t("list.removeConfirm").replace("{name}", friend.displayName)}
-            </span>
-            <button
-              type="button"
-              disabled={isRemoving}
-              onClick={() => handleRemove(friend.uid)}
-              className="rounded-lg bg-[var(--kanso-danger)]/15 px-3 py-2 text-xs font-bold text-[var(--kanso-danger)] transition hover:bg-[var(--kanso-danger)]/25 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isRemoving ? t("list.removing") : t("list.confirmRemove")}
-            </button>
-            <button
-              type="button"
-              disabled={isRemoving}
-              onClick={() => setConfirmRemoveUid(null)}
-              className="rounded-lg border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] transition hover:text-[var(--foreground)] disabled:opacity-60"
-            >
-              {t("list.cancel")}
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-            <Link
-              href={`/friends/${friend.uid}`}
-              className="rounded-lg border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-mint)] transition hover:border-[var(--kanso-mint)]/60 hover:bg-[var(--kanso-mint)]/10"
-            >
-              {t("list.viewProfile")}
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setRemoveError(null);
-                setConfirmRemoveUid(friend.uid);
-              }}
-              className="rounded-lg border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-danger)]/50 hover:text-[var(--kanso-danger)]"
-            >
-              {t("list.remove")}
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  };
+  const { sharingBusy, sharingError, changeSharing } = useFriendSharing({
+    profile: data?.profile ?? null,
+    onSharingChange: applySharing,
+    errorMessage: t("privacy.error"),
+  });
 
   if (authLoading || (loading && !data)) {
     return (
@@ -379,7 +120,7 @@ export default function FriendsPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href={loginHref("register")}
+                href={friendLoginHref("/friends", "register")}
                 className="rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
               >
                 {isGuest
@@ -387,7 +128,7 @@ export default function FriendsPage() {
                   : t("noSession.createAccount")}
               </Link>
               <Link
-                href={loginHref("login")}
+                href={friendLoginHref("/friends", "login")}
                 className="rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/50"
               >
                 {isGuest ? t("guest.signIn") : t("noSession.signIn")}
@@ -438,7 +179,7 @@ export default function FriendsPage() {
           </div>
           <button
             type="button"
-            onClick={() => setShareOpen(true)}
+            onClick={openShare}
             className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105 md:self-auto"
           >
             <Share2 className="h-4 w-4" aria-hidden="true" />
@@ -480,7 +221,10 @@ export default function FriendsPage() {
           </div>
 
           <form
-            onSubmit={handleAdd}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void addFriend();
+            }}
             className="mt-7 border-t border-[var(--kanso-line)] pt-6"
           >
             <div className="flex items-center gap-2">
@@ -603,7 +347,7 @@ export default function FriendsPage() {
                     aria-checked={enabled}
                     aria-label={title}
                     disabled={sharingBusy !== null}
-                    onClick={() => void handleSharingChange(section, !enabled)}
+                    onClick={() => void changeSharing(section, !enabled)}
                     className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--kanso-mint)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] disabled:cursor-wait disabled:opacity-60 ${
                       enabled
                         ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)]"
@@ -649,16 +393,17 @@ export default function FriendsPage() {
                 {t("incoming.title")}
               </h2>
             </div>
-            <div className="mt-4 grid gap-3">
-              {data.incoming.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-[var(--kanso-line)] p-4 text-sm text-[var(--kanso-muted)]">
-                  {t("incoming.empty")}
-                </p>
-              ) : (
-                data.incoming.map((request) =>
-                  renderRequest(request, "incoming"),
-                )
-              )}
+            <div className="mt-4">
+              <FriendRequestList
+                requests={data.incoming}
+                direction="incoming"
+                busyRequestId={busyRequestId}
+                busyAction={busyAction}
+                onRespond={(requestId, action) =>
+                  void respondToRequest(requestId, action)
+                }
+                emptyLabel={t("incoming.empty")}
+              />
             </div>
           </section>
         </Reveal>
@@ -674,16 +419,17 @@ export default function FriendsPage() {
                 {t("outgoing.title")}
               </h2>
             </div>
-            <div className="mt-4 grid gap-3">
-              {data.outgoing.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-[var(--kanso-line)] p-4 text-sm text-[var(--kanso-muted)]">
-                  {t("outgoing.empty")}
-                </p>
-              ) : (
-                data.outgoing.map((request) =>
-                  renderRequest(request, "outgoing"),
-                )
-              )}
+            <div className="mt-4">
+              <FriendRequestList
+                requests={data.outgoing}
+                direction="outgoing"
+                busyRequestId={busyRequestId}
+                busyAction={busyAction}
+                onRespond={(requestId, action) =>
+                  void respondToRequest(requestId, action)
+                }
+                emptyLabel={t("outgoing.empty")}
+              />
             </div>
           </section>
         </Reveal>
@@ -704,37 +450,21 @@ export default function FriendsPage() {
             <ErrorState variant="inline" className="mt-3" title={removeError} />
           )}
 
-          {data.friends.length === 0 ? (
-            <div className="mt-5 rounded-xl border border-dashed border-[var(--kanso-line)] p-6 text-center">
-              <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-2)] text-[var(--kanso-mint)]">
-                <UsersRound className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <h3 className="mt-4 text-base font-semibold text-[var(--foreground)]">
-                {t("list.emptyTitle")}
-              </h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[var(--kanso-muted)]">
-                {t("list.emptyDescription")}
-              </p>
-              <button
-                type="button"
-                onClick={() => setShareOpen(true)}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
-              >
-                <Share2 className="h-4 w-4" aria-hidden="true" />
-                {t("list.emptyCta")}
-              </button>
-            </div>
-          ) : (
-            <div className="mt-4 grid gap-3">
-              {data.friends.map(renderFriend)}
-            </div>
-          )}
+          <FriendList
+            friends={data.friends}
+            confirmRemoveUid={confirmRemoveUid}
+            removingUid={removingUid}
+            onAskRemove={askRemoveFriend}
+            onCancelRemove={cancelRemoveFriend}
+            onConfirmRemove={() => void confirmRemoveFriend()}
+            onShare={openShare}
+          />
         </section>
       </Reveal>
 
       <FriendShareModal
         isOpen={shareOpen}
-        onClose={() => setShareOpen(false)}
+        onClose={closeShare}
         profile={data.profile}
       />
     </main>

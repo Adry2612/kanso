@@ -3,6 +3,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { normalizeMoods } from "@/constants/moods";
 import { normalizeFavoriteFormats } from "@/lib/favorites";
+import { reportApiError } from "@/lib/sentry";
 
 export async function GET(request: NextRequest) {
   const auth = await authenticate(request);
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ favorites });
   } catch (error) {
-    console.error("Error obteniendo favoritos:", error);
+    reportApiError(error, "userFavorites");
     return NextResponse.json(
       { error: "No se pudo obtener la colección" },
       { status: 500 },

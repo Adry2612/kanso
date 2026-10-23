@@ -104,6 +104,7 @@
     "error": "We couldn't complete the search",
     "errorDescription": "Check your connection and try again.",
     "resultsTitle": "Search results",
+    "artistsTitle": "Artists",
     "album": "Album",
     "artist": "Artist",
     "addToFavorites": "Add to favorites",

@@ -5,21 +5,18 @@ import { moodOptions, normalizeMood } from "@/constants/moods";
 import { useTranslations } from "@/context/I18nContext";
 import Medallion from "@/components/Medallion";
 import OptionCarousel from "@/components/OptionCarousel";
+import type { Mood } from "@/types/mood";
 
-type MoodOption = {
-  /** Clave canónica de la emoción (es lo que se guarda). */
-  label: string;
+type MoodOption = Mood & {
   /** Etiqueta ya traducida, para mostrar. */
   displayLabel: string;
-  emoji: string;
-  symbol: string;
 };
 
 type MoodSelectorProps = {
-  onChange?: (moods: MoodOption[]) => void;
-  initialSelectedMoods?: MoodOption[];
+  onChange?: (moods: Mood[]) => void;
+  initialSelectedMoods?: Mood[];
   /** Si se pasa, el selector es controlado y refleja siempre esta selección. */
-  selectedMoods?: MoodOption[];
+  selectedMoods?: Mood[];
   variant?: "grid" | "carousel";
 };
 
@@ -42,7 +39,7 @@ const MoodSelector = ({
     symbol: mood.symbol,
   }));
 
-  const normalizeSelection = (moods: MoodOption[]) =>
+  const normalizeSelection = (moods: Mood[]) =>
     moods
       .map((mood) => {
         const key = normalizeMood(mood.label);

@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify */
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { Link } from "next-view-transitions";
 import {
@@ -18,27 +17,13 @@ import FriendAvatar from "@/components/FriendAvatar";
 import SharedAlbumCard from "@/components/SharedAlbumCard";
 import { Skeleton } from "@/components/Skeleton";
 import { Reveal } from "@/components/motion";
-import { getFriendLibrary } from "@/lib/api/friends";
-import type {
-  FriendLibraryResponse,
-  SharedAlbumSummary,
-  SharedRecommendation,
-} from "@/lib/friendLibrary";
-import { formatTime, groupByDate } from "@/utils/dateHelpers";
+import { useFriendLibrary } from "@/hooks/client/useFriendLibrary";
+import { friendLoginHref } from "@/utils/friends";
+import { formatTime } from "@/utils/dateHelpers";
 import { openSpotify } from "@/lib/spotifyUtils";
 import { getMood } from "@/constants/moods";
 import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
-
-function loginHref(uid: string, mode: "login" | "register") {
-  const next = `/friends/${uid}`;
-  return `/login?mode=${mode}&next=${encodeURIComponent(next)}`;
-}
-
-type SharedSection = "recommendations" | "collection" | "artists";
-
-/** Resultados que se muestran antes de pulsar «Ver más». */
-const PAGE_SIZE = 10;
 
 export default function SharedFriendProfilePage() {
   const params = useParams<{ uid: string }>();
@@ -46,103 +31,25 @@ export default function SharedFriendProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const t = useTranslations("friends");
   const tMoods = useTranslations("moods");
-  const tRef = useRef(t);
-  tRef.current = t;
 
-  const [data, setData] = useState<FriendLibraryResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<SharedSection | null>(
-    null,
-  );
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-
-  const loadLibrary = useCallback(async () => {
-    if (!uid) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setNotFound(false);
-
-    try {
-      const library = await getFriendLibrary(uid);
-      if (!library) {
-        setData(null);
-        setNotFound(true);
-      } else {
-        setData(library);
-      }
-    } catch (loadError) {
-      setData(null);
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : tRef.current("loadError"),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [uid]);
-
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!user || user.isAnonymous) {
-      setLoading(false);
-      setData(null);
-      return;
-    }
-
-    void loadLibrary();
-  }, [authLoading, user, loadLibrary]);
-
-  const recommendationItems = useMemo(() => {
-    return (data?.recommendations ?? []).filter(
-      (
-        item,
-      ): item is SharedRecommendation & {
-        providedAt: string;
-        album: SharedAlbumSummary;
-      } => Boolean(item.providedAt && item.album),
-    );
-  }, [data?.recommendations]);
-
-  const recommendationGroups = useMemo(
-    () => groupByDate(recommendationItems.slice(0, visibleCount)),
-    [recommendationItems, visibleCount],
-  );
-
-  const availableSections = useMemo<SharedSection[]>(() => {
-    if (!data) return [];
-    const sections: SharedSection[] = [];
-    if (data.recommendations !== undefined) sections.push("recommendations");
-    if (data.collection !== undefined) sections.push("collection");
-    if (data.artists !== undefined) sections.push("artists");
-    return sections;
-  }, [data]);
-
-  const firstSectionWithItems: SharedSection | null =
-    recommendationItems.length > 0
-      ? "recommendations"
-      : (data?.collection?.length ?? 0) > 0
-        ? "collection"
-        : (data?.artists?.length ?? 0) > 0
-          ? "artists"
-          : null;
-
-  const activeSection =
-    selectedSection && availableSections.includes(selectedSection)
-      ? selectedSection
-      : (firstSectionWithItems ?? availableSections[0] ?? null);
-
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [activeSection]);
+  const {
+    data,
+    loading,
+    notFound,
+    error,
+    recommendationGroups,
+    availableSections,
+    activeSection,
+    activeTotal,
+    canShowMore,
+    visibleCount,
+    totalRecommendations,
+    totalCollection,
+    totalArtists,
+    reload,
+    selectSection,
+    showMore,
+  } = useFriendLibrary(uid, { errorMessage: t("loadError") });
 
   if (authLoading || (loading && !data)) {
     return (
@@ -193,13 +100,13 @@ export default function SharedFriendProfilePage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href={loginHref(uid, "register")}
+                href={friendLoginHref(`/friends/${uid}`, "register")}
                 className="rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
               >
                 {t("profile.register")}
               </Link>
               <Link
-                href={loginHref(uid, "login")}
+                href={friendLoginHref(`/friends/${uid}`, "login")}
                 className="rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/50"
               >
                 {t("profile.login")}
@@ -259,7 +166,7 @@ export default function SharedFriendProfilePage() {
           className="mt-8"
           title={t("loadError")}
           description={error ?? t("loadErrorDescription")}
-          onRetry={() => void loadLibrary()}
+          onRetry={() => void reload()}
           retryLabel={t("profile.retry")}
         />
       </main>
@@ -291,16 +198,6 @@ export default function SharedFriendProfilePage() {
 
   const activeTab = sectionTabs.find((tab) => tab.id === activeSection) ?? null;
   const ActiveIcon = activeTab?.icon ?? Disc3;
-  const totalRecommendations = recommendationItems.length;
-  const totalCollection = data.collection?.length ?? 0;
-  const totalArtists = data.artists?.length ?? 0;
-  const activeTotal =
-    activeSection === "recommendations"
-      ? totalRecommendations
-      : activeSection === "collection"
-        ? totalCollection
-        : totalArtists;
-  const canShowMore = activeSection !== null && activeTotal > visibleCount;
 
   const sharedNote = t("profile.sharedNote").replace(
     "{name}",
@@ -379,7 +276,7 @@ export default function SharedFriendProfilePage() {
                   key={tab.id}
                   type="button"
                   aria-pressed={isActive}
-                  onClick={() => setSelectedSection(tab.id)}
+                  onClick={() => selectSection(tab.id)}
                   className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
                     isActive
                       ? "bg-[var(--kanso-mint)] text-[var(--background)]"
@@ -522,9 +419,7 @@ export default function SharedFriendProfilePage() {
                 <div className="mt-8 flex justify-center">
                   <button
                     type="button"
-                    onClick={() =>
-                      setVisibleCount((count) => count + PAGE_SIZE)
-                    }
+                    onClick={showMore}
                     className="inline-flex items-center gap-2 rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--kanso-mint)]"
                   >
                     {t("profile.loadMore")}

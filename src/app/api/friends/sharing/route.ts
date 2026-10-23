@@ -7,6 +7,7 @@ import {
   normalizeSharing,
 } from "@/lib/friends";
 import type { FriendSharingSettings } from "@/types/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    console.error("Error guardando la compartición:", error);
+    reportApiError(error, "friends/sharing");
     return NextResponse.json(
       { error: "No se pudo guardar la configuración." },
       { status: 500 },

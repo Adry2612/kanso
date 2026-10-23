@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
+import { reportApiError } from "@/lib/sentry";
 
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request);
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ favorite: true });
   } catch (error) {
-    console.error("Error actualizando artista favorito:", error);
+    reportApiError(error, "toggleArtistFavorite");
     return NextResponse.json(
       { error: "No se pudo actualizar el artista favorito" },
       { status: 500 },

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
+import { reportApiError } from "@/lib/sentry";
 
 export async function GET(request: Request) {
   const auth = await authenticate(request);
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ history }, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener el historial de recomendaciones:", error);
+    reportApiError(error, "getRecomendationHistory");
     return NextResponse.json(
       { error: "Error al obtener el historial" },
       { status: 500 },

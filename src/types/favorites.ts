@@ -36,6 +36,8 @@ export interface GroupedFavorites {
 
 export interface FavoriteAlbum {
   id: string;
+  /** Identificador del documento en el catálogo global `albums`. */
+  albumId?: string;
   album: SpotifyAlbum;
   savedAt: string | Date;
   labeledFeelings?: string[];
@@ -43,8 +45,21 @@ export interface FavoriteAlbum {
   /** Formatos en los que el usuario tiene o escucha el álbum. */
   format: FavoriteFormat[];
   tags?: FavoriteTag[];
+  /** Compatibilidad con documentos antiguos. */
+  ownership?: FavoriteOwnership;
+  moods?: string[];
   userId: string;
 }
+
+export type FavoritesTab = "collection" | "listenLater";
+
+export type CollectionFilters = FilterOptions;
+
+/** Favorito de la colección tal como lo devuelve `GET /api/userFavorites`. */
+export type CollectionFavorite = FavoriteAlbum;
+
+/** Elemento de la lista de pendientes tal como lo devuelve la API. */
+export type ListenLaterItem = ListenLaterAlbum;
 
 export type AlbumSaveDestination = "collection" | "pending";
 
@@ -87,35 +102,11 @@ export interface SaveAlbumResult {
   listenLater?: ListenLaterAlbum;
 }
 
-/**
- * Respuesta de recomendaciones basadas en actividad
- */
-export interface RecommendedAlbumInfo {
-  external_urls?: { spotify?: string };
-  images: { url: string }[];
-  name: string;
-  artists: { name: string; id: string }[];
-  release_date?: string;
-  total_tracks?: number;
-  id?: string;
-}
-
-export interface ActivityRecommendation {
-  id: string;
-  albumId: string;
-  labeledFeelings: string[];
-  matchingMoods: string[]; // Moods del álbum que coinciden con la actividad
-  compatibilityScore: number; // 0-1, qué tan compatible es con la actividad
-  albumInfo?: RecommendedAlbumInfo;
-}
-
-export interface ActivityRecommendationResponse {
-  activity: string;
-  optimalMoods: string[]; // Moods óptimos para la actividad
-  recommendations: ActivityRecommendation[];
-  totalFound: number;
-  message?: string;
-}
+export type {
+  ActivityRecommendation,
+  ActivityRecommendationResponse,
+  RecommendedAlbumInfo,
+} from "./recommendations";
 
 /**
  * Respuesta al guardar un favorito con emociones sugeridas

@@ -5,6 +5,7 @@ import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { Album } from "../../../../models/album";
 import type { ListenLaterAlbum } from "@/types/favorites";
 import type { SpotifyAlbum } from "@/types/spotify";
+import { reportApiError } from "@/lib/sentry";
 
 function toIsoDate(value: unknown): string | null {
   if (typeof value === "string") return value;
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest) {
       ),
     });
   } catch (error) {
-    console.error("Error obteniendo pendientes:", error);
+    reportApiError(error, "listenLater");
     return NextResponse.json(
       { error: "No se pudieron obtener los pendientes" },
       { status: 500 },
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest) {
       } satisfies ListenLaterAlbum,
     });
   } catch (error) {
-    console.error("Error guardando pendiente:", error);
+    reportApiError(error, "listenLater");
     return NextResponse.json(
       { error: "No se pudo guardar el álbum para escuchar" },
       { status: 500 },
@@ -234,7 +235,7 @@ export async function DELETE(request: NextRequest) {
       removed: true,
     });
   } catch (error) {
-    console.error("Error eliminando pendiente:", error);
+    reportApiError(error, "listenLater");
     return NextResponse.json(
       { error: "No se pudo quitar el álbum de pendientes" },
       { status: 500 },

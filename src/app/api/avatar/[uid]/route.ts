@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { isValidUid } from "@/lib/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       },
     });
   } catch (error) {
-    console.error("Error sirviendo el avatar:", error);
+    reportApiError(error, "avatar/[uid]");
     return new NextResponse("No se pudo cargar el avatar.", { status: 500 });
   }
 }

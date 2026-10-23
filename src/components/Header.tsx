@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useTransitionRouter } from "next-view-transitions";
-import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,7 +20,8 @@ import {
 import { useTranslations } from "@/context/I18nContext";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
-import { useScrollLock } from "@/hooks/useScrollLock";
+import { useSidebar } from "@/hooks/ui/useSidebar";
+import { useMobileDrawer } from "@/hooks/ui/useMobileDrawer";
 import FriendAvatar from "@/components/FriendAvatar";
 import { motion } from "@/components/motion";
 
@@ -31,14 +31,18 @@ export default function Header() {
   const t = useTranslations("header");
   const { user } = useAuth();
   const { profile } = useProfile();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  useScrollLock(mobileOpen);
-  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
-  const drawerRef = useRef<HTMLElement | null>(null);
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const isPublicPage =
     pathname === "/" || pathname === "/login" || pathname.startsWith("/f/");
+  const { collapsed: sidebarCollapsed, toggle: toggleSidebar } =
+    useSidebar(isPublicPage);
+  const {
+    open: mobileOpen,
+    openDrawer,
+    closeDrawer,
+    menuButtonRef,
+    drawerRef,
+    closeButtonRef,
+  } = useMobileDrawer(pathname);
   const profileName =
     profile?.displayName?.trim() ||
     user?.displayName?.trim() ||
@@ -55,103 +59,6 @@ export default function Header() {
     { href: "/favorites", label: t("favorites"), icon: Heart },
     { href: "/recomendationHistory", label: t("history"), icon: History },
   ];
-
-  useEffect(() => {
-    // En las páginas públicas no hay panel: el contenido ocupa todo el ancho.
-    document.body.classList.toggle("public-shell", isPublicPage);
-
-    if (isPublicPage) {
-      document.body.classList.remove("sidebar-collapsed");
-      return;
-    }
-
-    const saved = window.localStorage.getItem("kanso-sidebar-collapsed");
-    const stored =
-      saved ??
-      // Clave anterior, de cuando la aplicación se llamaba Collectify: se lee
-      // una sola vez para no perder la preferencia de quien ya la tenía.
-      window.localStorage.getItem("collectify-sidebar-collapsed");
-    // Migrada la preferencia, a partir de aquí solo se lee la clave nueva.
-    if (!saved && stored) {
-      window.localStorage.setItem("kanso-sidebar-collapsed", stored);
-    }
-    const collapsed = stored === "true";
-    setSidebarCollapsed(collapsed);
-    document.body.classList.toggle("sidebar-collapsed", collapsed);
-  }, [isPublicPage]);
-
-  const toggleSidebar = () => {
-    const next = !sidebarCollapsed;
-    setSidebarCollapsed(next);
-    window.localStorage.setItem("kanso-sidebar-collapsed", String(next));
-    document.body.classList.toggle("sidebar-collapsed", next);
-  };
-
-  /** Cierra el cajón móvil y devuelve el foco al botón que lo abrió. */
-  const closeMobile = useCallback(() => {
-    setMobileOpen(false);
-    window.requestAnimationFrame(() => menuButtonRef.current?.focus());
-  }, []);
-
-  // El cajón no sobrevive a un cambio de sección.
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  // Si la ventana crece hasta escritorio, el cajón deja de existir: cerrarlo
-  // evita quedarse con el scroll del fondo bloqueado.
-  useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 1024px)");
-    const handleChange = () => {
-      if (desktop.matches) setMobileOpen(false);
-    };
-    desktop.addEventListener("change", handleChange);
-    return () => desktop.removeEventListener("change", handleChange);
-  }, []);
-
-  // Cajón abierto: lleva el foco dentro, lo encierra con Tab/Mayús+Tab y lo
-  // libera con Escape. El scroll del fondo lo bloquea `useScrollLock`.
-  useEffect(() => {
-    if (!mobileOpen) return;
-
-    const drawer = drawerRef.current;
-    closeButtonRef.current?.focus();
-
-    const focusables = () =>
-      Array.from(
-        drawer?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
-        ) ?? [],
-      ).filter((element) => element.offsetParent !== null);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setMobileOpen(false);
-        window.requestAnimationFrame(() => menuButtonRef.current?.focus());
-        return;
-      }
-      if (event.key !== "Tab") return;
-
-      const items = focusables();
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [mobileOpen]);
 
   if (isPublicPage) return null;
 
@@ -179,7 +86,7 @@ export default function Header() {
         <button
           ref={menuButtonRef}
           type="button"
-          onClick={() => setMobileOpen(true)}
+          onClick={openDrawer}
           aria-expanded={mobileOpen}
           aria-controls="kanso-nav"
           aria-label={t("openMenu")}
@@ -194,7 +101,7 @@ export default function Header() {
           type="button"
           aria-label={t("closeMenu")}
           className="kanso-scrim lg:hidden"
-          onClick={closeMobile}
+          onClick={closeDrawer}
         />
       )}
 
@@ -238,7 +145,7 @@ export default function Header() {
         <button
           ref={closeButtonRef}
           type="button"
-          onClick={closeMobile}
+          onClick={closeDrawer}
           aria-label={t("closeMenu")}
           className="kanso-drawer-close absolute right-2 top-3 flex h-11 w-11 items-center justify-center rounded-xl text-[var(--kanso-muted)] transition hover:text-[var(--foreground)] lg:hidden"
         >

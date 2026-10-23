@@ -8,6 +8,7 @@ import {
   type FriendLibraryResponse,
 } from "@/lib/friendLibrary";
 import { isValidUid, normalizeSharing } from "@/lib/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
-    console.error("Error obteniendo la biblioteca compartida:", error);
+    reportApiError(error, "friends/[uid]/library");
     return NextResponse.json(
       { error: "No se pudo cargar la biblioteca." },
       { status: 500, headers: { "Cache-Control": "no-store" } },

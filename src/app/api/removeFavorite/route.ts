@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { Album } from "../../../../models/album";
+import { reportApiError } from "@/lib/sentry";
 
 export async function DELETE(request: NextRequest) {
   const auth = await authenticate(request);
@@ -51,7 +52,7 @@ export async function DELETE(request: NextRequest) {
       removed: true,
     });
   } catch (error) {
-    console.error("Error en removeFavorite API:", error);
+    reportApiError(error, "removeFavorite");
     return NextResponse.json(
       { error: "No se pudo eliminar el álbum" },
       { status: 500 },

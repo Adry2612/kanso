@@ -1,23 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/hooks/useFetch.ts
 import { useCallback, useState } from "react";
 
-type FetchFn<T = any> = (...args: any[]) => Promise<T>;
+type FetchFn<T, Args extends unknown[]> = (...args: Args) => Promise<T>;
 
-export function useFetch<T = any>(fetcher: FetchFn<T>) {
+export function useFetch<T, Args extends unknown[] = []>(
+  fetcher: FetchFn<T, Args>,
+) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const execute = useCallback(
-    async (...args: any[]): Promise<T | null> => {
+    async (...args: Args): Promise<T | null> => {
       setLoading(true);
       setError(null);
 
       try {
-        const result = await fetcher(...args);
-        return result;
-      } catch (err: any) {
-        setError(err.message || "Error desconocido");
+        return await fetcher(...args);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
         return null;
       } finally {
         setLoading(false);

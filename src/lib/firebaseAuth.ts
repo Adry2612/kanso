@@ -3,6 +3,7 @@ import {
   GoogleAuthProvider,
   signInAnonymously,
   signInWithPopup,
+  type User,
 } from "firebase/auth";
 
 const googleProvider = new GoogleAuthProvider();
@@ -14,7 +15,13 @@ const POPUP_CANCELLED_CODES = new Set([
   "auth/popup-closed-by-user",
 ]);
 
-export async function signInAsGuest() {
+function errorCode(error: unknown): string | undefined {
+  return error && typeof error === "object"
+    ? (error as { code?: string }).code
+    : undefined;
+}
+
+export async function signInAsGuest(): Promise<User> {
   await authPersistenceReady;
   await auth.authStateReady();
   if (auth.currentUser) return auth.currentUser;
@@ -23,8 +30,10 @@ export async function signInAsGuest() {
   return result.user;
 }
 
-async function signInWithProvider(provider, providerName) {
-  // Prevenir múltiples popups simultáneos
+async function signInWithProvider(
+  provider: GoogleAuthProvider,
+  providerName: string,
+): Promise<User | null> {
   if (isSigningIn) {
     console.warn("Ya hay un proceso de inicio de sesión en curso");
     return null;
@@ -36,13 +45,11 @@ async function signInWithProvider(provider, providerName) {
     const result = await signInWithPopup(auth, provider);
     await auth.authStateReady();
 
-    // El perfil no se escribe desde el cliente: las reglas de Firestore deniegan
-    // todo acceso directo y el documento users/{uid} no tiene consumidores.
+    // El perfil no se escribe desde el cliente: Firestore deniega el acceso
+    // directo y el documento users/{uid} no tiene consumidores.
     return result.user;
-  } catch (error) {
-    // Ignorar error si el usuario cancela el popup.
-    if (POPUP_CANCELLED_CODES.has(error.code)) {
-      console.log(`Popup de autenticación con ${providerName} cancelado`);
+  } catch (error: unknown) {
+    if (POPUP_CANCELLED_CODES.has(errorCode(error) ?? "")) {
       return null;
     }
     console.error(`Error al iniciar sesión con ${providerName}:`, error);
@@ -52,6 +59,6 @@ async function signInWithProvider(provider, providerName) {
   }
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(): Promise<User | null> {
   return signInWithProvider(googleProvider, "Google");
 }

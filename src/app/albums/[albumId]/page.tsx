@@ -1,65 +1,25 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState, useRef } from "react";
-import { getAlbum } from "../../../../services/spotify";
-import { openSpotify } from "@/lib/spotifyUtils";
 import { FaSpotify } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import AlbumTracklist from "@/components/AlbumTracklist";
-import { useTranslations } from "@/context/I18nContext";
-import { FastAverageColor } from "fast-average-color";
 import { Trash2Icon } from "lucide-react";
+import { useTransitionRouter } from "next-view-transitions";
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
-import { useAuth } from "@/context/AuthContext";
-import { undoFavorite } from "@/lib/api/favorites";
-import { getListenLater, removeFromListenLater } from "@/lib/api/listenLater";
-import { authFetch } from "@/lib/api/authFetch";
-import { getMood, normalizeMoods } from "@/constants/moods";
-import { getActivity } from "@/constants/activities";
-import { FavoriteFormat, ListenLaterAlbum } from "@/types/favorites";
-import type { Album } from "../../../../models/album";
-import TagList, { type Tag } from "@/components/TagList";
+import AlbumTracklist from "@/components/AlbumTracklist";
 import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
+import TagList from "@/components/TagList";
 import { AlbumDetailSkeleton } from "@/components/ContentSkeletons";
-
-type FavoriteRecord = {
-  labeledFeelings?: string[];
-  format?: FavoriteFormat | FavoriteFormat[];
-  activities?: string[];
-  tags?: Tag[];
-};
-import { useTransitionRouter } from "next-view-transitions";
 import { EASE_OUT, motion, useReducedMotion } from "@/components/motion";
-
-type TrackArtist = {
-  name: string;
-  id: string;
-};
-
-type Track = {
-  name: string;
-  track_number: number;
-  artists: TrackArtist[];
-};
-
-type SpotifyAlbum = {
-  id: string;
-  name: string;
-  images: { url: string }[];
-  artists: { name: string; id: string }[];
-  external_urls: { spotify: string };
-  tracks?: {
-    items: {
-      name: string;
-      track_number: number;
-      artists: { name: string; id: string }[];
-    }[];
-  };
-};
+import { useTranslations } from "@/context/I18nContext";
+import { useAlbumDetail } from "@/hooks/client/useAlbumDetail";
+import { getActivity } from "@/constants/activities";
+import { getMood } from "@/constants/moods";
+import { openSpotify } from "@/lib/spotifyUtils";
+import type { Album } from "@/types/album";
+import type { FavoriteFormat } from "@/types/favorites";
 
 export default function AlbumDetail() {
   const t = useTranslations("album");
@@ -69,117 +29,32 @@ export default function AlbumDetail() {
   const albumId = params.albumId as string;
   const router = useTransitionRouter();
   const reduceMotion = useReducedMotion();
-  const [albumTracklist, setAlbumTracklist] = useState<Track[] | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [bgColor, setBgColor] = useState("rgba(6, 78, 59, 0.8)"); // emerald-950 por defecto con opacidad
-  const imgRef = useRef<HTMLImageElement>(null);
-  const { user } = useAuth();
-  const [favorite, setFavorite] = useState<FavoriteRecord | null>(null);
-  const [pending, setPending] = useState<ListenLaterAlbum | null>(null);
-  const [collectionLoading, setCollectionLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [removing, setRemoving] = useState(false);
-  const [removingPending, setRemovingPending] = useState(false);
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tTags = useTranslations("tags");
-
   const {
-    data: album,
+    album,
     error,
     isLoading,
-  } = useSuspenseQuery<SpotifyAlbum>({
-    queryKey: ["album", albumId],
-    queryFn: () => getAlbum(albumId),
-  });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted || !album || !imgRef.current) return;
-
-    const fac = new FastAverageColor();
-
-    fac
-      .getColorAsync(imgRef.current, { algorithm: "dominant" })
-      .then((color) => {
-        // Usar el color con más intensidad
-        const rgb = color.value;
-        const r = Math.floor(rgb[0] * 0.6);
-        const g = Math.floor(rgb[1] * 0.6);
-        const b = Math.floor(rgb[2] * 0.6);
-
-        setBgColor(`rgba(${r}, ${g}, ${b}, 0.8)`);
-      })
-      .catch((e) => {
-        console.error("Error extracting color:", e);
-      });
-
-    return () => {
-      fac.destroy();
-    };
-  }, [album, mounted]);
-
-  useEffect(() => {
-    if (!user?.uid || !albumId) {
-      setFavorite(null);
-      setPending(null);
-      setCollectionLoading(false);
-      return;
-    }
-
-    setCollectionLoading(true);
-    const loadCollectionState = async () => {
-      try {
-        const [favoritesResponse, pendingAlbums] = await Promise.all([
-          authFetch("/api/userFavorites"),
-          getListenLater().catch(() => []),
-        ]);
-        const data = favoritesResponse.ok
-          ? await favoritesResponse.json()
-          : { favorites: [] };
-
-        setFavorite(
-          (data.favorites || []).find(
-            (item: { album?: { id?: string }; albumId?: string }) =>
-              (item.album?.id || item.albumId) === albumId,
-          ) || null,
-        );
-        setPending(
-          pendingAlbums.find(
-            (item) => (item.album?.id || item.albumId) === albumId,
-          ) || null,
-        );
-      } catch {
-        setFavorite(null);
-        setPending(null);
-      } finally {
-        setCollectionLoading(false);
-      }
-    };
-
-    loadCollectionState();
-  }, [albumId, user?.uid]);
-
-  useEffect(() => {
-    if (!mounted || !album) return;
-
-    if (album.tracks && album.tracks.items) {
-      const formattedTracks = album.tracks.items.map((item) => ({
-        name: item.name,
-        track_number: item.track_number,
-        artists: item.artists.map((artist) => ({
-          name: artist.name,
-          id: artist.id,
-        })),
-      }));
-      setAlbumTracklist(formattedTracks);
-    } else {
-      setAlbumTracklist([]);
-    }
-  }, [album, mounted]);
+    mounted,
+    bgColor,
+    imgRef,
+    albumTracklist,
+    favorite,
+    pending,
+    collectionLoading,
+    modalOpen,
+    setModalOpen,
+    removing,
+    removingPending,
+    removeFromCollection,
+    removeFromPending,
+    savedMoods,
+    savedFormats,
+    onSaved,
+    onPendingSaved,
+    onPendingRemoved,
+  } = useAlbumDetail(albumId);
 
   if (isLoading || !mounted) {
     return (
@@ -203,13 +78,6 @@ export default function AlbumDetail() {
   }
   if (!album) return null;
 
-  const savedMoods = normalizeMoods(favorite?.labeledFeelings || []);
-  const favoriteFormat = favorite?.format;
-  const savedFormats: FavoriteFormat[] = Array.isArray(favoriteFormat)
-    ? favoriteFormat
-    : favoriteFormat
-      ? [favoriteFormat]
-      : [];
   const formatLabel = (format: FavoriteFormat) => {
     const keys: Record<FavoriteFormat, string> = {
       digital: "formatDigital",
@@ -219,28 +87,6 @@ export default function AlbumDetail() {
     };
     return t(keys[format]);
   };
-  const removeFromCollection = async () => {
-    if (!user?.uid) return;
-    setRemoving(true);
-    try {
-      await undoFavorite(album as Album);
-      setFavorite(null);
-    } finally {
-      setRemoving(false);
-    }
-  };
-
-  const removeFromPending = async () => {
-    if (!user?.uid) return;
-    setRemovingPending(true);
-    try {
-      await removeFromListenLater(album as Album);
-      setPending(null);
-    } finally {
-      setRemovingPending(false);
-    }
-  };
-
   return (
     <main className="kanso-main relative min-h-screen overflow-hidden">
       {/* Gradiente de fondo basado en los colores del álbum - desde abajo */}
@@ -472,12 +318,9 @@ export default function AlbumDetail() {
           favoriteData={favorite}
           startEditing={Boolean(favorite)}
           startMovingToCollection={Boolean(pending) && !favorite}
-          onSaved={(savedFavorite) => {
-            setFavorite((current) => ({ ...current, ...savedFavorite }));
-            setPending(null);
-          }}
-          onPendingSaved={(pendingAlbum) => setPending(pendingAlbum)}
-          onPendingRemoved={() => setPending(null)}
+          onSaved={onSaved}
+          onPendingSaved={onPendingSaved}
+          onPendingRemoved={onPendingRemoved}
         />
       )}
     </main>

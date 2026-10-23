@@ -1,36 +1,39 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
-import { Album } from "../../../../../../models/album";
-import { useFetch } from "@/hooks/useFetch";
-import { undoFavorite } from "@/lib/api/favorites";
+"use client";
+
 import { IoTrash } from "react-icons/io5";
+import { useTranslations } from "@/context/I18nContext";
+import { getActivity } from "@/constants/activities";
 import ArtistBackdrop from "./ArtistBackdrop";
 import MoodBubble from "@/components/MoodBubble";
 import ModalShell from "@/components/ModalShell";
-import { useTranslations } from "@/context/I18nContext";
-import { getActivity } from "@/constants/activities";
 import InlineEmoji from "@/components/InlineEmoji";
+import type { Album } from "@/types/album";
+import type { Mood } from "@/types/mood";
 
 interface AlbumAlreadyFavoriteStepProps {
   isOpen: boolean;
   onClose: () => void;
   album: Album;
-  feelings: Array<any>;
+  feelings: Mood[];
   activities: string[];
+  removing: boolean;
   onEdit: () => void;
+  onRemove: () => void;
 }
 
+/** Resumen de un álbum que ya está en la colección. */
 export const AlbumAlreadyFavoriteStep = ({
   isOpen,
   onClose,
   album,
   feelings,
   activities,
+  removing,
   onEdit,
+  onRemove,
 }: AlbumAlreadyFavoriteStepProps) => {
   const tActivities = useTranslations("activities");
-  const { execute: removeFavorite, loading } = useFetch(undoFavorite);
-  if (!album) return null;
 
   return (
     <ModalShell
@@ -60,7 +63,7 @@ export const AlbumAlreadyFavoriteStep = ({
               {album.name}
             </h2>
             <p className="album-action-modal-muted mt-1 truncate text-sm">
-              {album.artists.map((artist: any) => artist.name).join(", ")}
+              {album.artists.map((artist) => artist.name).join(", ")}
             </p>
           </div>
         </div>
@@ -118,12 +121,12 @@ export const AlbumAlreadyFavoriteStep = ({
           Editar información
         </button>
         <button
-          disabled={loading}
-          onClick={() => removeFavorite(album).then(() => onClose())}
+          disabled={removing}
+          onClick={onRemove}
           className="modal-action-danger"
         >
           <IoTrash />
-          {loading ? "Eliminando..." : "Eliminar álbum"}
+          {removing ? "Eliminando..." : "Eliminar álbum"}
         </button>
       </div>
     </ModalShell>

@@ -12,6 +12,7 @@ import {
   requestDocumentId,
 } from "@/lib/friends";
 import type { FriendRequestResult } from "@/types/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request);
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error("Error enviando solicitud de amistad:", error);
+    reportApiError(error, "friends/requests");
     return NextResponse.json(
       { error: "No se pudo enviar la solicitud." },
       { status: 500 },

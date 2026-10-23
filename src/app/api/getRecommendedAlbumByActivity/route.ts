@@ -6,6 +6,7 @@ import {
   type ActivityFavoriteRecord,
 } from "@/lib/activityRecommendations";
 import type { RecommendedAlbumInfo } from "@/types/favorites";
+import { reportApiError } from "@/lib/sentry";
 
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request);
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error obteniendo la recomendación por actividad:", error);
+    reportApiError(error, "getRecommendedAlbumByActivity");
     return NextResponse.json(
       { error: "No se pudo obtener la recomendación" },
       { status: 500 },

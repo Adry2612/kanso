@@ -2,50 +2,41 @@
 "use client";
 
 import { IoTrash } from "react-icons/io5";
-import { Album } from "../../../../../../models/album";
-import { removeFromListenLater } from "@/lib/api/listenLater";
-import { useFetch } from "@/hooks/useFetch";
 import { useTranslations } from "@/context/I18nContext";
 import ModalShell from "@/components/ModalShell";
-import type { ListenLaterAlbum } from "@/types/favorites";
 import ArtistBackdrop from "./ArtistBackdrop";
+import type { Album } from "@/types/album";
+import type { ListenLaterItem } from "@/types/favorites";
 
 interface AlbumAlreadyPendingStepProps {
   isOpen: boolean;
   onClose: () => void;
   album: Album;
-  pendingData?: ListenLaterAlbum | null;
+  pendingData?: ListenLaterItem | null;
+  removing: boolean;
+  error: string | null;
   onMoveToCollection: () => void;
-  onRemoved: () => void;
+  onRemove: () => void;
 }
 
+/** Resumen de un álbum que ya está en pendientes. */
 export const AlbumAlreadyPendingStep = ({
   isOpen,
   onClose,
   album,
   pendingData,
+  removing,
+  error,
   onMoveToCollection,
-  onRemoved,
+  onRemove,
 }: AlbumAlreadyPendingStepProps) => {
   const t = useTranslations("modal");
-  const {
-    execute: removePending,
-    loading,
-    error,
-  } = useFetch(removeFromListenLater);
-
-  if (!album) return null;
 
   const addedAt = pendingData?.addedAt ? new Date(pendingData.addedAt) : null;
   const addedAtLabel =
     addedAt && !Number.isNaN(addedAt.getTime())
       ? addedAt.toLocaleDateString()
       : null;
-
-  const remove = async () => {
-    const result = await removePending(album);
-    if (result !== null) onRemoved();
-  };
 
   return (
     <ModalShell
@@ -118,12 +109,12 @@ export const AlbumAlreadyPendingStep = ({
         </button>
         <button
           type="button"
-          disabled={loading}
-          onClick={remove}
+          disabled={removing}
+          onClick={onRemove}
           className="modal-action-danger"
         >
           <IoTrash />
-          {loading ? t("removing") : t("removeFromPending")}
+          {removing ? t("removing") : t("removeFromPending")}
         </button>
       </div>
     </ModalShell>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebaseAdmin";
+import { reportApiError } from "@/lib/sentry";
 
 const MAX_TERM_LENGTH = 60;
 const MIN_TERM_LENGTH = 3;
@@ -38,7 +39,7 @@ export async function GET() {
     return NextResponse.json({ searches });
   } catch (error) {
     // Degradar sin romper la pantalla: el cliente trata la lista vacía.
-    console.error("Error obteniendo búsquedas de la comunidad:", error);
+    reportApiError(error, "communitySearches", "warning");
     return NextResponse.json({ searches: [] });
   }
 }
@@ -77,13 +78,13 @@ export async function POST(request: NextRequest) {
         .doc(`communitySearches/${termToId(previous)}`)
         .delete()
         .catch((error) => {
-          console.error("No se pudo eliminar el término parcial:", error);
+          reportApiError(error, "communitySearches", "warning");
         });
     }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("Error registrando búsqueda de la comunidad:", error);
+    reportApiError(error, "communitySearches", "warning");
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
