@@ -5,6 +5,7 @@ import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { Album } from "../../../../models/album";
 import { FavoriteFormat, FavoriteTag } from "@/types/favorites";
 import { normalizeMoods } from "@/constants/moods";
+import { reportApiError } from "@/lib/sentry";
 
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request);
@@ -149,10 +150,7 @@ export async function POST(request: NextRequest) {
           { merge: true },
         );
     } catch (feedError) {
-      console.error(
-        "No se pudo registrar el álbum en el feed de la comunidad:",
-        feedError,
-      );
+      reportApiError(feedError, "toggleFavorite", "warning");
     }
 
     return NextResponse.json({
@@ -163,7 +161,7 @@ export async function POST(request: NextRequest) {
       tags: normalizedTags,
     });
   } catch (error) {
-    console.error("Error en toggleFavorite API:", error);
+    reportApiError(error, "toggleFavorite");
     return NextResponse.json(
       { error: "No se pudo guardar el álbum" },
       { status: 500 },

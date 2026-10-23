@@ -1,53 +1,21 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import AlbumCard from "@/components/AlbumCard";
 import { Skeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { useTranslations } from "@/context/I18nContext";
-import {
-  getArtistAlbums,
-  getArtistInfo,
-  type ArtistAlbumLite,
-  type ArtistLite,
-} from "@/lib/api/artists";
+import { useArtistDetail } from "@/hooks/client/useArtistDetail";
+import { formatFollowers, getArtistGenres } from "@/utils/artists";
 
 export default function ArtistPage() {
   const params = useParams();
   const artistId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const t = useTranslations("artists");
-  const [artist, setArtist] = useState<ArtistLite | null>(null);
-  const [albums, setAlbums] = useState<ArtistAlbumLite[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
-
-  useEffect(() => {
-    if (!artistId) return;
-    let cancelled = false;
-    setAlbums(null);
-    setError(null);
-
-    getArtistInfo(artistId)
-      .then((data) => {
-        if (!cancelled) setArtist(data);
-      })
-      .catch(() => {});
-
-    getArtistAlbums(artistId)
-      .then((data) => {
-        if (!cancelled) setAlbums(data);
-      })
-      .catch((err: Error) => {
-        if (!cancelled) setError(err.message);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [artistId, reloadToken]);
+  const { artist, albums, error, reload } = useArtistDetail(artistId);
+  const genres = getArtistGenres(artist);
 
   return (
     <main className="kanso-main min-h-screen">
@@ -82,14 +50,14 @@ export default function ArtistPage() {
             <h1 className="mt-2 truncate text-4xl font-semibold tracking-tight text-[var(--foreground)] md:text-5xl">
               {artist.name}
             </h1>
-            {artist.genres && artist.genres.length > 0 && (
+            {genres.length > 0 && (
               <p className="mt-2 text-sm text-[var(--kanso-muted)]">
-                {artist.genres.slice(0, 3).join(" · ")}
+                {genres.join(" · ")}
               </p>
             )}
             {typeof artist.followers?.total === "number" && (
               <p className="mt-1 text-xs text-[var(--kanso-muted)]">
-                {artist.followers.total.toLocaleString("es")} {t("followers")}
+                {formatFollowers(artist.followers.total)} {t("followers")}
               </p>
             )}
           </div>
@@ -105,7 +73,7 @@ export default function ArtistPage() {
           <ErrorState
             title={t("error")}
             description={t("errorDescription")}
-            onRetry={() => setReloadToken((value) => value + 1)}
+            onRetry={reload}
           />
         )}
 

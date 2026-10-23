@@ -1,3 +1,5 @@
+import "server-only";
+
 import { Buffer } from "node:buffer";
 
 export const AVATAR_MAX_BYTES = 300_000;

@@ -1,11 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
-import { getRecomendationHistory } from "@/lib/api/recomendation";
 import { openSpotify } from "@/lib/spotifyUtils";
-import { formatTime, groupByDate } from "@/utils/dateHelpers";
-import React, { useEffect, useMemo, useState } from "react";
+import { useRecommendationHistory } from "@/hooks/client/useRecommendationHistory";
+import { formatTime } from "@/utils/dates";
 import {
   Clock3,
   Headphones,
@@ -17,110 +15,36 @@ import {
   Users,
 } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
-import { getMood, normalizeMoods, type MoodKey } from "@/constants/moods";
+import { getMood, normalizeMoods } from "@/constants/moods";
 import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
 import { Skeleton } from "@/components/Skeleton";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Link } from "next-view-transitions";
 
-type HistoryItem = {
-  id: string;
-  providedAt: string;
-  moods?: string[];
-  album: {
-    id: string;
-    name: string;
-    images: { url: string }[];
-    artists: { name: string }[];
-    external_urls?: { spotify?: string };
-  };
-};
-
 export default function RecomendationHistoryPage() {
   const t = useTranslations("history");
   const tMoods = useTranslations("moods");
-  const { user } = useAuth();
-  const [recomendationHistory, setRecomendationHistory] = useState<
-    HistoryItem[]
-  >([]);
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [reloadToken, setReloadToken] = useState(0);
-  const [query, setQuery] = useState("");
-  const [moodFilter, setMoodFilter] = useState<MoodKey | null>(null);
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const {
+    history: recomendationHistory,
+    mounted,
+    loading,
+    error,
+    query,
+    setQuery,
+    moodFilter,
+    setMoodFilter,
+    view,
+    setView,
+    moods,
+    filteredHistory,
+    groups,
+    uniqueArtists,
+    hasFilters,
+    clearFilters,
+    retry,
+  } = useRecommendationHistory();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    if (!user?.uid) {
-      setRecomendationHistory([]);
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    setError(false);
-
-    getRecomendationHistory()
-      .then(({ history }) => {
-        if (!cancelled) setRecomendationHistory(history || []);
-      })
-      .catch((fetchError) => {
-        console.error("Error fetching history:", fetchError);
-        if (!cancelled) setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.uid, mounted, reloadToken]);
-
-  const moods = useMemo(
-    () =>
-      normalizeMoods(
-        recomendationHistory.flatMap((item) => item.moods ?? []),
-      ).sort((a, b) => a.localeCompare(b)),
-    [recomendationHistory],
-  );
-
-  const filteredHistory = useMemo(() => {
-    const term = query.trim().toLowerCase();
-
-    return recomendationHistory.filter((item) => {
-      const matchesMood =
-        !moodFilter || normalizeMoods(item.moods ?? []).includes(moodFilter);
-      if (!matchesMood) return false;
-      if (!term) return true;
-
-      const artist = item.album?.artists?.[0]?.name ?? "";
-      return `${item.album?.name ?? ""} ${artist}`.toLowerCase().includes(term);
-    });
-  }, [recomendationHistory, query, moodFilter]);
-
-  const groups = useMemo(() => groupByDate(filteredHistory), [filteredHistory]);
-
-  const uniqueArtists = useMemo(
-    () =>
-      new Set(
-        recomendationHistory
-          .map((item) => item.album?.artists?.[0]?.name)
-          .filter(Boolean),
-      ).size,
-    [recomendationHistory],
-  );
-
-  const hasFilters = Boolean(query.trim() || moodFilter);
   const totalLabel = t(
     recomendationHistory.length === 1 ? "stats.totalOne" : "stats.total",
   ).toLowerCase();
@@ -223,7 +147,7 @@ export default function RecomendationHistoryPage() {
           className="mt-10"
           title={t("error")}
           description={t("errorDescription")}
-          onRetry={() => setReloadToken((value) => value + 1)}
+          onRetry={retry}
           retryLabel={t("retry")}
         />
       ) : recomendationHistory.length === 0 ? (
@@ -265,10 +189,7 @@ export default function RecomendationHistoryPage() {
                 {hasFilters && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setQuery("");
-                      setMoodFilter(null);
-                    }}
+                    onClick={clearFilters}
                     className="flex-1 rounded-xl border border-[var(--kanso-line)] px-4 py-2.5 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--foreground)] md:flex-none"
                   >
                     {t("clearFilters")}
@@ -343,10 +264,7 @@ export default function RecomendationHistoryPage() {
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  setQuery("");
-                  setMoodFilter(null);
-                }}
+                onClick={clearFilters}
                 className="mt-5 rounded-xl border border-[var(--kanso-line)] px-4 py-2.5 text-sm font-semibold text-[var(--kanso-mint)] transition hover:border-[var(--kanso-mint)]/50"
               >
                 {t("clearFilters")}

@@ -5,6 +5,7 @@ import { authenticate, isAuthFailure, requireRegistered } from "@/lib/apiAuth";
 import { parseAvatarDataUrl } from "@/lib/avatar";
 import { adminDb, getAdminApp } from "@/lib/firebaseAdmin";
 import { ensureUserProfile, FriendApiError } from "@/lib/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    console.error("Error guardando la foto de perfil:", error);
+    reportApiError(error, "profile/avatar");
     return NextResponse.json(
       { error: "No se pudo guardar la foto de perfil." },
       { status: 500 },
@@ -115,7 +116,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.error("Error eliminando la foto de perfil:", error);
+    reportApiError(error, "profile/avatar");
     return NextResponse.json(
       { error: "No se pudo quitar la foto de perfil." },
       { status: 500 },

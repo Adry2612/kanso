@@ -3,12 +3,15 @@ import {
   sortFavorites,
   filterFavorites,
   groupFavorites,
-  type SortMethod,
-  type FilterOptions,
 } from "@/utils/favoritesHelper";
+import type {
+  FavoriteAlbum,
+  FilterOptions,
+  SortMethod,
+} from "@/types/favorites";
 
 export function useFavoritesFilter(
-  favorites: unknown[],
+  favorites: FavoriteAlbum[],
   sortMethod: SortMethod,
   filters: FilterOptions,
 ) {

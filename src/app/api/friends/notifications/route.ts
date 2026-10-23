@@ -3,6 +3,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure, requireRegistered } from "@/lib/apiAuth";
 import { toIsoDate } from "@/lib/friends";
 import type { FriendPerson, FriendRequestEntry } from "@/types/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,7 @@ export async function GET(request: NextRequest) {
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {
-    console.error("Error obteniendo notificaciones de amistad:", error);
+    reportApiError(error, "friends/notifications");
     return NextResponse.json(
       { error: "No se pudieron cargar las solicitudes." },
       { status: 500 },

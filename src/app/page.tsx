@@ -3,20 +3,14 @@
 /* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify */
 import { Link, useTransitionRouter } from "next-view-transitions";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLandingAlbums } from "@/hooks/client/useLandingAlbums";
 import { signInAsGuest } from "@/lib/firebaseAuth";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
 import { Reveal, Stagger, StaggerItem, motion } from "@/components/motion";
 import { Skeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
-
-type LandingAlbum = {
-  id: string;
-  name: string;
-  images: { url: string }[];
-  artists: { name: string }[];
-};
 
 const startingPoints = [
   {
@@ -58,33 +52,12 @@ export default function Home() {
   const router = useTransitionRouter();
   const [isStartingGuest, setIsStartingGuest] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
-  const [landingAlbums, setLandingAlbums] = useState<LandingAlbum[] | null>(
-    null,
-  );
-  const [albumsError, setAlbumsError] = useState(false);
+  const {
+    albums: landingAlbums,
+    error: albumsError,
+    reload: loadLandingAlbums,
+  } = useLandingAlbums();
   const startHref = user ? "/home" : "/login?mode=register";
-
-  const loadLandingAlbums = useCallback(async () => {
-    setLandingAlbums(null);
-    setAlbumsError(false);
-
-    try {
-      const response = await fetch("/api/communityAlbums", {
-        cache: "no-store",
-      });
-      if (!response.ok) throw new Error("No se pudieron cargar los álbumes");
-
-      const data = await response.json();
-      setLandingAlbums((data.albums ?? []).slice(0, 3));
-    } catch {
-      setLandingAlbums([]);
-      setAlbumsError(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadLandingAlbums();
-  }, [loadLandingAlbums]);
 
   const handleGuestStart = async () => {
     setGuestError(null);

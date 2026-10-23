@@ -1,3 +1,24 @@
+import "server-only";
+
+import { reportApiError } from "@/lib/sentry";
+import {
+  buildArtistAlbumQuery,
+  filterArtistAlbums,
+  findExactArtist,
+  prioritizeExactArtist,
+} from "@/utils/searchTerms";
+import type { SpotifyAlbum, SpotifyArtist, SpotifyTrack } from "@/types/album";
+import type { ArtistRelease } from "@/types/artists";
+import type {
+  SpotifyArtistAlbum,
+  SpotifyArtistAlbumsResponse,
+  SpotifyAudioFeatures,
+  SpotifyAudioFeaturesResponse,
+  SpotifySearchResponse,
+  SpotifyTokenResponse,
+  SpotifyTrackPage,
+} from "@/types/spotify-api";
+
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
@@ -31,7 +52,7 @@ async function requestAccessToken(): Promise<string> {
     );
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as SpotifyTokenResponse;
 
   if (!data.access_token) {
     throw new Error("No access token in Spotify response");
@@ -62,7 +83,7 @@ async function getAccessToken(): Promise<string> {
   return tokenRequest;
 }
 
-export async function getArtist(id: string) {
+export async function getArtist(id: string): Promise<SpotifyArtist> {
   const token = await getAccessToken();
   const res = await fetch(`https://api.spotify.com/v1/artists/${id}`, {
     headers: {
@@ -70,12 +91,12 @@ export async function getArtist(id: string) {
     },
   });
 
-  const artistData = await res.json();
-
-  return artistData;
+  return (await res.json()) as SpotifyArtist;
 }
 
-export async function searchArtists(query: string) {
+export async function searchArtists(
+  query: string,
+): Promise<SpotifySearchResponse> {
   const token = await getAccessToken();
 
   const res = await fetch(
@@ -87,7 +108,7 @@ export async function searchArtists(query: string) {
     },
   );
 
-  return res.json();
+  return (await res.json()) as SpotifySearchResponse;
 }
 
 /**
@@ -96,10 +117,12 @@ export async function searchArtists(query: string) {
  * conserva un single solo si tiene 3 o más pistas (heurística de EP).
  * Se excluyen compilaciones y apariciones en trabajos de otros.
  */
-export async function getArtistAlbums(id: string) {
+export async function getArtistAlbums(
+  id: string,
+): Promise<SpotifyArtistAlbum[]> {
   const token = await getAccessToken();
   const limit = 50;
-  const items: any[] = [];
+  const items: SpotifyArtistAlbum[] = [];
 
   for (let page = 0; page < 4; page += 1) {
     const res = await fetch(
@@ -118,14 +141,14 @@ export async function getArtistAlbums(id: string) {
       break;
     }
 
-    const data = await res.json();
-    items.push(...(data.items || []));
+    const data = (await res.json()) as SpotifyArtistAlbumsResponse;
+    items.push(...(data.items ?? []));
     if (!data.next) break;
   }
 
   const seen = new Set<string>();
   return items
-    .filter((album: any) => {
+    .filter((album) => {
       if (!album?.id || seen.has(album.id)) return false;
       seen.add(album.id);
       if (album.album_group === "appears_on") return false;
@@ -136,7 +159,7 @@ export async function getArtistAlbums(id: string) {
       }
       return false;
     })
-    .sort((a: any, b: any) => (a.release_date < b.release_date ? 1 : -1));
+    .sort((a, b) => (a.release_date < b.release_date ? 1 : -1));
 }
 
 /**
@@ -145,7 +168,10 @@ export async function getArtistAlbums(id: string) {
  * singles (un single nuevo es noticia). Excluye compilaciones y apariciones en
  * trabajos de otros, y descarta los lanzamientos sin precisión de mes/día.
  */
-export async function getArtistReleases(id: string, withinDays = 60) {
+export async function getArtistReleases(
+  id: string,
+  withinDays = 60,
+): Promise<ArtistRelease[]> {
   const token = await getAccessToken();
   const cutoff = Date.now() - withinDays * 24 * 60 * 60 * 1000;
 
@@ -162,11 +188,11 @@ export async function getArtistReleases(id: string, withinDays = 60) {
     throw new Error(`Spotify API error: ${res.status}`);
   }
 
-  const data = await res.json();
+  const data = (await res.json()) as SpotifyArtistAlbumsResponse;
   const seen = new Set<string>();
 
-  return (data.items || [])
-    .filter((album: any) => {
+  return (data.items ?? [])
+    .filter((album) => {
       if (!album?.id || seen.has(album.id)) return false;
       seen.add(album.id);
       if (album.album_group === "appears_on") return false;
@@ -179,11 +205,11 @@ export async function getArtistReleases(id: string, withinDays = 60) {
       if (Number.isNaN(releasedAt) || releasedAt < cutoff) return false;
       return true;
     })
-    .map((album: any) => ({
+    .map((album) => ({
       id: album.id,
       name: album.name,
       images: album.images ?? [],
-      artists: (album.artists ?? []).map((artist: any) => ({
+      artists: (album.artists ?? []).map((artist) => ({
         id: artist.id,
         name: artist.name,
       })),
@@ -191,10 +217,10 @@ export async function getArtistReleases(id: string, withinDays = 60) {
       albumType: album.album_type,
       totalTracks: album.total_tracks ?? 0,
     }))
-    .sort((a: any, b: any) => (a.releaseDate < b.releaseDate ? 1 : -1));
+    .sort((a, b) => (a.releaseDate < b.releaseDate ? 1 : -1));
 }
 
-export async function getAlbum(id: string) {
+export async function getAlbum(id: string): Promise<SpotifyAlbum> {
   const token = await getAccessToken();
 
   const res = await fetch(`https://api.spotify.com/v1/albums/${id}`, {
@@ -203,16 +229,17 @@ export async function getAlbum(id: string) {
     },
   });
 
-  const albumData = await res.json();
-
-  return albumData;
+  return (await res.json()) as SpotifyAlbum;
 }
 
-export async function searchStuff(query: string) {
-  const token = await getAccessToken();
-
+async function requestSpotifySearch(
+  token: string,
+  query: string,
+  type: "album" | "artist" | "album,artist",
+  limit: number,
+): Promise<SpotifySearchResponse> {
   const res = await fetch(
-    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=album,artist&limit=10`,
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=${type}&limit=${limit}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -220,10 +247,77 @@ export async function searchStuff(query: string) {
     },
   );
 
-  return res.json();
+  return (await res.json()) as SpotifySearchResponse;
 }
 
-export async function getAlbumTracklist(albumId: string) {
+/**
+ * Búsqueda combinada de álbumes y artistas. Si la consulta coincide exactamente
+ * con un artista, se prioriza su discografía y se descartan las coincidencias
+ * parciales de título y los recopilatorios. Un fallo al enriquecer la respuesta
+ * se degrada a los resultados generales para no romper la búsqueda.
+ */
+export async function searchStuff(
+  query: string,
+): Promise<SpotifySearchResponse> {
+  const token = await getAccessToken();
+  const results = await requestSpotifySearch(token, query, "album,artist", 10);
+
+  const exactArtist = findExactArtist(results.artists?.items, query);
+
+  if (!exactArtist) {
+    return results.artists
+      ? {
+          ...results,
+          artists: {
+            ...results.artists,
+            items: prioritizeExactArtist(results.artists.items),
+          },
+        }
+      : results;
+  }
+
+  const artists = prioritizeExactArtist(results.artists?.items, exactArtist.id);
+
+  try {
+    const artistSearch = await requestSpotifySearch(
+      token,
+      buildArtistAlbumQuery(exactArtist.name),
+      "album",
+      50,
+    );
+    const artistAlbums = filterArtistAlbums(
+      artistSearch.albums?.items,
+      exactArtist.id,
+    );
+
+    if (artistAlbums.length === 0) {
+      return {
+        ...results,
+        artists: { ...results.artists, items: artists },
+      };
+    }
+
+    return {
+      ...results,
+      artists: { ...results.artists, items: artists },
+      albums: {
+        ...results.albums,
+        items: artistAlbums,
+        next: null,
+      },
+    };
+  } catch (error) {
+    reportApiError(error, "search", "warning");
+    return {
+      ...results,
+      artists: { ...results.artists, items: artists },
+    };
+  }
+}
+
+export async function getAlbumTracklist(
+  albumId: string,
+): Promise<SpotifyTrackPage> {
   const token = await getAccessToken();
 
   const url = `https://api.spotify.com/v1/albums/${albumId}/tracks`;
@@ -234,30 +328,31 @@ export async function getAlbumTracklist(albumId: string) {
     },
   });
 
-  console.log("📊 Response status:", res.status);
-
   if (!res.ok) {
     const errorBody = await res.text();
     console.error("❌ Spotify API error response:", errorBody);
     throw new Error(`Spotify API error: ${res.status} ${res.statusText}`);
   }
 
-  const data = await res.json();
-  return data;
+  return (await res.json()) as SpotifyTrackPage;
 }
 
 /**
- * Obtiene las características de audio promedio de todas las canciones de un álbum
+ * Obtiene las características de audio promedio de todas las canciones de un álbum.
  */
-export async function getAlbumAudioFeaturesAverage(albumId: string) {
+export async function getAlbumAudioFeaturesAverage(albumId: string): Promise<{
+  energy: number;
+  valence: number;
+  danceability: number;
+  acousticness: number;
+  instrumentalness: number;
+  tempo: number;
+  speechiness: number;
+  totalTracks: number;
+} | null> {
   try {
-    console.log(
-      `📀 Obteniendo características de audio para álbum: ${albumId}`,
-    );
     const token = await getAccessToken();
 
-    // Obtener pistas del álbum
-    console.log(`🎵 Solicitando pistas del álbum...`);
     const tracksRes = await fetch(
       `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`,
       {
@@ -273,12 +368,11 @@ export async function getAlbumAudioFeaturesAverage(albumId: string) {
       return null;
     }
 
-    const tracksData = await tracksRes.json();
-    console.log(
-      `✓ Pistas obtenidas: ${tracksData.items?.length || 0} canciones`,
-    );
+    const tracksData = (await tracksRes.json()) as SpotifyTrackPage;
 
-    const trackIds = tracksData.items?.map((track: any) => track.id).join(",");
+    const trackIds = (tracksData.items ?? [])
+      .map((track: SpotifyTrack) => track.id)
+      .join(",");
 
     if (!trackIds) {
       console.error(
@@ -287,10 +381,6 @@ export async function getAlbumAudioFeaturesAverage(albumId: string) {
       return null;
     }
 
-    // Obtener audio features de todas las pistas
-    console.log(
-      `🎼 Solicitando audio features para ${trackIds.split(",").length} pistas...`,
-    );
     const featuresRes = await fetch(
       `https://api.spotify.com/v1/audio-features?ids=${trackIds}`,
       {
@@ -306,52 +396,45 @@ export async function getAlbumAudioFeaturesAverage(albumId: string) {
       return null;
     }
 
-    const featuresData = await featuresRes.json();
-    const validFeatures = featuresData.audio_features?.filter(
-      (f: any) => f !== null,
-    );
+    const featuresData =
+      (await featuresRes.json()) as SpotifyAudioFeaturesResponse;
+    const validFeatures: SpotifyAudioFeatures[] = (
+      featuresData.audio_features ?? []
+    ).filter((feature): feature is SpotifyAudioFeatures => feature !== null);
 
-    console.log(
-      `✓ Audio features obtenidas: ${validFeatures?.length || 0} válidas`,
-    );
-
-    if (!validFeatures || validFeatures.length === 0) {
+    if (validFeatures.length === 0) {
       console.error(
         `❌ No se obtuvieron características válidas para el álbum ${albumId}`,
       );
       return null;
     }
 
-    // Calcular promedios
-    const result = {
+    return {
       energy:
-        validFeatures.reduce((sum: number, f: any) => sum + f.energy, 0) /
+        validFeatures.reduce((sum, feature) => sum + feature.energy, 0) /
         validFeatures.length,
       valence:
-        validFeatures.reduce((sum: number, f: any) => sum + f.valence, 0) /
+        validFeatures.reduce((sum, feature) => sum + feature.valence, 0) /
         validFeatures.length,
       danceability:
-        validFeatures.reduce((sum: number, f: any) => sum + f.danceability, 0) /
+        validFeatures.reduce((sum, feature) => sum + feature.danceability, 0) /
         validFeatures.length,
       acousticness:
-        validFeatures.reduce((sum: number, f: any) => sum + f.acousticness, 0) /
+        validFeatures.reduce((sum, feature) => sum + feature.acousticness, 0) /
         validFeatures.length,
       instrumentalness:
         validFeatures.reduce(
-          (sum: number, f: any) => sum + f.instrumentalness,
+          (sum, feature) => sum + feature.instrumentalness,
           0,
         ) / validFeatures.length,
       tempo:
-        validFeatures.reduce((sum: number, f: any) => sum + f.tempo, 0) /
+        validFeatures.reduce((sum, feature) => sum + feature.tempo, 0) /
         validFeatures.length,
       speechiness:
-        validFeatures.reduce((sum: number, f: any) => sum + f.speechiness, 0) /
+        validFeatures.reduce((sum, feature) => sum + feature.speechiness, 0) /
         validFeatures.length,
       totalTracks: validFeatures.length,
     };
-
-    console.log(`✅ Características calculadas:`, result);
-    return result;
   } catch (error) {
     console.error(`❌ Error analizando álbum ${albumId}:`, error);
     return null;

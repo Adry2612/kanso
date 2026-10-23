@@ -1,76 +1,21 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useTransitionRouter } from "next-view-transitions";
-import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "@/context/I18nContext";
 import { ReleaseGridSkeleton } from "@/components/ContentSkeletons";
 import { Stagger, StaggerItem } from "@/components/motion";
-import { getArtistReleases, type ArtistRelease } from "@/lib/api/artists";
 import ErrorState from "@/components/ErrorState";
+import { useArtistReleases } from "@/hooks/client/useArtistReleases";
+import { formatReleaseMonth, getReleaseTypeKey } from "@/utils/releases";
+import type { ArtistRelease } from "@/types/artists";
 
 export default function ReleasesPage() {
   const t = useTranslations("releases");
-  const { user } = useAuth();
   const router = useTransitionRouter();
-  const [releases, setReleases] = useState<ArtistRelease[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
+  const { releases, groups, error, reload } = useArtistReleases();
 
-  useEffect(() => {
-    if (!user?.uid) {
-      setReleases([]);
-      return;
-    }
-
-    let cancelled = false;
-    setReleases(null);
-    setError(null);
-
-    getArtistReleases()
-      .then((items) => {
-        if (!cancelled) setReleases(items);
-      })
-      .catch((err: Error) => {
-        if (!cancelled) {
-          setError(err.message);
-          setReleases([]);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.uid, reloadToken]);
-
-  const groups = useMemo(() => {
-    const byMonth = new Map<string, ArtistRelease[]>();
-    (releases ?? []).forEach((release) => {
-      const month = (release.releaseDate || "").slice(0, 7);
-      if (!month) return;
-      const list = byMonth.get(month) ?? [];
-      list.push(release);
-      byMonth.set(month, list);
-    });
-    return Array.from(byMonth.entries()).sort((a, b) => (a[0] < b[0] ? 1 : -1));
-  }, [releases]);
-
-  const formatMonth = (month: string) => {
-    const [year, monthIndex] = month.split("-");
-    return new Date(Number(year), Number(monthIndex) - 1, 1).toLocaleDateString(
-      undefined,
-      { month: "long", year: "numeric" },
-    );
-  };
-
-  const typeLabel = (release: ArtistRelease) => {
-    if (release.albumType === "album") return t("typeAlbum");
-    if (release.albumType === "single") {
-      return (release.totalTracks ?? 0) >= 3 ? t("typeEp") : t("typeSingle");
-    }
-    return t("typeRelease");
-  };
+  const typeLabel = (release: ArtistRelease) => t(getReleaseTypeKey(release));
 
   return (
     <main className="kanso-main min-h-screen">
@@ -99,7 +44,7 @@ export default function ReleasesPage() {
             className="mt-9"
             title={t("error")}
             description={t("errorDescription")}
-            onRetry={() => setReloadToken((value) => value + 1)}
+            onRetry={reload}
           />
         )}
 
@@ -112,7 +57,7 @@ export default function ReleasesPage() {
         {groups.map(([month, items]) => (
           <section key={month} className="mt-10">
             <h2 className="mb-5 text-lg font-semibold capitalize tracking-tight text-[var(--foreground)]">
-              {formatMonth(month)}
+              {formatReleaseMonth(month)}
             </h2>
             <Stagger
               className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6"

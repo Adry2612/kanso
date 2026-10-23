@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getAlbumTracklist } from "@/services/spotify";
+import { getAlbumTracklist } from "@/services/server/spotify";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { SpotifyArtist, SpotifyTrack } from "@/types/spotify";
+import { reportApiError } from "@/lib/sentry";
 
 export async function GET(req: Request) {
   try {
@@ -49,7 +50,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(tracks);
   } catch (err) {
-    console.error("Error in getAlbumTracklist route:", err);
+    reportApiError(err, "getAlbumTracklist");
     return NextResponse.json(
       {
         error: "Server error",

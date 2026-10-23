@@ -1,4 +1,5 @@
-import { getArtistAlbums } from "../../../../services/spotify";
+import { getArtistAlbums } from "@/services/server/spotify";
+import { reportApiError } from "@/lib/sentry";
 
 export async function GET(request: Request): Promise<Response> {
   const artistId = new URL(request.url).searchParams.get("id");
@@ -11,10 +12,10 @@ export async function GET(request: Request): Promise<Response> {
     const albums = await getArtistAlbums(artistId);
     return Response.json({ albums });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Error al obtener la discografía";
-    return Response.json({ error: message }, { status: 500 });
+    reportApiError(error, "getArtistAlbums");
+    return Response.json(
+      { error: "No se pudo obtener la discografía" },
+      { status: 500 },
+    );
   }
 }

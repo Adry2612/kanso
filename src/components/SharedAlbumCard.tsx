@@ -4,7 +4,7 @@
 import { Music2 } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
 import { openSpotify } from "@/lib/spotifyUtils";
-import type { SharedCollectionAlbum } from "@/lib/friendLibrary";
+import type { SharedCollectionAlbum } from "@/types/friends";
 import { getMood } from "@/constants/moods";
 import { getActivity } from "@/constants/activities";
 import InlineEmoji from "@/components/InlineEmoji";

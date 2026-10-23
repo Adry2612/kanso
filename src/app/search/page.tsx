@@ -1,249 +1,60 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useEffect, useRef, useState } from "react";
-import { Album } from "../../../models/album";
+import SearchArtists from "@/app/search/components/SearchArtists";
 import { useTranslations } from "@/context/I18nContext";
-import { normalizeTagCategory } from "@/lib/tags";
 import AlbumCard from "@/components/AlbumCard";
 import {
   AlbumGridSkeleton,
   CollectionSkeleton,
 } from "@/components/ContentSkeletons";
 import { Skeleton } from "@/components/Skeleton";
-import { useAuth } from "@/context/AuthContext";
-import { getMood, normalizeMoods } from "@/constants/moods";
+import { getMood } from "@/constants/moods";
 import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
 import { Link } from "next-view-transitions";
 import { Stagger, StaggerItem } from "@/components/motion";
-import { authFetch } from "@/lib/api/authFetch";
-import { getListenLater } from "@/lib/api/listenLater";
-import type { ListenLaterAlbum } from "@/types/favorites";
+import { useSearchPage } from "@/hooks/client/useSearchPage";
+import { tagCategoryI18nKey } from "@/utils/favorites";
 
 export default function SearchPage() {
   const t = useTranslations("search");
   const tTags = useTranslations("tags");
-  const { user } = useAuth();
-  const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 500);
+  const {
+    query,
+    setQuery,
+    mounted,
+    debouncedQuery,
+    result,
+    loading,
+    error,
+    retry,
+    favoritesByAlbum,
+    pendingByAlbum,
+    favoritesLoaded,
+    favoritesError,
+    communitySearches,
+    communityAlbums,
+    collectionMoods,
+    collectionTags,
+    openModal,
+    selectedAlbum,
+    selectedIsFavorite,
+    selectedIsPending,
+    selectedPendingData,
+    selectedFavoriteData,
+    openAlbumModal,
+    closeAlbumModal,
+    handleSaved,
+    handlePendingSaved,
+    handlePendingRemoved,
+  } = useSearchPage();
 
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
-  const [favoritesError, setFavoritesError] = useState(false);
-  const [communitySearches, setCommunitySearches] = useState<string[]>([]);
-  const [communityAlbums, setCommunityAlbums] = useState<any[]>([]);
-  const [reloadToken, setReloadToken] = useState(0);
+  const tagCategoryLabel = (category: string) =>
+    tTags(tagCategoryI18nKey(category));
 
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
-  const [selectedAlbumIsFavorite, setSelectedAlbumIsFavorite] = useState(false);
-  const [selectedAlbumIsPending, setSelectedAlbumIsPending] = useState(false);
-  const [selectedPendingData, setSelectedPendingData] =
-    useState<ListenLaterAlbum | null>(null);
-  const [favoritesByAlbum, setFavoritesByAlbum] = useState<Map<string, any>>(
-    new Map(),
-  );
-  const [pendingByAlbum, setPendingByAlbum] = useState<
-    Map<string, ListenLaterAlbum>
-  >(new Map());
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-  };
-
-  useEffect(() => {
-    if (!user?.uid) {
-      setFavoritesByAlbum(new Map());
-      setFavoritesLoaded(true);
-      return;
-    }
-
-    setFavoritesLoaded(false);
-    setFavoritesError(false);
-    authFetch("/api/userFavorites")
-      .then((response) => {
-        if (!response.ok) throw new Error("No se pudo cargar la colección");
-        return response.json();
-      })
-      .then((data) => {
-        const favorites = new Map<string, any>();
-        (data.favorites || []).forEach((favorite: any) => {
-          const albumId = favorite.album?.id || favorite.albumId;
-          if (albumId) favorites.set(albumId, favorite);
-        });
-        setFavoritesByAlbum(favorites);
-        setFavoritesLoaded(true);
-      })
-      .catch((error: unknown) => {
-        console.error("Error al cargar la colección:", error);
-        setFavoritesByAlbum(new Map());
-        setFavoritesError(true);
-        setFavoritesLoaded(true);
-      });
-  }, [user?.uid]);
-
-  useEffect(() => {
-    if (!user?.uid) {
-      setPendingByAlbum(new Map());
-      return;
-    }
-
-    let cancelled = false;
-
-    getListenLater()
-      .then((albums) => {
-        if (cancelled) return;
-
-        const pending = new Map<string, ListenLaterAlbum>();
-        albums.forEach((pendingAlbum) => {
-          const albumId = pendingAlbum.album?.id || pendingAlbum.albumId;
-          if (albumId) pending.set(albumId, pendingAlbum);
-        });
-        setPendingByAlbum(pending);
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        console.error("Error al cargar pendientes:", error);
-        setPendingByAlbum(new Map());
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.uid]);
-
-  useEffect(() => {
-    fetch("/api/communitySearches")
-      .then((response) => (response.ok ? response.json() : { searches: [] }))
-      .then((data) => {
-        setCommunitySearches(
-          (data.searches || [])
-            .map((item: { term?: string }) => item.term)
-            .filter((term: unknown): term is string => Boolean(term)),
-        );
-      })
-      .catch(() => setCommunitySearches([]));
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/communityAlbums")
-      .then((response) => (response.ok ? response.json() : { albums: [] }))
-      .then((data) => setCommunityAlbums(data.albums || []))
-      .catch(() => setCommunityAlbums([]));
-  }, []);
-
-  // Registro de la comunidad: espera a que la consulta se asiente (más que el
-  // debounce de resultados), exige 3 caracteres y coalesce prefijos parciales.
-  const lastRegisteredTerm = useRef<string | null>(null);
-
-  useEffect(() => {
-    const term = query.trim().replace(/\s+/g, " ");
-    if (term.length < 3) return;
-
-    const timer = setTimeout(() => {
-      const normalized = term.toLocaleLowerCase("es");
-      const previous = lastRegisteredTerm.current;
-      if (previous === normalized) return;
-
-      const extendsPrevious =
-        previous !== null && normalized.startsWith(previous);
-
-      lastRegisteredTerm.current = normalized;
-      fetch("/api/communitySearches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          term,
-          previousTerm: extendsPrevious ? previous : undefined,
-        }),
-      }).catch(() => {});
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  const collectionMoods = Array.from(
-    new Set(
-      Array.from(favoritesByAlbum.values()).flatMap((favorite) =>
-        normalizeMoods(favorite.labeledFeelings || []),
-      ),
-    ),
-  ).slice(0, 6);
-  const collectionTags = Array.from(
-    new Map(
-      Array.from(favoritesByAlbum.values())
-        .flatMap((favorite) => favorite.tags || [])
-        .map((tag: { category: string; value: string }) => [
-          `${tag.category}-${tag.value}`,
-          tag,
-        ]),
-    ).values(),
-  ).slice(0, 8) as { category: string; value: string }[];
-
-  const tagCategoryLabel = (category: string) => {
-    const normalized = normalizeTagCategory(category);
-    if (normalized === "idioma") return tTags("categories.language");
-    if (normalized === "género") return tTags("categories.genre");
-    return tTags("categories.other");
-  };
-
-  const handleOpenModal = (album: Album) => {
-    setOpenModal((prev) => !prev);
-    setSelectedAlbum(album);
-    setSelectedAlbumIsFavorite(favoritesByAlbum.has(album.id));
-    setSelectedAlbumIsPending(pendingByAlbum.has(album.id));
-    setSelectedPendingData(pendingByAlbum.get(album.id) ?? null);
-  };
-
-  useEffect(() => {
-    const term = debouncedQuery.trim();
-
-    if (!term) {
-      setResult(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
-    // Cancelar la petición anterior: escribir rápido nunca pinta resultados viejos.
-    const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(term)}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || "Error fetching data");
-        }
-        const data = await res.json();
-        setResult(data);
-      } catch (err: any) {
-        if (err?.name === "AbortError") return;
-        setError(err.message);
-        setResult(null);
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-
-    fetchData();
-
-    return () => controller.abort();
-  }, [debouncedQuery, reloadToken]);
+  const artists = (result?.artists?.items ?? []).slice(0, 4);
+  const albums = result?.albums?.items ?? [];
 
   return (
     <main className="kanso-main min-h-screen">
@@ -264,7 +75,7 @@ export default function SearchPage() {
         type="text"
         placeholder={t("placeholder")}
         value={query}
-        onChange={handleInputChange}
+        onChange={(event) => setQuery(event.target.value)}
         className="kanso-input mt-8 mb-10 w-full max-w-2xl px-5 py-4 text-sm placeholder:text-[var(--kanso-muted)]"
       />
 
@@ -274,7 +85,7 @@ export default function SearchPage() {
           className="mb-6"
           title={t("error")}
           description={t("errorDescription")}
-          onRetry={() => setReloadToken((value) => value + 1)}
+          onRetry={retry}
         />
       )}
 
@@ -293,13 +104,15 @@ export default function SearchPage() {
               <span className="text-[var(--kanso-mint)]">{debouncedQuery}</span>
             </h2>
 
-            {result.albums?.items?.length > 0 ? (
+            <SearchArtists artists={artists} />
+
+            {albums.length > 0 ? (
               <Stagger
                 className="grid w-full grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
                 stagger={0.04}
                 onMount
               >
-                {result.albums.items.map((album: any) => (
+                {albums.map((album) => (
                   <StaggerItem key={album.id}>
                     <AlbumCard
                       album={album}
@@ -308,11 +121,17 @@ export default function SearchPage() {
                         !favoritesByAlbum.has(album.id) &&
                         pendingByAlbum.has(album.id)
                       }
-                      onAdd={() => handleOpenModal(album)}
+                      onAdd={() => openAlbumModal(album)}
                     />
                   </StaggerItem>
                 ))}
               </Stagger>
+            ) : artists.length > 0 ? (
+              <section className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
+                <p className="text-sm leading-relaxed text-[var(--kanso-muted)]">
+                  {t("noAlbumsFound")}
+                </p>
+              </section>
             ) : (
               <section className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
                 <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
@@ -366,57 +185,19 @@ export default function SearchPage() {
                 )}
               </section>
             )}
-            {openModal && (
+            {openModal && selectedAlbum && (
               <SelectedAlbumModal
                 isOpen={openModal}
-                onClose={() => setOpenModal(false)}
+                onClose={closeAlbumModal}
                 album={selectedAlbum}
-                isFavorite={selectedAlbumIsFavorite}
-                isPending={selectedAlbumIsPending}
+                isFavorite={selectedIsFavorite}
+                isPending={selectedIsPending}
                 pendingData={selectedPendingData}
-                startEditing={selectedAlbumIsFavorite}
-                favoriteData={
-                  selectedAlbum
-                    ? favoritesByAlbum.get(selectedAlbum.id)
-                    : undefined
-                }
-                onSaved={(savedFavorite) => {
-                  if (selectedAlbum?.id) {
-                    setFavoritesByAlbum((current) => {
-                      const next = new Map(current);
-                      next.set(selectedAlbum.id, savedFavorite);
-                      return next;
-                    });
-                    setPendingByAlbum((current) => {
-                      const next = new Map(current);
-                      next.delete(selectedAlbum.id);
-                      return next;
-                    });
-                  }
-                }}
-                onPendingSaved={(pendingAlbum) => {
-                  if (!selectedAlbum?.id) return;
-                  setPendingByAlbum((current) => {
-                    const next = new Map(current);
-                    if (pendingAlbum) {
-                      next.set(selectedAlbum.id, pendingAlbum);
-                    }
-                    return next;
-                  });
-                  setFavoritesByAlbum((current) => {
-                    const next = new Map(current);
-                    next.delete(selectedAlbum.id);
-                    return next;
-                  });
-                }}
-                onPendingRemoved={() => {
-                  if (!selectedAlbum?.id) return;
-                  setPendingByAlbum((current) => {
-                    const next = new Map(current);
-                    next.delete(selectedAlbum.id);
-                    return next;
-                  });
-                }}
+                startEditing={selectedIsFavorite}
+                favoriteData={selectedFavoriteData}
+                onSaved={handleSaved}
+                onPendingSaved={handlePendingSaved}
+                onPendingRemoved={handlePendingRemoved}
               />
             )}
           </>

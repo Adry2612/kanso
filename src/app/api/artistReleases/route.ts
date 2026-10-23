@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
-import { getArtistReleases } from "../../../../services/spotify";
+import { getArtistReleases } from "@/services/server/spotify";
 import type { ArtistRelease } from "@/lib/api/artists";
+import { reportApiError } from "@/lib/sentry";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -18,7 +19,7 @@ async function readCache(artistId: string) {
       fetchedAt: fetchedAt ? new Date(fetchedAt) : null,
     };
   } catch (error) {
-    console.error(`No se pudo leer la caché del artista ${artistId}:`, error);
+    reportApiError(error, "artistReleases", "warning");
     return null;
   }
 }
@@ -44,17 +45,11 @@ async function resolveArtistReleases(
         fetchedAt: new Date(),
       })
       .catch((error) => {
-        console.error(
-          `No se pudo guardar la caché del artista ${artistId}:`,
-          error,
-        );
+        reportApiError(error, "artistReleases", "warning");
       });
     return releases;
   } catch (error) {
-    console.error(
-      `No se pudieron obtener novedades del artista ${artistId}:`,
-      error,
-    );
+    reportApiError(error, "artistReleases", "warning");
     return cached?.releases ?? [];
   }
 }
@@ -90,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ releases });
   } catch (error) {
-    console.error("Error obteniendo novedades de artistas:", error);
+    reportApiError(error, "artistReleases");
     return NextResponse.json(
       { error: "No se pudieron obtener las novedades" },
       { status: 500 },

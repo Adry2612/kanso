@@ -20,13 +20,16 @@ const eslintConfig = [
     },
     rules: {
       // TypeScript
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
+      "@typescript-eslint/no-explicit-any": "error",
 
       // React
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "error",
 
       // General
       "no-console": ["warn", { allow: ["warn", "error"] }],
@@ -35,6 +38,77 @@ const eslintConfig = [
 
       // Prettier
       "prettier/prettier": "warn",
+    },
+  },
+  // Fronteras de arquitectura: las vistas, componentes y hooks de cliente no
+  // pueden importar código exclusivo de servidor.
+  {
+    files: [
+      "src/app/**/page.tsx",
+      "src/components/**/*.{ts,tsx}",
+      "src/hooks/**/*.{ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/services/server", "@/services/server/*"],
+              message:
+                "Usa un servicio de cliente; los servicios de servidor no pueden importarse desde el cliente.",
+            },
+            {
+              group: ["firebase-admin", "firebase-admin/*"],
+              message:
+                "Firebase Admin solo puede usarse desde src/services/server o una ruta API.",
+            },
+            {
+              group: ["@/lib/apiAuth", "@/lib/firebaseAdmin", "@/lib/avatar"],
+              message:
+                "Este módulo es exclusivo de servidor; usa la API interna desde el cliente.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/services/client/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/services/server", "@/services/server/*"],
+              message:
+                "Un servicio de cliente no puede importar servicios de servidor.",
+            },
+            {
+              group: ["firebase-admin", "firebase-admin/*"],
+              message:
+                "Los servicios de cliente no pueden usar Firebase Admin.",
+            },
+            {
+              group: ["@/lib/apiAuth", "@/lib/firebaseAdmin", "@/lib/avatar"],
+              message:
+                "Los servicios de cliente no pueden importar módulos de servidor.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "src/services/**/*.{ts,tsx}",
+      "src/hooks/**/*.{ts,tsx}",
+      "src/utils/**/*.{ts,tsx}",
+      "src/types/**/*.{ts,tsx}",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
   // Disables ESLint rules that conflict with Prettier formatting.

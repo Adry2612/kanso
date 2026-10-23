@@ -1,8 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify; la optimización de imágenes se decide en improve-performance */
-import React, { useEffect, useState } from "react";
-import { getRecomendationHistory } from "@/lib/api/recomendation";
-import { authFetch } from "@/lib/api/authFetch";
-import { useAuth } from "@/context/AuthContext";
+import React, { useState } from "react";
+import { useHomeStart } from "@/hooks/client/useHomeStart";
 import { Skeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
 import { useTransitionRouter } from "next-view-transitions";
@@ -11,6 +9,10 @@ import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
 import { normalizeTagCategory } from "@/lib/tags";
 import type { FavoriteFormat } from "@/types/favorites";
+import {
+  buildQuickRecommendationHref,
+  buildRecommendationHref,
+} from "@/utils/recommendationParams";
 import {
   AnimatePresence,
   EASE_OUT,
@@ -24,38 +26,22 @@ import FeelingsCarousel, {
   type CarouselOption,
 } from "@/components/FeelingsCarousel";
 
-type HistoryEntry = {
-  id: string;
-  album: {
-    id: string;
-    name: string;
-    images: { url: string }[];
-    artists: { name: string }[];
-  };
-};
-
-type FavoriteWithTags = {
-  tags?: { category: string; value: string }[];
-};
-
 export default function StartPage() {
   const router = useTransitionRouter();
-  const { user } = useAuth();
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tQuick = useTranslations("quickRecommendation");
   const tFeelings = useTranslations("feelingsCarousel");
   const tTags = useTranslations("tags");
   const reduce = useReducedMotion();
+  const {
+    today,
+    loading,
+    historyError,
+    recentRecommendations,
+    collectionTags,
+  } = useHomeStart();
 
-  const [mounted, setMounted] = useState(false);
-  const [today, setToday] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [historyError, setHistoryError] = useState<string | null>(null);
-
-  const [recomendationHistory, setRecomendationHistory] = useState<
-    HistoryEntry[]
-  >([]);
   const [selectedMood, setSelectedMood] = useState<string[]>([]);
   const [recommendationType, setRecommendationType] = useState<
     "mood" | "activity"
@@ -65,9 +51,6 @@ export default function StartPage() {
     "all",
   );
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [collectionTags, setCollectionTags] = useState<
-    { category: string; value: string }[]
-  >([]);
   const [recommendationStep, setRecommendationStep] = useState<0 | 1>(0);
   const [quickOpen, setQuickOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -80,62 +63,6 @@ export default function StartPage() {
     if (normalized === "género") return tTags("categories.genre");
     return tTags("categories.other");
   };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Fecha real del día, calculada tras montar para no desajustar la hidratación.
-  useEffect(() => {
-    const formatter = new Intl.DateTimeFormat(
-      document.documentElement.lang || "es",
-      { weekday: "long", day: "numeric", month: "long" },
-    );
-    const label = formatter.format(new Date());
-    setToday(label.charAt(0).toUpperCase() + label.slice(1));
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (!user?.uid) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchRecomendationHistory = async () => {
-      setLoading(true);
-      setHistoryError(null);
-      try {
-        const { history } = await getRecomendationHistory();
-        setRecomendationHistory(history || []);
-      } catch (error) {
-        console.error("Error fetching history:", error);
-        setHistoryError(
-          "No pudimos cargar tus recomendaciones. Inténtalo de nuevo más tarde.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRecomendationHistory();
-  }, [user?.uid, mounted]);
-
-  useEffect(() => {
-    if (!user?.uid) return;
-    authFetch("/api/userFavorites")
-      .then((response) => (response.ok ? response.json() : { favorites: [] }))
-      .then((data) => {
-        const unique = new Map<string, { category: string; value: string }>();
-        (data.favorites || [])
-          .flatMap((favorite: FavoriteWithTags) => favorite.tags || [])
-          .forEach((tag: { category: string; value: string }) =>
-            unique.set(`${tag.category}:${tag.value}`, tag),
-          );
-        setCollectionTags(Array.from(unique.values()));
-      })
-      .catch(() => setCollectionTags([]));
-  }, [user?.uid]);
 
   const carouselOptions: CarouselOption[] =
     recommendationType === "mood"
@@ -151,25 +78,21 @@ export default function StartPage() {
         }));
 
   const handleRecommendation = () => {
-    const params = new URLSearchParams({ format: selectedFormat });
-    selectedMood.forEach((mood) => params.append("moods", mood));
-    selectedActivity.forEach((activity) => params.append("activity", activity));
-    selectedTags.forEach((tag) => params.append("tag", tag));
-    params.set("type", selectedActivity.length ? "activity" : "mood");
-    router.push(`/recommendation?${params.toString()}`);
+    router.push(
+      buildRecommendationHref({
+        format: selectedFormat,
+        moods: selectedMood,
+        activities: selectedActivity,
+        tags: selectedTags,
+      }),
+    );
   };
 
   const handleQuickRecommendation = () => {
-    const params = new URLSearchParams({ format: quickFormat });
-    if (quickTag) params.append("tag", quickTag);
-    params.set("type", "mood");
-    router.push(`/recommendation?${params.toString()}`);
+    router.push(buildQuickRecommendationHref(quickFormat, quickTag));
   };
 
   const hasSelection = selectedMood.length > 0 || selectedActivity.length > 0;
-  const recentRecommendations = recomendationHistory
-    .filter((item) => item.album?.id)
-    .slice(0, 3);
 
   // Emoción: alterna varias. Actividad: elige una (la spec habla de "la
   // actividad elegida"); volver a pulsarla la quita.

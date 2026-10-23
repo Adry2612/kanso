@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate, isAuthFailure, requireRegistered } from "@/lib/apiAuth";
 import { ensureUserProfile, FriendApiError } from "@/lib/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.error("Error obteniendo el perfil propio:", error);
+    reportApiError(error, "profile");
     return NextResponse.json(
       { error: "No se pudo cargar el perfil." },
       { status: 500 },

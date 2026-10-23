@@ -1,26 +1,18 @@
-// src/lib/api/favorites.ts
-import { User } from "firebase/auth";
-import { Album } from "../../../models/album";
-import {
+import type { User } from "firebase/auth";
+import type { Album } from "@/types/album";
+import type {
   FavoriteFormat,
   FavoriteTag,
   SaveFavoriteResponse,
 } from "@/types/favorites";
-import { normalizeMoods } from "@/constants/moods";
-import { authFetch } from "@/lib/api/authFetch";
+import {
+  addFavorite as saveFavorite,
+  removeFavorite,
+} from "@/services/client/favorites";
 
-// Lee el cuerpo sin asumir que sea JSON: un error de proxy/HTML no debe
-// convertirse en un SyntaxError críptico.
-async function parseJson<T = { error?: string }>(
-  res: Response,
-): Promise<T | null> {
-  try {
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  }
-}
+export { getCollection, removeFavorite } from "@/services/client/favorites";
 
+/** Compatibilidad con la firma anterior; el usuario se deriva del token. */
 export const addFavorite = async (
   album: Album,
   user: User,
@@ -30,42 +22,7 @@ export const addFavorite = async (
   tags: FavoriteTag[] = [],
 ): Promise<SaveFavoriteResponse> => {
   if (!user?.uid) throw new Error("Usuario no autenticado");
-
-  const normalizedFeelings = normalizeMoods(
-    feelings.map((feeling) =>
-      typeof feeling === "string" ? feeling : feeling.label,
-    ),
-  );
-
-  // El usuario se identifica con el token de la sesión: la API lo ignora del cuerpo.
-  const res = await authFetch("/api/toggleFavorite", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      album,
-      feelings: normalizedFeelings,
-      format,
-      activities,
-      tags,
-    }),
-  });
-
-  const data = await parseJson<SaveFavoriteResponse & { error?: string }>(res);
-
-  if (!res.ok) throw new Error(data?.error || "No se pudo guardar el álbum");
-
-  return data as SaveFavoriteResponse;
+  return saveFavorite(album, feelings, format, activities, tags);
 };
 
-export const undoFavorite = async (album: Album) => {
-  const res = await authFetch("/api/removeFavorite", {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ album }),
-  });
-
-  if (!res.ok) {
-    const data = await parseJson(res);
-    throw new Error(data?.error || "No se pudo eliminar el álbum");
-  }
-};
+export const undoFavorite = async (album: Album) => removeFavorite(album);

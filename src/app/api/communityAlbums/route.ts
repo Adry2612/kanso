@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
+import { reportApiError } from "@/lib/sentry";
 
 const LIST_LIMIT = 8;
 
@@ -35,7 +36,7 @@ export async function GET() {
     return NextResponse.json({ albums });
   } catch (error) {
     // Degradar sin romper la pantalla: el cliente trata la lista vacía.
-    console.error("Error obteniendo álbumes de la comunidad:", error);
+    reportApiError(error, "communityAlbums", "warning");
     return NextResponse.json({ albums: [] });
   }
 }

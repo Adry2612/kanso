@@ -11,6 +11,7 @@ import type {
   PublicProfileRelation,
   PublicProfileResponse,
 } from "@/types/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
-    console.error("Error obteniendo el perfil público:", error);
+    reportApiError(error, "publicProfile");
     return NextResponse.json(
       { error: "No se pudo cargar el perfil." },
       { status: 500, headers: { "Cache-Control": "no-store" } },

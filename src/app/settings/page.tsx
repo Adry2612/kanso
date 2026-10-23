@@ -1,19 +1,14 @@
 "use client";
 
-import { signOut } from "firebase/auth";
 import { useTheme } from "@/components/ThemeProvider";
 import { useI18n, useTranslations } from "@/context/I18nContext";
-import { useAuth } from "@/context/AuthContext";
-import { useProfile } from "@/context/ProfileContext";
 import { useTransitionRouter } from "next-view-transitions";
-import { useRef, useState, type ChangeEvent } from "react";
+import { useRef } from "react";
 import { Camera, Check, Loader2, Trash2 } from "lucide-react";
-import { auth } from "@/lib/firebase";
 import { motion, Reveal } from "@/components/motion";
 import FriendAvatar from "@/components/FriendAvatar";
 import ErrorState from "@/components/ErrorState";
-import { removeAvatar, uploadAvatar } from "@/lib/api/profile";
-import { resizeImageToAvatarDataUrl } from "@/lib/avatarImage";
+import { useSettingsPage } from "@/hooks/client/useSettingsPage";
 
 const THEME_OPTIONS = [
   {
@@ -41,89 +36,37 @@ const LANGUAGE_OPTIONS = [
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const { user } = useAuth();
-  const { profile, refreshProfile } = useProfile();
   const { locale, setLocale } = useI18n();
   const t = useTranslations("settings");
   const router = useTransitionRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const [signOutFailed, setSignOutFailed] = useState(false);
-  const [avatarBusy, setAvatarBusy] = useState(false);
-  const [avatarError, setAvatarError] = useState<string | null>(null);
-  const [avatarSuccess, setAvatarSuccess] = useState<string | null>(null);
-
-  const profileName =
-    profile?.displayName ||
-    user?.displayName ||
-    user?.email?.split("@")[0] ||
-    t("profile.fallbackName");
-  const avatarURL = profile?.photoURL ?? user?.photoURL ?? null;
-  const hasCustomAvatar = Boolean(
-    profile?.photoURL?.startsWith("/api/avatar/"),
-  );
-
-  const handleSignOut = async () => {
-    setIsSigningOut(true);
-    setSignOutFailed(false);
-    try {
-      await signOut(auth);
+  const {
+    user,
+    profileName,
+    avatarURL,
+    hasCustomAvatar,
+    isSigningOut,
+    signOutFailed,
+    handleSignOut,
+    avatarBusy,
+    avatarError,
+    avatarSuccess,
+    handleAvatarSelected,
+    handleRemoveAvatar,
+  } = useSettingsPage(
+    () => {
       router.replace("/");
       router.refresh();
-    } catch {
-      setSignOutFailed(true);
-    } finally {
-      setIsSigningOut(false);
-    }
-  };
-
-  const handleAvatarSelected = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-
-    setAvatarError(null);
-    setAvatarSuccess(null);
-    setAvatarBusy(true);
-
-    try {
-      const dataUrl = await resizeImageToAvatarDataUrl(file);
-      await uploadAvatar(dataUrl);
-      await refreshProfile();
-      setAvatarSuccess(t("profile.updated"));
-    } catch (error) {
-      const code = error instanceof Error ? error.message : "";
-      setAvatarError(
-        code === "unsupported-type"
-          ? t("profile.invalidType")
-          : code === "file-too-large"
-            ? t("profile.tooLarge")
-            : error instanceof Error
-              ? error.message
-              : t("profile.error"),
-      );
-    } finally {
-      setAvatarBusy(false);
-    }
-  };
-
-  const handleRemoveAvatar = async () => {
-    setAvatarError(null);
-    setAvatarSuccess(null);
-    setAvatarBusy(true);
-
-    try {
-      await removeAvatar();
-      await refreshProfile();
-      setAvatarSuccess(t("profile.removed"));
-    } catch (error) {
-      setAvatarError(
-        error instanceof Error ? error.message : t("profile.error"),
-      );
-    } finally {
-      setAvatarBusy(false);
-    }
-  };
+    },
+    {
+      updated: t("profile.updated"),
+      removed: t("profile.removed"),
+      invalidType: t("profile.invalidType"),
+      tooLarge: t("profile.tooLarge"),
+      error: t("profile.error"),
+      fallbackName: t("profile.fallbackName"),
+    },
+  );
 
   return (
     <main className="settings-page kanso-main min-h-screen">

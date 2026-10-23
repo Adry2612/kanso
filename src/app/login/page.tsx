@@ -1,130 +1,31 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import { auth, authPersistenceReady } from "../../lib/firebase";
-import { signInAsGuest, signInWithGoogle } from "../../lib/firebaseAuth";
-import { getAuthErrorMessage } from "@/lib/authErrorMessage";
-import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
+import { useLoginForm } from "@/hooks/client/useLoginForm";
 import { GoogleIcon } from "@/components/BrandIcons";
 import ErrorState from "@/components/ErrorState";
 
 function LoginForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [guestError, setGuestError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStartingGuest, setIsStartingGuest] = useState(false);
-  const oauthTimeoutRef = useRef<number | null>(null);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const isRegisterMode = searchParams.get("mode") !== "login";
-  const requestedNext = searchParams.get("next");
-  const destination =
-    requestedNext &&
-    requestedNext.startsWith("/") &&
-    !requestedNext.startsWith("//")
-      ? requestedNext
-      : "/home";
-  const nextQuery =
-    destination !== "/home" ? `&next=${encodeURIComponent(destination)}` : "";
-
-  // Si el popup se queda colgado (COOP, bloqueo del navegador), el botón no
-  // debe quedar deshabilitado para siempre.
-  useEffect(
-    () => () => {
-      if (oauthTimeoutRef.current) window.clearTimeout(oauthTimeoutRef.current);
-    },
-    [],
-  );
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      await authPersistenceReady;
-      if (isRegisterMode) {
-        const displayName = name.trim();
-        if (!displayName) {
-          setError("Escribe tu nombre para crear la cuenta.");
-          return;
-        }
-
-        const credential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password,
-        );
-        await updateProfile(credential.user, { displayName });
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
-      // Esperar a que el contexto de autenticación reciba al usuario antes de
-      // navegar evita que la pantalla de destino arranque sin sesión.
-      await auth.authStateReady();
-      router.replace(destination);
-    } catch (err: unknown) {
-      setError(
-        getAuthErrorMessage(
-          err,
-          "No hemos podido completar la operación. Inténtalo de nuevo.",
-        ),
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    if (isLoggingIn) return;
-
-    setError(null);
-    setIsLoggingIn(true);
-    // Red de seguridad: si el popup nunca resuelve, se libera el botón.
-    oauthTimeoutRef.current = window.setTimeout(() => {
-      setIsLoggingIn(false);
-    }, 90_000);
-
-    try {
-      const user = await signInWithGoogle();
-      if (user) router.replace(destination);
-    } catch (err: unknown) {
-      setError(
-        getAuthErrorMessage(err, "No hemos podido iniciar sesión con Google."),
-      );
-    } finally {
-      if (oauthTimeoutRef.current) {
-        window.clearTimeout(oauthTimeoutRef.current);
-        oauthTimeoutRef.current = null;
-      }
-      setIsLoggingIn(false);
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    setError(null);
-    setGuestError(null);
-    setIsStartingGuest(true);
-    try {
-      await signInAsGuest();
-      router.replace(destination);
-    } catch (error: unknown) {
-      setGuestError(getGuestSignInErrorMessage(error));
-    } finally {
-      setIsStartingGuest(false);
-    }
-  };
+  const {
+    name,
+    setName,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    error,
+    guestError,
+    isLoggingIn,
+    isSubmitting,
+    isStartingGuest,
+    isRegisterMode,
+    nextQuery,
+    handleSubmit,
+    handleGoogleLogin,
+    handleGuestLogin,
+  } = useLoginForm();
 
   return (
     <main className="public-page relative flex items-center">

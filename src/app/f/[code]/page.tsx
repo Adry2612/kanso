@@ -1,109 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Link as TransitionLink } from "next-view-transitions";
-import { ArrowLeft, UserPlus, UsersRound } from "lucide-react";
+import { ArrowLeft, UsersRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "@/context/I18nContext";
-import FriendAvatar from "@/components/FriendAvatar";
 import { Skeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
-import { getPublicProfile, sendFriendRequest } from "@/lib/api/friends";
-import type { PublicProfileResponse } from "@/types/friends";
-
-function loginHref(code: string, mode: "login" | "register") {
-  return `/login?mode=${mode}&next=${encodeURIComponent(`/f/${code}`)}`;
-}
+import { usePublicProfile } from "@/hooks/client/usePublicProfile";
+import PublicProfileContent from "./components/PublicProfileContent";
 
 export default function PublicFriendProfilePage() {
   const params = useParams<{ code: string }>();
   const code = String(params?.code ?? "");
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const t = useTranslations("friends");
 
-  const [profile, setProfile] = useState<PublicProfileResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const { profile, loading, notFound, error, sending, actionError, addFriend } =
+    usePublicProfile(code, {
+      actionError: t("public.error"),
+    });
 
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!code) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
-    let active = true;
-    setLoading(true);
-    setNotFound(false);
-    setError(null);
-    setActionError(null);
-
-    getPublicProfile(code)
-      .then((data) => {
-        if (!active) return;
-        if (!data) {
-          setProfile(null);
-          setNotFound(true);
-        } else {
-          setProfile(data);
-        }
-      })
-      .catch((loadError) => {
-        if (!active) return;
-        setProfile(null);
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "No se pudo cargar el perfil.",
-        );
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [authLoading, code, user?.uid, user?.isAnonymous]);
-
-  const handleAdd = async () => {
-    if (!user || user.isAnonymous) return;
-
-    setSending(true);
-    setActionError(null);
-    try {
-      const result = await sendFriendRequest(code);
-      setProfile((current) =>
-        current
-          ? {
-              ...current,
-              relation: result.status === "accepted" ? "friend" : "pending",
-              pendingDirection:
-                result.status === "accepted" ? undefined : "outgoing",
-            }
-          : current,
-      );
-    } catch (sendError) {
-      setActionError(
-        sendError instanceof Error ? sendError.message : t("public.error"),
-      );
-      // La relación puede haber cambiado en otra pestaña: refrescarla sin
-      // borrar el mensaje de error que acabamos de mostrar.
-      void getPublicProfile(code)
-        .then((fresh) => {
-          if (fresh) setProfile(fresh);
-        })
-        .catch(() => {});
-    } finally {
-      setSending(false);
-    }
-  };
+  const viewer = !user
+    ? "guest"
+    : user.isAnonymous
+      ? "anonymous"
+      : "authenticated";
 
   const renderContent = () => {
     if (loading) {
@@ -154,137 +76,14 @@ export default function PublicFriendProfilePage() {
     }
 
     return (
-      <div className="text-center">
-        <FriendAvatar
-          displayName={profile.displayName}
-          photoURL={profile.photoURL}
-          size="lg"
-          className="mx-auto"
-        />
-        <p className="mt-5 text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
-          {t("public.eyebrow")}
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-[var(--foreground)]">
-          {profile.displayName}
-        </h1>
-
-        <div className="mt-7">
-          {profile.relation === "self" && (
-            <div>
-              <p className="text-sm font-semibold text-[var(--kanso-mint)]">
-                {t("public.self")}
-              </p>
-              <TransitionLink
-                href="/friends"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
-              >
-                <UsersRound className="h-4 w-4" aria-hidden="true" />
-                {t("public.goToFriends")}
-              </TransitionLink>
-            </div>
-          )}
-
-          {profile.relation === "friend" && (
-            <div>
-              <p className="text-sm font-semibold text-[var(--kanso-mint)]">
-                {t("public.accepted")}
-              </p>
-              <TransitionLink
-                href="/friends"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/50"
-              >
-                <UsersRound className="h-4 w-4" aria-hidden="true" />
-                {t("public.goToFriends")}
-              </TransitionLink>
-            </div>
-          )}
-
-          {profile.relation === "pending" && (
-            <div>
-              <p className="text-sm font-semibold text-[var(--kanso-muted)]">
-                {profile.pendingDirection === "incoming"
-                  ? t("public.pendingIncoming")
-                  : t("public.requestSent")}
-              </p>
-              {profile.pendingDirection === "incoming" && (
-                <TransitionLink
-                  href="/friends"
-                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
-                >
-                  <UsersRound className="h-4 w-4" aria-hidden="true" />
-                  {t("public.goToFriends")}
-                </TransitionLink>
-              )}
-            </div>
-          )}
-
-          {profile.relation === "none" && (
-            <div>
-              {!user ? (
-                <div>
-                  <p className="mx-auto max-w-sm text-sm leading-relaxed text-[var(--kanso-muted)]">
-                    {t("public.loginTitle")}
-                  </p>
-                  <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <TransitionLink
-                      href={loginHref(code, "register")}
-                      className="rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
-                    >
-                      {t("public.register")}
-                    </TransitionLink>
-                    <TransitionLink
-                      href={loginHref(code, "login")}
-                      className="rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/50"
-                    >
-                      {t("public.login")}
-                    </TransitionLink>
-                  </div>
-                </div>
-              ) : user.isAnonymous ? (
-                <div>
-                  <p className="mx-auto max-w-sm text-sm leading-relaxed text-[var(--kanso-muted)]">
-                    {t("public.guestDescription")}
-                  </p>
-                  <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <TransitionLink
-                      href={loginHref(code, "register")}
-                      className="rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105"
-                    >
-                      {t("public.register")}
-                    </TransitionLink>
-                    <TransitionLink
-                      href={loginHref(code, "login")}
-                      className="rounded-xl border border-[var(--kanso-line)] px-4 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/50"
-                    >
-                      {t("public.login")}
-                    </TransitionLink>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <button
-                    type="button"
-                    onClick={handleAdd}
-                    disabled={sending}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-5 py-3 text-sm font-bold text-[var(--background)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <UserPlus className="h-4 w-4" aria-hidden="true" />
-                    {sending ? t("public.adding") : t("public.add")}
-                  </button>
-                  {actionError && (
-                    <ErrorState
-                      variant="inline"
-                      className="mx-auto mt-3 max-w-sm text-left"
-                      title={t("public.error")}
-                      description={actionError}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      <PublicProfileContent
+        code={code}
+        profile={profile}
+        viewer={viewer}
+        sending={sending}
+        actionError={actionError}
+        onAdd={() => void addFriend()}
+      />
     );
   };
 

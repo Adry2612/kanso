@@ -8,6 +8,7 @@ import type {
   FriendRequestEntry,
   FriendsResponse,
 } from "@/types/friends";
+import { reportApiError } from "@/lib/sentry";
 
 export const dynamic = "force-dynamic";
 
@@ -127,7 +128,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.error("Error obteniendo amigos:", error);
+    reportApiError(error, "friends");
     return NextResponse.json(
       { error: "No se pudieron cargar los amigos." },
       { status: 500 },

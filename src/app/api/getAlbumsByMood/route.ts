@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
+import { reportApiError } from "@/lib/sentry";
 
 // Documento de favorito tal como se guarda en Firestore.
 type FavoriteAlbum = {
@@ -108,7 +109,7 @@ export async function POST(request: Request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Error obteniendo álbum por estado de ánimo:", error);
+    reportApiError(error, "getAlbumsByMood");
     return NextResponse.json(
       { error: "No se pudo obtener la recomendación" },
       { status: 500 },

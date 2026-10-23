@@ -1,17 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import { useFetch } from "@/hooks/useFetch";
-import { getAlbumTracklist } from "@/lib/api/albumInfo";
-import {
-  getRecomendation,
-  getRecommendedAlbumByActivity,
-  saveRecomendationHistory,
-} from "@/lib/api/recomendation";
-import {
-  getActivityLabel,
-  moodLabelToKey,
-  type RecommendedAlbum,
-} from "@/lib/activityRecommendations";
+import { useRecommendation } from "@/hooks/client/useRecommendation";
+import { getActivityLabel, moodLabelToKey } from "@/utils/recommendations";
 import { useTranslations } from "@/context/I18nContext";
 import { useTransitionRouter } from "next-view-transitions";
 import { Reveal } from "@/components/motion";
@@ -21,19 +11,7 @@ import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
 import { Skeleton } from "@/components/Skeleton";
 import { openSpotify } from "@/lib/spotifyUtils";
-import React, { useEffect, useState } from "react";
 import { FaSpotify } from "react-icons/fa";
-
-type TrackArtist = {
-  name: string;
-  id: string;
-};
-
-type Track = {
-  name: string;
-  track_number: number;
-  artists: TrackArtist[];
-};
 
 type RecomendationsProps = {
   moods: string[];
@@ -58,110 +36,25 @@ export default function RecomendationPage({
     ? getActivityLabel(activity, tActivities)
     : null;
   const activityEmoji = activity ? getActivity(activity)?.emoji : undefined;
-  const [recomendedAlbum, setRecomendedAlbum] = useState<RecommendedAlbum>();
-  const [albumTracklist, setAlbumTracklist] = useState<Track[] | null>(null);
-  const [tracklistLoading, setTracklistLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [activityLoading, setActivityLoading] = useState(false);
-  const [activityError, setActivityError] = useState<string | null>(null);
-  const [noMatch, setNoMatch] = useState(false);
+  const {
+    mounted,
+    loading,
+    error,
+    noMatch,
+    recommendedAlbum: recomendedAlbum,
+    albumTracklist,
+    tracklistLoading,
+  } = useRecommendation({
+    moods,
+    userId,
+    activity,
+    format,
+    tags,
+    activityLabel,
+  });
 
-  const { execute: recomendation, error, loading } = useFetch(getRecomendation);
-  const { execute: tracklist } = useFetch(getAlbumTracklist);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    setNoMatch(false);
-
-    if (activity) {
-      setActivityLoading(true);
-      setActivityError(null);
-      getRecommendedAlbumByActivity(activity, format, moods, tags)
-        .then((result) => {
-          if (result.recommendedAlbum) {
-            setRecomendedAlbum(result.recommendedAlbum);
-            const historyMoods = result.recommendations[0]?.matchingMoods
-              ?.length
-              ? result.recommendations[0].matchingMoods
-              : result.optimalMoods;
-
-            if (historyMoods.length > 0) {
-              saveRecomendationHistory(
-                historyMoods,
-                result.recommendedAlbum.albumId,
-              ).catch((error: unknown) => {
-                console.error(
-                  "Error guardando historial de recomendación:",
-                  error,
-                );
-              });
-            }
-          } else {
-            setRecomendedAlbum(undefined);
-            setActivityError(
-              `No hay recomendaciones disponibles para ${activityLabel || activity}`,
-            );
-          }
-        })
-        .catch((err: unknown) => {
-          const message =
-            err instanceof Error ? err.message : "Error desconocido";
-          setActivityError(message);
-        })
-        .finally(() => {
-          setActivityLoading(false);
-        });
-      return;
-    }
-
-    recomendation(moods, format, tags).then((data) => {
-      if (data) {
-        setRecomendedAlbum(data);
-        const firebaseAlbumId = data.albumId;
-
-        saveRecomendationHistory(moods, firebaseAlbumId).catch(
-          (error: unknown) => {
-            console.error("Error guardando historial de recomendación:", error);
-          },
-        );
-      } else {
-        setNoMatch(true);
-      }
-    });
-    // El efecto solo debe re-ejecutarse cuando cambian estos valores; incluir
-    // los traductores o `recomendation` (recreados en cada render) provocaría bucles.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activity, moods, userId, mounted, format, tags]);
-
-  useEffect(() => {
-    if (!recomendedAlbum?.albumId) {
-      return;
-    }
-
-    setTracklistLoading(true);
-    (async () => {
-      try {
-        const tracklistData = await tracklist(recomendedAlbum.albumId);
-        if (tracklistData) {
-          setAlbumTracklist(tracklistData);
-        } else {
-          setAlbumTracklist([]);
-        }
-      } catch {
-        setAlbumTracklist([]);
-      } finally {
-        setTracklistLoading(false);
-      }
-    })();
-  }, [recomendedAlbum?.albumId, tracklist]);
-
-  const isLoading = activity ? activityLoading : loading;
-  const activeError = activity ? activityError : error;
+  const isLoading = loading;
+  const activeError = error;
 
   if (!mounted || isLoading) {
     return (

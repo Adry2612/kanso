@@ -1,28 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useRouter } from "next/navigation";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { LuUndo2 } from "react-icons/lu";
-import { Album } from "../../../../../../models/album";
-import { useFetch } from "@/hooks/useFetch";
-import { undoFavorite } from "@/lib/api/favorites";
-import { removeFromListenLater } from "@/lib/api/listenLater";
 import { useTranslations } from "@/context/I18nContext";
 import MoodBubble from "@/components/MoodBubble";
 import ModalShell from "@/components/ModalShell";
-import type { AlbumSaveDestination } from "@/types/favorites";
 import ArtistBackdrop from "./ArtistBackdrop";
+import type { Album } from "@/types/album";
+import type { Mood } from "@/types/mood";
+import type { AlbumSaveDestination } from "@/types/favorites";
 
 interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   album: Album;
-  feelings: Array<any>;
+  feelings: Mood[];
   isEditing?: boolean;
   destination?: AlbumSaveDestination;
-  onPendingRemoved?: () => void;
+  removing: boolean;
+  onUndo: () => void;
 }
 
 export const SuccessModal = ({
@@ -32,31 +30,12 @@ export const SuccessModal = ({
   feelings,
   isEditing = false,
   destination = "collection",
-  onPendingRemoved,
+  removing,
+  onUndo,
 }: SuccessModalProps) => {
   const t = useTranslations("modal");
   const router = useRouter();
-  const { execute: removeFavorite, loading: removingFavorite } =
-    useFetch(undoFavorite);
-  const { execute: removePending, loading: removingPending } = useFetch(
-    removeFromListenLater,
-  );
   const isPending = destination === "pending";
-  const loading = isPending ? removingPending : removingFavorite;
-
-  const undo = async () => {
-    if (isPending) {
-      const result = await removePending(album);
-      if (result !== null) {
-        onPendingRemoved?.();
-        onClose();
-      }
-      return;
-    }
-
-    await removeFavorite(album);
-    onClose();
-  };
 
   return (
     <ModalShell
@@ -93,7 +72,7 @@ export const SuccessModal = ({
               {album.name}
             </h2>
             <p className="album-action-modal-muted mt-1 truncate text-sm">
-              {album.artists.map((artist: any) => artist.name).join(", ")}
+              {album.artists.map((artist) => artist.name).join(", ")}
             </p>
           </div>
         </div>
@@ -132,7 +111,7 @@ export const SuccessModal = ({
           <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
             <p className="text-sm font-semibold">{t("relatedEmotions")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {feelings.map((feeling: any) => (
+              {feelings.map((feeling) => (
                 <MoodBubble mood={feeling} key={feeling.label} />
               ))}
             </div>
@@ -158,11 +137,11 @@ export const SuccessModal = ({
         <div className="modal-shell-undo">
           <button
             className="modal-action-danger w-auto px-4 py-2 text-xs"
-            disabled={loading}
-            onClick={undo}
+            disabled={removing}
+            onClick={onUndo}
           >
             <LuUndo2 />
-            {loading ? "Quitando..." : t("undo")}
+            {removing ? "Quitando..." : t("undo")}
           </button>
         </div>
       )}

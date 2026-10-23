@@ -14,6 +14,7 @@ import type {
   FriendProfile,
   FriendRequestAction,
 } from "@/types/friends";
+import { reportApiError } from "@/lib/sentry";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -135,7 +136,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    console.error("Error respondiendo a una solicitud de amistad:", error);
+    reportApiError(error, "friends/requests/[id]");
     return NextResponse.json(
       { error: "No se pudo responder a la solicitud." },
       { status: 500 },

@@ -1,5 +1,5 @@
 import { QueryClient, dehydrate } from "@tanstack/react-query";
-import { getAlbum } from "../../../../services/spotify";
+import { getAlbum } from "@/services/server/albums";
 import QueryProvider from "@/components/query-provider";
 
 export default async function AlbumLayout({
