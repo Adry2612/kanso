@@ -1,4 +1,5 @@
 import { authFetch } from "@/lib/api/authFetch";
+import { isGenreKey } from "@/constants/taxonomy";
 import type { SpotifyAlbum, Track } from "@/types/album";
 import type { GenreBranch } from "@/utils/genres";
 
@@ -13,19 +14,39 @@ export async function getAlbum(albumId: string): Promise<SpotifyAlbum> {
   return (await response.json()) as SpotifyAlbum;
 }
 
-/** Ramas de género derivadas de los artistas del álbum. */
-export async function getAlbumGenres(albumId: string): Promise<GenreBranch[]> {
+export type AlbumGenreProfile = {
+  main: GenreBranch | null;
+  branches: GenreBranch[];
+};
+
+const EMPTY_GENRE_PROFILE: AlbumGenreProfile = { main: null, branches: [] };
+
+/** Perfil de género derivado de los artistas del álbum. */
+export async function getAlbumGenre(
+  albumId: string,
+): Promise<AlbumGenreProfile> {
   const response = await authFetch(
     `/api/albumGenres?albumId=${encodeURIComponent(albumId)}`,
   );
 
-  if (!response.ok) return [];
+  if (!response.ok) return EMPTY_GENRE_PROFILE;
 
   const data = (await response.json().catch(() => null)) as {
-    genres?: GenreBranch[];
+    main?: unknown;
+    branches?: unknown;
   } | null;
 
-  return Array.isArray(data?.genres) ? data.genres : [];
+  const branches = Array.isArray(data?.branches)
+    ? data.branches.filter(
+        (genre): genre is GenreBranch =>
+          typeof genre === "string" && isGenreKey(genre),
+      )
+    : [];
+
+  const main =
+    typeof data?.main === "string" && isGenreKey(data.main) ? data.main : null;
+
+  return { main, branches };
 }
 
 /** Obtiene la tracklist de un álbum de la colección. */

@@ -12,6 +12,8 @@ const OFFSETS = [-30, -15, 0, 15, 30];
 type VinylCrateLoaderProps = {
   /** Tamaño y radio del contenedor; suele aportar el hueco de la portada. */
   className?: string;
+  /** `framed` conserva el marco de portada; `bare` lo quita para centrarlo. */
+  variant?: "framed" | "bare";
 };
 
 /**
@@ -22,11 +24,17 @@ type VinylCrateLoaderProps = {
  * el estado de carga lo anuncia el contenedor que lo envuelve. Con movimiento
  * reducido la pila queda quieta.
  */
-export default function VinylCrateLoader({ className }: VinylCrateLoaderProps) {
+export default function VinylCrateLoader({
+  className,
+  variant = "framed",
+}: VinylCrateLoaderProps) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className={`vinyl-fan ${className ?? ""}`} aria-hidden="true">
+    <div
+      className={`vinyl-fan ${variant === "bare" ? "vinyl-fan--bare" : ""} ${className ?? ""}`.trim()}
+      aria-hidden="true"
+    >
       <div className="vinyl-fan-stack">
         {Array.from({ length: COVERS }).map((_, index) => {
           const angle = ANGLES[index] ?? 0;

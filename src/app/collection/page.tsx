@@ -5,6 +5,7 @@ import { useTranslations } from "@/context/I18nContext";
 import { useCollectionPage } from "@/hooks/client/useCollectionPage";
 import { openSpotify } from "@/lib/spotifyUtils";
 import { getMood, normalizeMood } from "@/constants/moods";
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import { UNKNOWN_GROUP, prioritizeMoods } from "@/utils/collection";
 import { genreBranchLabelKey } from "@/utils/genres";
 import { Skeleton } from "@/components/Skeleton";
@@ -44,6 +45,7 @@ export default function CollectionPage() {
   const tModal = useTranslations("modal");
   const tMoods = useTranslations("moods");
   const tTags = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
   const router = useTransitionRouter();
   const {
     activeTab,
@@ -107,10 +109,12 @@ export default function CollectionPage() {
   const tagCategoryLabel = (category: string) =>
     tTags(categoryLabelKey(category));
 
+  const tagLabel = (tag: CollectionTag) => tagDisplayLabel(tag, tTaxonomy);
+
   const tagRemoveLabel = (tag: CollectionTag) =>
     tTags("remove").replace(
       "{tag}",
-      `${tagCategoryLabel(tag.category)}: ${tag.value}`,
+      `${tagCategoryLabel(tag.category)}: ${tagLabel(tag)}`,
     );
 
   const moodChips: MoodChip[] = availableMoods.map((mood) => ({
@@ -535,6 +539,7 @@ export default function CollectionPage() {
             genreLabel={genreLabel}
             formatLabel={formatLabel}
             tagCategoryLabel={tagCategoryLabel}
+            tagLabel={tagLabel}
             tagRemoveLabel={tagRemoveLabel}
             onClearSort={() => setSortBy("")}
             onRemoveGenre={removeGenre}

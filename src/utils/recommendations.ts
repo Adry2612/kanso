@@ -387,6 +387,8 @@ export async function computeActivityRecommendations({
       labeledFeelings: normalizedFeelings,
       matchingMoods,
       activities: entry.activities ?? [],
+      format: entry.format,
+      tags: entry.tags,
       compatibilityScore: labelOverlap,
       albumInfo,
     });
@@ -405,6 +407,8 @@ export async function computeActivityRecommendations({
         albumId: best.albumId,
         labeledFeelings: best.labeledFeelings,
         activities: best.activities ?? [],
+        format: best.format,
+        tags: best.tags,
         albumInfo: best.albumInfo,
       }
     : null;

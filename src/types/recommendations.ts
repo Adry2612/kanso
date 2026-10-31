@@ -1,5 +1,7 @@
 /** Tipos compartidos de recomendaciones e historial. */
 
+import type { CollectionTag } from "@/types/collection";
+
 export interface RecommendedAlbumInfo {
   external_urls?: { spotify?: string };
   images: { url: string }[];
@@ -16,6 +18,8 @@ export interface ActivityRecommendation {
   labeledFeelings: string[];
   matchingMoods: string[];
   activities?: string[];
+  format?: string | string[];
+  tags?: CollectionTag[];
   compatibilityScore: number;
   albumInfo?: RecommendedAlbumInfo;
 }
@@ -38,6 +42,8 @@ export type RecommendedAlbum = {
   albumId: string;
   labeledFeelings: string[];
   activities: string[];
+  format?: string | string[];
+  tags?: CollectionTag[];
   albumInfo?: RecommendedAlbumInfo;
 };
 
@@ -94,7 +100,7 @@ export type ActivityCollectionRecord = {
   albumId: string;
   format?: string | string[];
   ownership?: { format?: string | string[] };
-  tags?: { category?: string; value?: string }[];
+  tags?: CollectionTag[];
   labeledFeelings?: unknown[];
   feelings?: unknown[];
   activities?: string[];
@@ -128,7 +134,7 @@ export interface MoodRecommendationResponse {
   id: string;
   albumId: string;
   format?: string | string[];
-  tags?: { category?: string; value?: string }[];
+  tags?: CollectionTag[];
   labeledFeelings: string[];
   activities: string[];
   albumInfo?: RecommendedAlbumInfo;

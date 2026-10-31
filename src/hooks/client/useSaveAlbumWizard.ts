@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getMood } from "@/constants/moods";
-import { getAlbumGenres } from "@/services/client/albums";
+import { getAlbumGenre } from "@/services/client/albums";
 import { normalizeCollectionFormats } from "@/utils/formats";
 import { normalizeTagCategory, uniqueTags } from "@/utils/tags";
 import { useAlbumCollectionActions } from "@/hooks/client/useAlbumCollectionActions";
@@ -174,11 +174,12 @@ export function useSaveAlbumWizard({
 
     clearError();
 
-    // Relleno previo del género derivado de Spotify, editable en el TagEditor.
+    // Relleno previo del género principal derivado de Spotify. El idioma
+    // nunca se deriva: queda vacío hasta que la persona lo elija.
     if (!editing) {
-      getAlbumGenres(album.id)
-        .then((genres) => {
-          if (cancelled || genres.length === 0) return;
+      getAlbumGenre(album.id)
+        .then(({ main }) => {
+          if (cancelled || !main) return;
 
           setTags((current) => {
             const hasGenre = current.some(
@@ -188,12 +189,12 @@ export function useSaveAlbumWizard({
 
             return uniqueTags([
               ...current,
-              ...genres.map((genre) => ({ category: "género", value: genre })),
+              { category: "género", value: main },
             ]);
           });
         })
         .catch(() => {
-          // Sin Spotify se guarda sin género; la persona puede añadirlo.
+          // Sin Spotify se guarda sin género; la persona puede elegirlo.
         });
     }
 

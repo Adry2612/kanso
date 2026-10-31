@@ -142,6 +142,8 @@ export function useRecommendation({
             albumId: data.albumId,
             labeledFeelings: data.labeledFeelings ?? [],
             activities: data.activities ?? [],
+            format: data.format,
+            tags: data.tags,
             feelings: [],
             albumInfo: data.albumInfo,
           });

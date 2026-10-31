@@ -3,6 +3,7 @@
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
 import SearchArtists from "@/app/search/components/SearchArtists";
 import { useTranslations } from "@/context/I18nContext";
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import AlbumCard from "@/components/AlbumCard";
 import {
   AlbumGridSkeleton,
@@ -20,6 +21,7 @@ import { tagCategoryI18nKey } from "@/utils/collection";
 export default function SearchPage() {
   const t = useTranslations("search");
   const tTags = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
   const {
     query,
     setQuery,
@@ -178,7 +180,8 @@ export default function SearchPage() {
                           onClick={() => setQuery(tag.value)}
                           className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                         >
-                          {tagCategoryLabel(tag.category)}: {tag.value}
+                          {tagCategoryLabel(tag.category)}:{" "}
+                          {tagDisplayLabel(tag, tTaxonomy)}
                         </button>
                       ))}
                     </div>
@@ -286,7 +289,8 @@ export default function SearchPage() {
                         onClick={() => setQuery(tag.value)}
                         className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                       >
-                        {tagCategoryLabel(tag.category)}: {tag.value}
+                        {tagCategoryLabel(tag.category)}:{" "}
+                        {tagDisplayLabel(tag, tTaxonomy)}
                       </button>
                     ))}
                   </div>

@@ -155,6 +155,7 @@ Textos de recomendaciones:
 
 - `title`, `based`, `listenOn`, `spotify`
 - `saveToCollection`, `getAnother`
+- `loading.title`, `loading.description` (estado de carga a pantalla completa)
 
 ### `recommendationExplain`
 
@@ -167,6 +168,15 @@ Textos de la herramienta de desarrollo «Por qué este disco», visible solo con
 - `score.recencyPenalty`, `score.feedbackBoost`, `score.finalScore`
 - `formula`, `formulaMatch`, `formulaRecency`, `formulaFeedback`, `scoreHelp`
 - `alternatives`, `formats.*`
+
+### `taxonomy`
+
+Nombres visibles de las etiquetas canónicas:
+
+- `genres.*`: las 16 ramas canónicas (`pop`, `rock`, `hip-hop`, `electronic`…)
+- `languages.*`: los códigos ISO admitidos (`es`, `en`, `fr`…)
+
+La clave guardada no cambia con el idioma de la interfaz; solo cambia la etiqueta mostrada.
 
 ### `formats`
 

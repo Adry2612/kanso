@@ -19,7 +19,9 @@
     "bruno:env": "node scripts/sync-bruno-env.mjs",
     "migrate:collection": "node scripts/migrate-collection.mjs",
     "migrate:collection:dry": "node scripts/migrate-collection.mjs --dry-run",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate:tags": "node scripts/migrate-tags.mjs",
+    "migrate:tags:dry": "node scripts/migrate-tags.mjs --dry-run"
   },
   "dependencies": {
     "@sentry/nextjs": "^11.8.0",

@@ -124,18 +124,16 @@
   },
   "tags": {
     "title": "Idioma y género",
-    "description": "Añade el idioma y el género para filtrar tu colección y afinar las recomendaciones.",
-    "filterTitle": "Tus etiquetas",
-    "filterEmpty": "Todavía no tienes etiquetas. Añádelas al guardar un disco para poder filtrar por idioma o género.",
     "categories": {
       "language": "Idioma",
       "genre": "Género",
       "other": "Otra"
     },
-    "customPlaceholder": "Otro idioma o género…",
-    "add": "Añadir",
-    "selected": "Seleccionadas",
-    "remove": "Quitar {tag}"
+    "remove": "Quitar {tag}",
+    "noLanguage": "Sin idioma",
+    "noGenre": "Sin género",
+    "languageHelp": "Elige un idioma o deja el disco sin idioma.",
+    "genreHelp": "Elige un género principal o deja el disco sin género."
   },
   "history": {
     "title": "Histórico de recomendaciones",
@@ -345,6 +343,10 @@
       "noCollectionTitle": "Añade tu primer disco",
       "noCollectionDescription": "Todavía no tienes colección. Busca un álbum y guárdalo para empezar a recibir recomendaciones.",
       "noCollectionCta": "Añadir mi primer disco"
+    },
+    "loading": {
+      "title": "Buscando tu próximo disco",
+      "description": "Estamos cruzando tus emociones con tu colección para encontrar algo que encaje con este momento."
     }
   },
   "recommendationExplain": {
@@ -699,5 +701,47 @@
     "vinyl": "Vinilo",
     "cd": "CD",
     "cassette": "Casete"
+  },
+  "taxonomy": {
+    "genres": {
+      "pop": "Pop",
+      "rock": "Rock",
+      "hip-hop": "Hip-Hop",
+      "metal": "Metal",
+      "r&b": "R&B",
+      "jazz": "Jazz",
+      "electronic": "Electrónica",
+      "classical": "Clásica",
+      "indie": "Indie",
+      "folk": "Folk",
+      "reggaeton": "Reggaetón",
+      "soul": "Soul",
+      "punk": "Punk",
+      "country": "Country",
+      "ambient": "Ambient",
+      "blues": "Blues"
+    },
+    "languages": {
+      "es": "Español",
+      "en": "Inglés",
+      "fr": "Francés",
+      "de": "Alemán",
+      "it": "Italiano",
+      "pt": "Portugués",
+      "ja": "Japonés",
+      "ko": "Coreano",
+      "ru": "Ruso",
+      "ar": "Árabe",
+      "nl": "Neerlandés",
+      "sv": "Sueco",
+      "ca": "Catalán",
+      "gl": "Gallego",
+      "eu": "Euskera",
+      "zh": "Chino",
+      "hi": "Hindi",
+      "tr": "Turco",
+      "pl": "Polaco",
+      "el": "Griego"
+    }
   }
 }

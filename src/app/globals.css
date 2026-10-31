@@ -2183,6 +2183,17 @@ body.theme-light::before {
     color-mix(in srgb, var(--surface-2) 88%, transparent);
 }
 
+.vinyl-fan--bare {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.vinyl-fan--bare .vinyl-fan-stack {
+  width: 78%;
+}
+
 .vinyl-fan-stack {
   position: relative;
   width: 62%;

@@ -1,9 +1,16 @@
 "use client";
 
-import TagEditor from "@/components/TagEditor";
 import OptionSelector from "@/components/selectors/OptionSelector";
 import { buildFormatOptions } from "@/components/selectors/formatOptions";
+import type { OptionItem } from "@/components/selectors/types";
+import {
+  GENRE_KEYS,
+  LANGUAGE_KEYS,
+  normalizeGenreValue,
+  normalizeLanguageValue,
+} from "@/constants/taxonomy";
 import { useTranslations } from "@/context/I18nContext";
+import { normalizeTagCategory } from "@/utils/tags";
 import type { CollectionFormat, CollectionTag } from "@/types/collection";
 
 interface SaveAlbumFormatStepProps {
@@ -13,7 +20,7 @@ interface SaveAlbumFormatStepProps {
   onTagsChange: (tags: CollectionTag[]) => void;
 }
 
-/** Paso 3: formatos de la colección y etiquetas. */
+/** Paso 3: formatos de la colección, idioma y género. */
 export function SaveAlbumFormatStep({
   format,
   tags,
@@ -22,7 +29,51 @@ export function SaveAlbumFormatStep({
 }: SaveAlbumFormatStepProps) {
   const tTags = useTranslations("tags");
   const tFormats = useTranslations("formats");
-  const options = buildFormatOptions(tFormats, { includeAll: false });
+  const tTaxonomy = useTranslations("taxonomy");
+  const formatOptions = buildFormatOptions(tFormats, { includeAll: false });
+
+  const languageTag = tags.find(
+    (tag) => normalizeTagCategory(tag.category) === "idioma",
+  );
+  const genreTag = tags.find(
+    (tag) => normalizeTagCategory(tag.category) === "género",
+  );
+  const languageValue = languageTag
+    ? normalizeLanguageValue(languageTag.value)
+    : null;
+  const genreValue = genreTag ? normalizeGenreValue(genreTag.value) : null;
+
+  const languageOptions: OptionItem[] = [
+    { key: "none", label: tTags("noLanguage") },
+    ...LANGUAGE_KEYS.map((key) => ({
+      key,
+      label: tTaxonomy(`languages.${key}`),
+    })),
+  ];
+
+  const genreOptions: OptionItem[] = [
+    { key: "none", label: tTags("noGenre") },
+    ...GENRE_KEYS.map((key) => ({
+      key,
+      label: tTaxonomy(`genres.${key}`),
+    })),
+  ];
+
+  const setLanguage = (key: string) => {
+    const next = tags.filter(
+      (tag) => normalizeTagCategory(tag.category) !== "idioma",
+    );
+    if (key !== "none") next.push({ category: "idioma", value: key });
+    onTagsChange(next);
+  };
+
+  const setGenre = (key: string) => {
+    const next = tags.filter(
+      (tag) => normalizeTagCategory(tag.category) !== "género",
+    );
+    if (key !== "none") next.push({ category: "género", value: key });
+    onTagsChange(next);
+  };
 
   const toggleFormat = (item: string) => {
     const value = item as CollectionFormat;
@@ -46,7 +97,7 @@ export function SaveAlbumFormatStep({
       </p>
       <div className="mt-5">
         <OptionSelector
-          options={options}
+          options={formatOptions}
           selectedKeys={format}
           onSelect={toggleFormat}
           selection="multiple"
@@ -63,13 +114,45 @@ export function SaveAlbumFormatStep({
           : "Selecciona al menos un formato para guardar el álbum."}
       </p>
 
-      <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
-        <h4 className="text-sm font-semibold">{tTags("title")}</h4>
-        <p className="album-action-modal-muted mt-1 text-xs">
-          {tTags("description")}
-        </p>
-        <div className="mt-3">
-          <TagEditor tags={tags} onChange={onTagsChange} />
+      <div className="mt-6 space-y-6 border-t border-[var(--kanso-line)] pt-5">
+        <div>
+          <h4 className="text-sm font-semibold">
+            {tTags("categories.language")}
+          </h4>
+          <p className="album-action-modal-muted mt-1 text-xs">
+            {tTags("languageHelp")}
+          </p>
+          <div className="mt-3">
+            <OptionSelector
+              options={languageOptions}
+              selectedKeys={[languageValue ?? "none"]}
+              onSelect={setLanguage}
+              selection="single"
+              layout="grid"
+              semantics="buttons"
+              ariaLabel={tTags("categories.language")}
+              columns={4}
+            />
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-sm font-semibold">{tTags("categories.genre")}</h4>
+          <p className="album-action-modal-muted mt-1 text-xs">
+            {tTags("genreHelp")}
+          </p>
+          <div className="mt-3">
+            <OptionSelector
+              options={genreOptions}
+              selectedKeys={[genreValue ?? "none"]}
+              onSelect={setGenre}
+              selection="single"
+              layout="grid"
+              semantics="buttons"
+              ariaLabel={tTags("categories.genre")}
+              columns={4}
+            />
+          </div>
         </div>
       </div>
     </section>

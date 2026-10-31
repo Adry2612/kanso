@@ -6,18 +6,14 @@ import { MdEdit } from "react-icons/md";
 import { Trash2Icon } from "lucide-react";
 import { useTransitionRouter } from "next-view-transitions";
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
+import AlbumRecordPanel from "@/components/album/AlbumRecordPanel";
 import AlbumShowcase from "@/components/album/AlbumShowcase";
-import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
-import TagList from "@/components/TagList";
 import { AlbumDetailSkeleton } from "@/components/ContentSkeletons";
 import { useTranslations } from "@/context/I18nContext";
 import { useAlbumDetail } from "@/hooks/client/useAlbumDetail";
-import { getActivity } from "@/constants/activities";
-import { getMood } from "@/constants/moods";
 import { openSpotify } from "@/lib/spotifyUtils";
 import type { Album } from "@/types/album";
-import type { CollectionFormat } from "@/types/collection";
 
 export default function AlbumDetail() {
   const t = useTranslations("album");
@@ -26,9 +22,6 @@ export default function AlbumDetail() {
   const params = useParams();
   const albumId = params.albumId as string;
   const router = useTransitionRouter();
-  const tMoods = useTranslations("moods");
-  const tActivities = useTranslations("activities");
-  const tTags = useTranslations("tags");
   const {
     album,
     error,
@@ -72,16 +65,6 @@ export default function AlbumDetail() {
     );
   }
   if (!album) return null;
-
-  const formatLabel = (format: CollectionFormat) => {
-    const keys: Record<CollectionFormat, string> = {
-      digital: "formatDigital",
-      vinyl: "formatVinyl",
-      cd: "formatCd",
-      cassette: "formatCassette",
-    };
-    return t(keys[format]);
-  };
 
   const actions = (
     <>
@@ -141,95 +124,12 @@ export default function AlbumDetail() {
   );
 
   const aside = collectionEntry ? (
-    <aside
-      aria-labelledby="album-record-title"
-      className="order-first xl:order-none xl:sticky xl:top-8"
-    >
-      <p
-        id="album-record-title"
-        className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--kanso-muted)]"
-      >
-        {t("myRecord")}
-      </p>
-      <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
-        {savedMoods.length > 0 && (
-          <section>
-            <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-              {t("emotions")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {savedMoods.map((mood) => {
-                const item = getMood(mood);
-                return (
-                  <span
-                    key={mood}
-                    className="rounded-full bg-[var(--kanso-mint)]/10 px-3 py-1.5 text-xs text-[var(--kanso-mint)]"
-                  >
-                    <InlineEmoji emoji={item?.emoji} />
-                    {tMoods(mood)}
-                  </span>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {!!collectionEntry.activities?.length && (
-          <section>
-            <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-              {t("activities")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(collectionEntry.activities ?? []).map((activity: string) => (
-                <span
-                  key={activity}
-                  className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
-                >
-                  <InlineEmoji emoji={getActivity(activity)?.emoji} />
-                  {tActivities(activity)}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {savedFormats.length > 0 && (
-          <section>
-            <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-              {t("format")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {savedFormats.map((format) => (
-                <span
-                  key={format}
-                  className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[var(--foreground)]"
-                >
-                  {formatLabel(format)}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {!!collectionEntry.tags?.length && (
-          <section>
-            <p className="mb-2 text-xs font-semibold text-[var(--kanso-muted)]">
-              {tTags("title")}
-            </p>
-            <TagList tags={collectionEntry.tags} showCategory />
-          </section>
-        )}
-
-        {!savedMoods.length &&
-          !collectionEntry.activities?.length &&
-          !savedFormats.length &&
-          !collectionEntry.tags?.length && (
-            <p className="text-xs text-[var(--kanso-muted)]">
-              {t("recordSummaryEmpty")}
-            </p>
-          )}
-      </div>
-    </aside>
+    <AlbumRecordPanel
+      moods={savedMoods}
+      activities={collectionEntry.activities}
+      formats={savedFormats}
+      tags={collectionEntry.tags}
+    />
   ) : pending ? (
     <aside
       aria-labelledby="album-pending-title"

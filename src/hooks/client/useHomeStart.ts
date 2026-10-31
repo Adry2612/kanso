@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { canonicalizeTags } from "@/constants/taxonomy";
 import { getRecommendationHistory } from "@/services/client/recommendations";
 import { getCollection } from "@/services/client/collection";
 import { formatTodayLabel } from "@/utils/dates";
@@ -87,7 +88,7 @@ export function useHomeStart() {
 
         const unique = new Map<string, CollectionTag>();
         collection
-          .flatMap((entry) => entry.tags ?? [])
+          .flatMap((entry) => canonicalizeTags(entry.tags ?? []))
           .forEach((tag) => unique.set(`${tag.category}:${tag.value}`, tag));
         setCollectionTags(Array.from(unique.values()));
         setCollectionCount(collection.length);

@@ -6,14 +6,13 @@ import { useTransitionRouter } from "next-view-transitions";
 import { Reveal } from "@/components/motion";
 import { getMood } from "@/constants/moods";
 import { getActivity } from "@/constants/activities";
-import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
+import AlbumRecordPanel from "@/components/album/AlbumRecordPanel";
 import AlbumShowcase from "@/components/album/AlbumShowcase";
 import RecommendationFeedback from "@/components/album/RecommendationFeedback";
 import VinylCrateLoader from "@/components/album/VinylCrateLoader";
 import RecommendationFilterSummary from "@/app/home/components/RecommendationFilterSummary";
 import RecommendationExplain from "@/app/home/components/RecommendationExplain";
-import { Skeleton } from "@/components/Skeleton";
 import { openSpotify } from "@/lib/spotifyUtils";
 import { FaSpotify } from "react-icons/fa";
 import { useEffect } from "react";
@@ -78,24 +77,23 @@ export default function RecomendationPage({
   if (!mounted || isLoading) {
     return (
       <main className="kanso-main min-h-screen">
-        <div className="pt-12 md:pt-16" role="status" aria-busy="true">
+        <div
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center"
+        >
           <span className="sr-only">{tCommon("loading")}</span>
-          <Skeleton className="h-3 w-24" />
-          <div className="mt-8 grid gap-8 border-b border-[var(--kanso-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16">
-            <VinylCrateLoader className="aspect-square w-full max-w-[320px]" />
-            <div className="space-y-4 pt-2">
-              <Skeleton className="h-3 w-32" />
-              <Skeleton className="h-16 w-4/5" />
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-12 w-44 rounded-xl" />
-            </div>
-          </div>
-          <div className="mt-10 max-w-2xl space-y-4">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
+          <VinylCrateLoader
+            variant="bare"
+            className="h-56 w-56 max-w-full sm:h-64 sm:w-64"
+          />
+          <h1 className="mt-8 max-w-md text-2xl font-semibold tracking-tight text-[var(--foreground)] md:text-3xl">
+            {tRecomendation("loading.title")}
+          </h1>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-[var(--kanso-muted)]">
+            {tRecomendation("loading.description")}
+          </p>
         </div>
       </main>
     );
@@ -221,41 +219,13 @@ export default function RecomendationPage({
           <RecommendationFeedback albumId={recomendedAlbum.albumId} />
         </>
       }
-      meta={
-        <>
-          {recomendedAlbum.labeledFeelings.length > 0 && (
-            <div className="mt-7 flex flex-wrap gap-2">
-              {recomendedAlbum.labeledFeelings.map((mood) => {
-                const item = getMood(mood);
-                return (
-                  <span
-                    key={mood}
-                    className="rounded-full border border-[var(--kanso-line)] px-3 py-1.5 text-xs text-[var(--kanso-muted)]"
-                  >
-                    <InlineEmoji emoji={item?.emoji} />
-                    {tMoods(item?.key ?? mood)}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-          {recomendedAlbum.activities.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {recomendedAlbum.activities.map((activity) => {
-                const item = getActivity(activity);
-                return (
-                  <span
-                    key={activity}
-                    className="rounded-full border border-[var(--kanso-line)] px-3 py-1.5 text-xs text-[var(--kanso-muted)]"
-                  >
-                    <InlineEmoji emoji={item?.emoji} />
-                    {tActivities(item?.id ?? activity)}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-        </>
+      aside={
+        <AlbumRecordPanel
+          moods={recomendedAlbum.labeledFeelings}
+          activities={recomendedAlbum.activities}
+          formats={recomendedAlbum.format}
+          tags={recomendedAlbum.tags}
+        />
       }
       onBack={() => window.history.back()}
       backLabel="Volver"

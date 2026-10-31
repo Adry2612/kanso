@@ -2,6 +2,7 @@
 
 import { useTranslations } from "@/context/I18nContext";
 import { getMood } from "@/constants/moods";
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import { tagCategoryI18nKey } from "@/utils/collection";
 import type {
   RecommendationExplanation,
@@ -42,6 +43,7 @@ export default function RecommendationExplain({
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tTags = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
 
   const formatLabel = (value: string) => {
     const known = ["all", "digital", "vinyl", "cd", "cassette"];
@@ -121,7 +123,8 @@ export default function RecommendationExplain({
                   key={`tag-${tag}`}
                   className="rounded-full border border-[var(--kanso-line)] px-2.5 py-1"
                 >
-                  {tTags(tagCategoryI18nKey(category))}: {value}
+                  {tTags(tagCategoryI18nKey(category))}:{" "}
+                  {tagDisplayLabel({ category, value }, tTaxonomy)}
                 </li>
               );
             })}

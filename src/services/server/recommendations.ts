@@ -16,6 +16,7 @@ import {
   W_RECENT,
   RECENT_WINDOW,
 } from "@/utils/recommendations";
+import type { CollectionTag } from "@/types/collection";
 import type {
   ActivityCollectionRecord,
   ActivityRecommendationsResult,
@@ -119,7 +120,7 @@ async function collectionRecords(uid: string): Promise<{
         id: entry.id,
         albumId: entry.albumId,
         format: entry.format,
-        tags: entry.tags as { category?: string; value?: string }[] | undefined,
+        tags: entry.tags as CollectionTag[] | undefined,
         labeledFeelings: entry.labeledFeelings,
         activities: Array.isArray(entry.activities)
           ? entry.activities.filter(
@@ -173,7 +174,7 @@ type MoodCandidateEntry = {
   albumId: string;
   album: Record<string, unknown>;
   format?: string | string[];
-  tags?: { category?: string; value?: string }[];
+  tags?: CollectionTag[];
   labeledFeelings?: unknown[];
   activities?: unknown;
 };

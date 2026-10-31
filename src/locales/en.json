@@ -124,18 +124,16 @@
   },
   "tags": {
     "title": "Language & genre",
-    "description": "Add the language and genre to filter your collection and sharpen recommendations.",
-    "filterTitle": "Your tags",
-    "filterEmpty": "You don't have any tags yet. Add them when saving an album to filter by language or genre.",
     "categories": {
       "language": "Language",
       "genre": "Genre",
       "other": "Other"
     },
-    "customPlaceholder": "Another language or genre…",
-    "add": "Add",
-    "selected": "Selected",
-    "remove": "Remove {tag}"
+    "remove": "Remove {tag}",
+    "noLanguage": "No language",
+    "noGenre": "No genre",
+    "languageHelp": "Choose a language or leave the album without one.",
+    "genreHelp": "Choose one main genre or leave the album without one."
   },
   "history": {
     "title": "Recommendation history",
@@ -345,6 +343,10 @@
       "noCollectionTitle": "Add your first album",
       "noCollectionDescription": "You don't have a collection yet. Search for an album and save it to start receiving recommendations.",
       "noCollectionCta": "Add my first album"
+    },
+    "loading": {
+      "title": "Finding your next record",
+      "description": "We're matching your collection with this moment to find something that fits."
     }
   },
   "recommendationExplain": {
@@ -699,5 +701,47 @@
     "vinyl": "Vinyl",
     "cd": "CD",
     "cassette": "Cassette"
+  },
+  "taxonomy": {
+    "genres": {
+      "pop": "Pop",
+      "rock": "Rock",
+      "hip-hop": "Hip-Hop",
+      "metal": "Metal",
+      "r&b": "R&B",
+      "jazz": "Jazz",
+      "electronic": "Electronic",
+      "classical": "Classical",
+      "indie": "Indie",
+      "folk": "Folk",
+      "reggaeton": "Reggaeton",
+      "soul": "Soul",
+      "punk": "Punk",
+      "country": "Country",
+      "ambient": "Ambient",
+      "blues": "Blues"
+    },
+    "languages": {
+      "es": "Spanish",
+      "en": "English",
+      "fr": "French",
+      "de": "German",
+      "it": "Italian",
+      "pt": "Portuguese",
+      "ja": "Japanese",
+      "ko": "Korean",
+      "ru": "Russian",
+      "ar": "Arabic",
+      "nl": "Dutch",
+      "sv": "Swedish",
+      "ca": "Catalan",
+      "gl": "Galician",
+      "eu": "Basque",
+      "zh": "Chinese",
+      "hi": "Hindi",
+      "tr": "Turkish",
+      "pl": "Polish",
+      "el": "Greek"
+    }
   }
 }

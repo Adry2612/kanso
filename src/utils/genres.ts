@@ -106,3 +106,45 @@ export function mapSpotifyGenres(genres: readonly string[]): GenreBranch[] {
 
   return GENRE_BRANCHES.filter((branch) => matched.has(branch));
 }
+
+/**
+ * Elige una sola rama principal a partir de los géneros de cada artista.
+ *
+ * `artistGenres` llega en el orden del álbum (artista principal primero). Gana
+ * la rama presente en más artistas; un empate se resuelve por el artista
+ * principal y, si persiste, por el orden canónico de `GENRE_BRANCHES`.
+ */
+export function pickMainGenre(
+  artistGenres: readonly (readonly string[])[],
+): GenreBranch | null {
+  if (artistGenres.length === 0) return null;
+
+  const perArtist = artistGenres.map(
+    (genres) =>
+      new Set(
+        genres
+          .map(mapSpotifyGenreToBranch)
+          .filter((branch): branch is GenreBranch => Boolean(branch)),
+      ),
+  );
+
+  const counts = new Map<GenreBranch, number>();
+  perArtist.forEach((branches) => {
+    branches.forEach((branch) => {
+      counts.set(branch, (counts.get(branch) ?? 0) + 1);
+    });
+  });
+
+  const primary = perArtist[0] ?? new Set<GenreBranch>();
+  const candidates = Array.from(counts.keys()).sort((a, b) => {
+    const countDiff = (counts.get(b) ?? 0) - (counts.get(a) ?? 0);
+    if (countDiff !== 0) return countDiff;
+
+    const primaryDiff = Number(primary.has(b)) - Number(primary.has(a));
+    if (primaryDiff !== 0) return primaryDiff;
+
+    return GENRE_BRANCHES.indexOf(a) - GENRE_BRANCHES.indexOf(b);
+  });
+
+  return candidates[0] ?? null;
+}

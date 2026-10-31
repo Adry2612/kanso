@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import { useTranslations } from "@/context/I18nContext";
 import { normalizeTagCategory, tagKey } from "@/lib/tags";
 
@@ -19,6 +20,7 @@ export const TagList: React.FC<TagListProps> = ({
   showCategory = false,
 }) => {
   const t = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
 
   if (!tags || tags.length === 0) return null;
 
@@ -41,7 +43,7 @@ export const TagList: React.FC<TagListProps> = ({
               {categoryLabel(tag.category)}:
             </span>
           )}
-          {tag.value}
+          {tagDisplayLabel(tag, tTaxonomy)}
         </span>
       ))}
     </div>

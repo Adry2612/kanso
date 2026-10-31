@@ -1,5 +1,7 @@
 import { normalizeMood, normalizeMoods } from "@/constants/moods";
+import { canonicalizeTags, normalizeGenreValue } from "@/constants/taxonomy";
 import { normalizeTagCategory, tagKey, uniqueTags } from "@/utils/tags";
+import type { GenreBranch } from "@/utils/genres";
 import { formatLongDate } from "@/utils/dates";
 import type {
   CollectionFilters,
@@ -13,14 +15,12 @@ import type {
 
 const GENRE_TAG_CATEGORIES = ["género", "genero", "genre"];
 
-const normalizeGenre = (value: unknown): string =>
-  typeof value === "string" ? value.trim().toLowerCase() : "";
-
 /**
- * Resuelve los géneros disponibles de una entrada: el campo `genres` del álbum
- * más las etiquetas personales cuya categoría sea un género.
+ * Resuelve los géneros canónicos de una entrada: el campo `genres` del álbum
+ * más las etiquetas personales cuya categoría sea un género. Los valores
+ * crudos o heredados se resuelven con los alias de la taxonomía.
  */
-const getCollectionGenres = (entry: CollectionAlbum): string[] => {
+const getCollectionGenres = (entry: CollectionAlbum): GenreBranch[] => {
   const fromAlbum = Array.isArray(entry.album.genres) ? entry.album.genres : [];
   const fromTags = (entry.tags ?? [])
     .filter((tag) =>
@@ -32,7 +32,13 @@ const getCollectionGenres = (entry: CollectionAlbum): string[] => {
     )
     .map((tag) => tag.value);
 
-  return [...fromAlbum, ...fromTags].map(normalizeGenre).filter(Boolean);
+  return Array.from(
+    new Set(
+      [...fromAlbum, ...fromTags]
+        .map((value) => normalizeGenreValue(value))
+        .filter((value): value is GenreBranch => value !== null),
+    ),
+  );
 };
 
 /** Valor de grupo para álbumes sin artista, título o año reconocible. */
@@ -204,7 +210,10 @@ export function filterCollection(
     const genres = getCollectionGenres(entry);
     const matchesGenres =
       filters.genres.length === 0 ||
-      filters.genres.some((genre) => genres.includes(normalizeGenre(genre)));
+      filters.genres.some((genre) => {
+        const canonical = normalizeGenreValue(genre);
+        return canonical ? genres.includes(canonical) : false;
+      });
     const matchesFormats =
       filters.formats.length === 0 ||
       filters.formats.some((format) => formats.includes(format));
@@ -372,7 +381,9 @@ export function countCollectionMoods(collection: CollectionAlbum[]): number {
 export function getAvailableTags(
   collection: CollectionAlbum[],
 ): CollectionTag[] {
-  return uniqueTags(collection.flatMap((entry) => entry.tags ?? []));
+  return uniqueTags(
+    collection.flatMap((entry) => canonicalizeTags(entry.tags ?? [])),
+  );
 }
 
 export function hasCollectionFilters(

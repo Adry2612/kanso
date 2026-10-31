@@ -13,6 +13,7 @@ type CollectionActiveFiltersProps = {
   genreLabel: (genre: string) => string;
   formatLabel: (format: CollectionFormat) => string;
   tagCategoryLabel: (category: string) => string;
+  tagLabel: (tag: CollectionTag) => string;
   tagRemoveLabel: (tag: CollectionTag) => string;
   onClearSort: () => void;
   onClearGroup: () => void;
@@ -36,6 +37,7 @@ export default function CollectionActiveFilters({
   genreLabel,
   formatLabel,
   tagCategoryLabel,
+  tagLabel,
   tagRemoveLabel,
   onClearSort,
   onRemoveGenre,
@@ -132,7 +134,7 @@ export default function CollectionActiveFilters({
           <span className="text-xs uppercase tracking-[.1em] text-[var(--kanso-muted)]">
             {tagCategoryLabel(tag.category)}
           </span>
-          {tag.value}
+          {tagLabel(tag)}
           <button
             type="button"
             onClick={() => onRemoveTag(tag)}

@@ -3,6 +3,7 @@ import {
   GENRE_BRANCHES,
   mapSpotifyGenreToBranch,
   mapSpotifyGenres,
+  pickMainGenre,
 } from "./genres";
 
 describe("mapSpotifyGenreToBranch", () => {
@@ -54,5 +55,29 @@ describe("mapSpotifyGenres", () => {
   it("devuelve [] sin géneros reconocidos", () => {
     expect(mapSpotifyGenres(["spoken word", "audiobook"])).toEqual([]);
     expect(mapSpotifyGenres([])).toEqual([]);
+  });
+});
+
+describe("pickMainGenre", () => {
+  it("elige la rama presente en más artistas", () => {
+    expect(
+      pickMainGenre([["latin hip hop", "trap"], ["rock", "hip hop"], ["pop"]]),
+    ).toBe("hip-hop");
+  });
+
+  it("resuelve el empate por el artista principal", () => {
+    expect(pickMainGenre([["metalcore"], ["house"]])).toBe("metal");
+    expect(pickMainGenre([["house"], ["metalcore"]])).toBe("electronic");
+  });
+
+  it("usa el orden canónico cuando el empate persiste", () => {
+    // El artista principal no aporta ramas: `rock` y `pop` empatan y decide
+    // el orden de GENRE_BRANCHES.
+    expect(pickMainGenre([["spoken word"], ["rock", "pop"]])).toBe("pop");
+  });
+
+  it("devuelve null sin artistas o sin géneros reconocidos", () => {
+    expect(pickMainGenre([])).toBeNull();
+    expect(pickMainGenre([["spoken word"], []])).toBeNull();
   });
 });

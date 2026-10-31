@@ -1,6 +1,10 @@
 import "server-only";
 
-import { mapSpotifyGenres, type GenreBranch } from "@/utils/genres";
+import {
+  mapSpotifyGenres,
+  pickMainGenre,
+  type GenreBranch,
+} from "@/utils/genres";
 import { getArtist } from "./spotify";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -28,14 +32,21 @@ async function artistGenres(artistId: string): Promise<string[]> {
   return genres;
 }
 
+export type AlbumGenreProfile = {
+  /** Rama principal; `null` si Spotify no aportó géneros. */
+  main: GenreBranch | null;
+  /** Todas las ramas reconocidas, en orden canónico. */
+  branches: GenreBranch[];
+};
+
 /**
- * Deriva las ramas principales de género de un álbum a partir de los géneros
- * de sus artistas. Si Spotify falla para algún artista, se ignora; si fallan
- * todos, devuelve `[]` sin romper el guardado.
+ * Deriva el perfil de género de un álbum a partir de los géneros de sus
+ * artistas. Si Spotify falla para algún artista, se ignora; si fallan todos,
+ * devuelve un perfil vacío sin romper el guardado.
  */
-export async function deriveAlbumGenreBranches(album: {
+export async function deriveAlbumGenreProfile(album: {
   artists?: { id?: string }[];
-}): Promise<GenreBranch[]> {
+}): Promise<AlbumGenreProfile> {
   const artistIds = [
     ...new Set(
       (album.artists ?? [])
@@ -44,15 +55,26 @@ export async function deriveAlbumGenreBranches(album: {
     ),
   ];
 
-  if (artistIds.length === 0) return [];
+  if (artistIds.length === 0) return { main: null, branches: [] };
 
   const results = await Promise.allSettled(
     artistIds.map((artistId) => artistGenres(artistId)),
   );
 
-  const genres = results.flatMap((result) =>
+  const perArtist = results.map((result) =>
     result.status === "fulfilled" ? result.value : [],
   );
+  const genres = perArtist.flat();
 
-  return mapSpotifyGenres(genres);
+  return {
+    main: pickMainGenre(perArtist),
+    branches: mapSpotifyGenres(genres),
+  };
+}
+
+/** Ramas reconocidas de un álbum, sin elegir una principal. */
+export async function deriveAlbumGenreBranches(album: {
+  artists?: { id?: string }[];
+}): Promise<GenreBranch[]> {
+  return (await deriveAlbumGenreProfile(album)).branches;
 }

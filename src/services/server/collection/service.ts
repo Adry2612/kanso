@@ -1,6 +1,7 @@
 import "server-only";
 
 import { normalizeMoods } from "@/constants/moods";
+import { sanitizeCollectionTags } from "@/utils/collectionTags";
 import { normalizeCollectionFormats } from "@/utils/formats";
 import { reportApiError } from "@/lib/sentry";
 import type { Album } from "@/types/album";
@@ -133,19 +134,7 @@ function normalizeFormats(input: unknown): CollectionFormat[] {
 }
 
 function normalizeTags(input: unknown): CollectionTag[] {
-  if (!Array.isArray(input)) return [];
-
-  return input
-    .filter(
-      (tag): tag is CollectionTag =>
-        typeof (tag as { category?: unknown })?.category === "string" &&
-        typeof (tag as { value?: unknown })?.value === "string",
-    )
-    .map((tag) => ({
-      category: tag.category.trim().toLowerCase(),
-      value: tag.value.trim().toLowerCase(),
-    }))
-    .filter((tag) => tag.category && tag.value);
+  return sanitizeCollectionTags(input);
 }
 
 /**

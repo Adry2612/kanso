@@ -7,6 +7,7 @@ import { useTransitionRouter } from "next-view-transitions";
 import { moodOptions } from "@/constants/moods";
 import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import { normalizeTagCategory } from "@/lib/tags";
 import OptionSelector from "@/components/selectors/OptionSelector";
 import { buildFormatOptions } from "@/components/selectors/formatOptions";
@@ -36,6 +37,7 @@ export default function StartPage() {
   const tFormats = useTranslations("formats");
   const tFeelings = useTranslations("feelingsCarousel");
   const tTags = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
   const tRecommendation = useTranslations("recommendation");
   const reduce = useReducedMotion();
   const {
@@ -249,7 +251,8 @@ export default function StartPage() {
                                     : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                                 }`}
                               >
-                                {tagCategoryLabel(tag.category)}: {tag.value}
+                                {tagCategoryLabel(tag.category)}:{" "}
+                                {tagDisplayLabel(tag, tTaxonomy)}
                               </button>
                             );
                           })}
@@ -403,7 +406,8 @@ export default function StartPage() {
                                 : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                             }`}
                           >
-                            {tagCategoryLabel(tag.category)}: {tag.value}
+                            {tagCategoryLabel(tag.category)}:{" "}
+                            {tagDisplayLabel(tag, tTaxonomy)}
                           </button>
                         );
                       })}

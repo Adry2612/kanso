@@ -1,5 +1,6 @@
 "use client";
 
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import { useTranslations } from "@/context/I18nContext";
 import { tagCategoryI18nKey } from "@/utils/collection";
 
@@ -32,6 +33,7 @@ export default function RecommendationFilterSummary({
   const tQuick = useTranslations("quickRecommendation");
   const tFormats = useTranslations("formats");
   const tTags = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
   const formatLabel = tFormats(FORMAT_KEYS.has(format) ? format : "all");
 
   return (
@@ -53,7 +55,8 @@ export default function RecommendationFilterSummary({
           return (
             <li key={tag}>
               <span className="inline-flex rounded-full border border-[var(--kanso-line)] bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--kanso-muted)]">
-                {tTags(tagCategoryI18nKey(category))}: {value}
+                {tTags(tagCategoryI18nKey(category))}:{" "}
+                {tagDisplayLabel({ category, value }, tTaxonomy)}
               </span>
             </li>
           );
