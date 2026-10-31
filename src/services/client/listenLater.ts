@@ -5,7 +5,7 @@ import type {
   ListenLaterResponse,
   RemoveListenLaterResponse,
   SaveListenLaterResponse,
-} from "@/types/favorites";
+} from "@/types/collection";
 
 async function parseJson<T = { error?: string }>(
   response: Response,

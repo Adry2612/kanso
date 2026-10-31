@@ -3,7 +3,7 @@
 import { Check, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useLocale, useTranslations } from "@/context/I18nContext";
-import type { FavoriteTag } from "@/types/favorites";
+import type { CollectionTag } from "@/types/collection";
 import {
   normalizeTagCategory,
   TAG_CATEGORIES,
@@ -14,8 +14,8 @@ import {
 } from "@/lib/tags";
 
 interface TagEditorProps {
-  tags: FavoriteTag[];
-  onChange: (tags: FavoriteTag[]) => void;
+  tags: CollectionTag[];
+  onChange: (tags: CollectionTag[]) => void;
 }
 
 /**

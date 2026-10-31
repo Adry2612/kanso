@@ -1,18 +1,23 @@
 import "server-only";
 
 import { normalizeMoods } from "@/constants/moods";
-import { normalizeFavoriteFormats } from "@/lib/favorites";
+import { normalizeCollectionFormats } from "@/utils/formats";
 import { reportApiError } from "@/lib/sentry";
 import type { Album } from "@/types/album";
 import type {
-  FavoriteFormat,
-  FavoriteTag,
+  CollectionFormat,
+  CollectionTag,
   ListenLaterAlbum,
-} from "@/types/favorites";
+} from "@/types/collection";
 import type { SpotifyAlbum } from "@/types/spotify";
-import { createCollectionRepository, type FavoriteWrite } from "./repository";
+import { createCollectionRepository, type CollectionWrite } from "./repository";
 
-const VALID_FORMATS: FavoriteFormat[] = ["digital", "cd", "cassette", "vinyl"];
+const VALID_FORMATS: CollectionFormat[] = [
+  "digital",
+  "cd",
+  "cassette",
+  "vinyl",
+];
 
 /** Error con un estado HTTP que la ruta puede devolver tal cual. */
 export class CollectionApiError extends Error {
@@ -25,24 +30,25 @@ export class CollectionApiError extends Error {
   }
 }
 
-/** Favorito tal como lo devuelve `GET /api/userFavorites`. */
-export type FavoriteRecord = {
+/** Entrada de la colección tal como la devuelve `GET /api/collection`. */
+export type CollectionRecord = {
   id: string;
+  albumId: string | null;
   addedAt: unknown;
   savedAt: unknown;
   labeledFeelings: string[];
   activities: unknown;
   tags: unknown;
-  format: FavoriteFormat[];
+  format: CollectionFormat[];
   album: Record<string, unknown> | null;
 };
 
-export type ToggleFavoriteResponse = FavoriteWrite & {
+export type SaveCollectionAlbumResponse = CollectionWrite & {
   message: string;
-  alreadyFavorite?: boolean;
+  alreadyInCollection?: boolean;
 };
 
-type ToggleFavoriteBody = {
+type SaveCollectionAlbumBody = {
   album?: Album;
   feelings?: unknown;
   format?: unknown;
@@ -111,9 +117,9 @@ function normalizeActivities(input: unknown): string[] {
     .filter(Boolean);
 }
 
-function normalizeFormats(input: unknown): FavoriteFormat[] {
+function normalizeFormats(input: unknown): CollectionFormat[] {
   const formats = Array.isArray(input)
-    ? [...new Set(input as FavoriteFormat[])]
+    ? [...new Set(input as CollectionFormat[])]
     : [];
 
   if (
@@ -126,12 +132,12 @@ function normalizeFormats(input: unknown): FavoriteFormat[] {
   return formats;
 }
 
-function normalizeTags(input: unknown): FavoriteTag[] {
+function normalizeTags(input: unknown): CollectionTag[] {
   if (!Array.isArray(input)) return [];
 
   return input
     .filter(
-      (tag): tag is FavoriteTag =>
+      (tag): tag is CollectionTag =>
         typeof (tag as { category?: unknown })?.category === "string" &&
         typeof (tag as { value?: unknown })?.value === "string",
     )
@@ -147,12 +153,12 @@ function normalizeTags(input: unknown): FavoriteTag[] {
  *
  * Si ya estaba, actualiza emociones/formatos/etiquetas y descarta el pendiente.
  * Si es nuevo, lo crea y alimenta el feed de la comunidad sin bloquear el
- * guardado: un fallo del feed no invalida el favorito.
+ * guardado: un fallo del feed no invalida el guardado en la colección.
  */
-export async function toggleFavorite(
+export async function saveCollectionAlbum(
   uid: string,
-  body: ToggleFavoriteBody,
-): Promise<ToggleFavoriteResponse> {
+  body: SaveCollectionAlbumBody,
+): Promise<SaveCollectionAlbumResponse> {
   const {
     album,
     feelings,
@@ -165,7 +171,7 @@ export async function toggleFavorite(
     throw new CollectionApiError(400, "Álbum no válido");
   }
 
-  const write: FavoriteWrite = {
+  const write: CollectionWrite = {
     labeledFeelings: normalizeFeelings(feelings),
     activities: normalizeActivities(activitiesInput),
     format: normalizeFormats(format),
@@ -177,15 +183,16 @@ export async function toggleFavorite(
     (await repository.findAlbumId(album.id)) ??
     (await repository.createAlbum(album));
 
-  const existingRefs = await repository.listFavoriteRefs(uid, albumDocId);
-  const existingRef = existingRefs[0] ?? null;
+  const alreadyInCollection = await repository.saveCollectionEntry(
+    uid,
+    albumDocId,
+    write,
+  );
 
-  await repository.saveFavorite(uid, albumDocId, write, existingRef);
-
-  if (existingRef) {
+  if (alreadyInCollection) {
     return {
-      message: "Favorito actualizado",
-      alreadyFavorite: true,
+      message: "Colección actualizada",
+      alreadyInCollection: true,
       ...write,
     };
   }
@@ -193,14 +200,14 @@ export async function toggleFavorite(
   try {
     await repository.touchCommunityAlbum(albumDocId);
   } catch (feedError) {
-    reportApiError(feedError, "toggleFavorite", "warning");
+    reportApiError(feedError, "saveCollectionAlbum", "warning");
   }
 
-  return { message: "Favorito guardado", ...write };
+  return { message: "Guardado en la colección", ...write };
 }
 
 /** Elimina el álbum de la colección; si no estaba, responde sin error. */
-export async function removeFavorite(
+export async function removeCollectionAlbum(
   uid: string,
   body: { album?: unknown },
 ): Promise<{ message: string; removed: boolean }> {
@@ -214,25 +221,25 @@ export async function removeFavorite(
   const albumDocId = await repository.findAlbumId(album.id);
 
   if (!albumDocId) {
-    return { message: "El álbum no está en favoritos", removed: false };
+    return { message: "El álbum no está en la colección", removed: false };
   }
 
-  const refs = await repository.listFavoriteRefs(uid, albumDocId);
+  const refs = await repository.listCollectionRefs(uid, albumDocId);
   if (refs.length === 0) {
-    return { message: "El álbum no está en favoritos", removed: false };
+    return { message: "El álbum no está en la colección", removed: false };
   }
 
   await repository.deleteRefs(refs);
 
-  return { message: "Favorito eliminado correctamente", removed: true };
+  return { message: "Álbum eliminado de la colección", removed: true };
 }
 
 /** Colección completa, con el álbum resuelto y ordenada por fecha de alta. */
-export async function listFavorites(uid: string): Promise<FavoriteRecord[]> {
+export async function listCollection(uid: string): Promise<CollectionRecord[]> {
   const repository = createCollectionRepository();
-  const favorites = await Promise.all(
-    (await repository.listFavorites(uid)).map(
-      async (document): Promise<FavoriteRecord> => {
+  const collection = await Promise.all(
+    (await repository.listCollection(uid)).map(
+      async (document): Promise<CollectionRecord> => {
         const {
           albumId,
           addedAt,
@@ -245,12 +252,13 @@ export async function listFavorites(uid: string): Promise<FavoriteRecord[]> {
 
         return {
           id: document.id,
+          albumId: typeof albumId === "string" ? albumId : null,
           addedAt: toJsonDate(addedAt),
           savedAt: toJsonDate(addedAt),
           labeledFeelings: normalizeMoods((labeledFeelings ?? []) as unknown[]),
           activities: activities ?? [],
           tags: Array.isArray(tags) ? tags : [],
-          format: normalizeFavoriteFormats(format, ownership),
+          format: normalizeCollectionFormats(format, ownership),
           album:
             typeof albumId === "string"
               ? await repository.getAlbum(albumId)
@@ -260,13 +268,13 @@ export async function listFavorites(uid: string): Promise<FavoriteRecord[]> {
     ),
   );
 
-  favorites.sort(
+  collection.sort(
     (a, b) =>
       new Date(b.addedAt as string | number | Date).getTime() -
       new Date(a.addedAt as string | number | Date).getTime(),
   );
 
-  return favorites;
+  return collection;
 }
 
 /** Pendientes, ignorando los que ya están en la colección. */
@@ -278,7 +286,7 @@ export async function listListenLater(
 
   if (pendingDocs.length === 0) return [];
 
-  const favoriteAlbumIds = await repository.listFavoriteAlbumIds(uid);
+  const collectionAlbumIds = await repository.listCollectionAlbumIds(uid);
 
   const albums = await Promise.all(
     pendingDocs.map(async (document): Promise<ListenLaterAlbum | null> => {
@@ -287,7 +295,7 @@ export async function listListenLater(
       if (
         typeof albumId !== "string" ||
         !albumId.trim() ||
-        favoriteAlbumIds.has(albumId)
+        collectionAlbumIds.has(albumId)
       ) {
         return null;
       }
@@ -338,8 +346,8 @@ export async function addListenLater(
     albumData = album;
   }
 
-  const favoriteRefs = await repository.listFavoriteRefs(uid, albumDocId);
-  if (favoriteRefs.length > 0) {
+  const collectionRefs = await repository.listCollectionRefs(uid, albumDocId);
+  if (collectionRefs.length > 0) {
     throw new CollectionApiError(409, "Este álbum ya está en tu colección");
   }
 

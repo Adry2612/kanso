@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/I18nContext";
 import { getRecommendationHistory } from "@/services/client/recommendations";
 import type { MoodKey } from "@/constants/moods";
 import { groupByDate } from "@/utils/dates";
@@ -20,6 +21,7 @@ type HistoryView = "grid" | "list";
  */
 export function useRecommendationHistory() {
   const { user } = useAuth();
+  const { locale } = useI18n();
 
   const [history, setHistory] = useState<RecommendationHistoryItem[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -71,7 +73,10 @@ export function useRecommendationHistory() {
     [history, query, moodFilter],
   );
 
-  const groups = useMemo(() => groupByDate(filteredHistory), [filteredHistory]);
+  const groups = useMemo(
+    () => groupByDate(filteredHistory, (item) => item.providedAt, locale),
+    [filteredHistory, locale],
+  );
 
   const uniqueArtists = useMemo(() => countHistoryArtists(history), [history]);
 

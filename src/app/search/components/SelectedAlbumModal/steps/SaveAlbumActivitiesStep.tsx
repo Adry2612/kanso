@@ -1,7 +1,7 @@
 "use client";
 
-import Medallion from "@/components/Medallion";
-import OptionCarousel from "@/components/OptionCarousel";
+import OptionSelector from "@/components/selectors/OptionSelector";
+import type { OptionItem } from "@/components/selectors/types";
 import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
 
@@ -16,6 +16,12 @@ export function SaveAlbumActivitiesStep({
   onActivitiesChange,
 }: SaveAlbumActivitiesStepProps) {
   const tActivities = useTranslations("activities");
+
+  const options: OptionItem[] = activityOptions.map(({ emoji, id }) => ({
+    key: id,
+    label: tActivities(id),
+    emoji,
+  }));
 
   const toggle = (activity: string) =>
     onActivitiesChange(
@@ -36,26 +42,17 @@ export function SaveAlbumActivitiesStep({
         Añade actividades para encontrarlo más fácilmente después.
       </p>
       <div className="mt-5">
-        <OptionCarousel ariaLabel="Actividades" className="activity-carousel">
-          {activityOptions.map(({ emoji, id: activity }) => {
-            const selected = activities.includes(activity);
-            return (
-              <button
-                key={activity}
-                type="button"
-                data-selected={selected}
-                aria-pressed={selected}
-                onClick={() => toggle(activity)}
-                className="save-album-modal-option flex items-center gap-3 rounded-xl p-3 text-left transition"
-              >
-                <Medallion emoji={emoji} size="sm" onAccent={selected} />
-                <span className="text-xs font-semibold">
-                  {tActivities(activity)}
-                </span>
-              </button>
-            );
-          })}
-        </OptionCarousel>
+        <OptionSelector
+          options={options}
+          selectedKeys={activities}
+          onSelect={toggle}
+          selection="multiple"
+          layout="carousel"
+          semantics="buttons"
+          ariaLabel="Actividades"
+          className="option-selector--activity"
+          buttonClassName="save-album-modal-option"
+        />
       </div>
       <p className="album-action-modal-muted mt-3 text-xs">
         {activities.length

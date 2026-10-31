@@ -1,23 +1,16 @@
 "use client";
 
 import TagEditor from "@/components/TagEditor";
+import OptionSelector from "@/components/selectors/OptionSelector";
+import { buildFormatOptions } from "@/components/selectors/formatOptions";
 import { useTranslations } from "@/context/I18nContext";
-import type { FavoriteFormat, FavoriteTag } from "@/types/favorites";
-
-const FORMATS: FavoriteFormat[] = ["digital", "vinyl", "cd", "cassette"];
-
-const FORMAT_LABELS: Record<FavoriteFormat, string> = {
-  digital: "Digital",
-  vinyl: "Vinilo",
-  cd: "CD",
-  cassette: "Cassette",
-};
+import type { CollectionFormat, CollectionTag } from "@/types/collection";
 
 interface SaveAlbumFormatStepProps {
-  format: FavoriteFormat[];
-  tags: FavoriteTag[];
-  onFormatChange: (format: FavoriteFormat[]) => void;
-  onTagsChange: (tags: FavoriteTag[]) => void;
+  format: CollectionFormat[];
+  tags: CollectionTag[];
+  onFormatChange: (format: CollectionFormat[]) => void;
+  onTagsChange: (tags: CollectionTag[]) => void;
 }
 
 /** Paso 3: formatos de la colección y etiquetas. */
@@ -28,13 +21,17 @@ export function SaveAlbumFormatStep({
   onTagsChange,
 }: SaveAlbumFormatStepProps) {
   const tTags = useTranslations("tags");
+  const tFormats = useTranslations("formats");
+  const options = buildFormatOptions(tFormats, { includeAll: false });
 
-  const toggleFormat = (item: FavoriteFormat) =>
+  const toggleFormat = (item: string) => {
+    const value = item as CollectionFormat;
     onFormatChange(
-      format.includes(item)
-        ? format.filter((value) => value !== item)
-        : [...format, item],
+      format.includes(value)
+        ? format.filter((current) => current !== value)
+        : [...format, value],
     );
+  };
 
   return (
     <section>
@@ -47,21 +44,18 @@ export function SaveAlbumFormatStep({
       <p className="album-action-modal-muted mt-2 text-sm">
         Elige uno o varios formatos para asociar a este álbum.
       </p>
-      <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {FORMATS.map((item) => {
-          const selected = format.includes(item);
-          return (
-            <button
-              key={item}
-              type="button"
-              data-selected={selected}
-              onClick={() => toggleFormat(item)}
-              className="save-album-modal-option rounded-xl px-3 py-4 text-center text-sm transition"
-            >
-              {FORMAT_LABELS[item]}
-            </button>
-          );
-        })}
+      <div className="mt-5">
+        <OptionSelector
+          options={options}
+          selectedKeys={format}
+          onSelect={toggleFormat}
+          selection="multiple"
+          layout="grid"
+          semantics="buttons"
+          ariaLabel="Formatos de la colección"
+          columns={4}
+          buttonClassName="save-album-modal-option"
+        />
       </div>
       <p className="album-action-modal-muted mt-3 text-xs">
         {format.length

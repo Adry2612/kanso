@@ -1,6 +1,6 @@
 /** Tipos compartidos por la API y la UI de amigos. */
 
-import type { FavoriteFormat } from "./favorites";
+import type { CollectionFormat } from "./collection";
 
 export type FriendPerson = {
   uid: string;
@@ -78,7 +78,7 @@ export type SharedCollectionAlbum = {
   addedAt: string | null;
   labeledFeelings: string[];
   activities: string[];
-  format: FavoriteFormat[];
+  format: CollectionFormat[];
   album: SharedAlbumSummary | null;
 };
 

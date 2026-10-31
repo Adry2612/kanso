@@ -1,7 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useRecommendation } from "@/hooks/client/useRecommendation";
-import { getActivityLabel, moodLabelToKey } from "@/utils/recommendations";
+import { getActivityLabel } from "@/utils/recommendations";
 import { useTranslations } from "@/context/I18nContext";
 import { useTransitionRouter } from "next-view-transitions";
 import { Reveal } from "@/components/motion";
@@ -9,9 +8,15 @@ import { getMood } from "@/constants/moods";
 import { getActivity } from "@/constants/activities";
 import InlineEmoji from "@/components/InlineEmoji";
 import ErrorState from "@/components/ErrorState";
+import AlbumShowcase from "@/components/album/AlbumShowcase";
+import RecommendationFeedback from "@/components/album/RecommendationFeedback";
+import VinylCrateLoader from "@/components/album/VinylCrateLoader";
+import RecommendationFilterSummary from "@/app/home/components/RecommendationFilterSummary";
+import RecommendationExplain from "@/app/home/components/RecommendationExplain";
 import { Skeleton } from "@/components/Skeleton";
 import { openSpotify } from "@/lib/spotifyUtils";
 import { FaSpotify } from "react-icons/fa";
+import { useEffect } from "react";
 
 type RecomendationsProps = {
   moods: string[];
@@ -19,6 +24,8 @@ type RecomendationsProps = {
   activity?: string | null;
   format?: string;
   tags?: string[];
+  /** Indica que el resultado viene de «Recomendación rápida». */
+  isQuick?: boolean;
 };
 
 export default function RecomendationPage({
@@ -27,10 +34,12 @@ export default function RecomendationPage({
   activity = null,
   format = "all",
   tags = [],
+  isQuick = false,
 }: RecomendationsProps) {
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tRecomendation = useTranslations("recommendation");
+  const tCommon = useTranslations("common");
   const router = useTransitionRouter();
   const activityLabel = activity
     ? getActivityLabel(activity, tActivities)
@@ -41,7 +50,9 @@ export default function RecomendationPage({
     loading,
     error,
     noMatch,
+    collectionEmpty,
     recommendedAlbum: recomendedAlbum,
+    explain,
     albumTracklist,
     tracklistLoading,
   } = useRecommendation({
@@ -53,16 +64,25 @@ export default function RecomendationPage({
     activityLabel,
   });
 
+  const debugTools = process.env.NEXT_PUBLIC_RECOMMENDATION_DEBUG === "true";
+
+  useEffect(() => {
+    if (!debugTools || !explain) return;
+    // eslint-disable-next-line no-console -- herramienta de desarrollo tras flag
+    console.debug("[recommendation] explicación", explain);
+  }, [debugTools, explain]);
+
   const isLoading = loading;
   const activeError = error;
 
   if (!mounted || isLoading) {
     return (
       <main className="kanso-main min-h-screen">
-        <div className="pt-12 md:pt-16">
+        <div className="pt-12 md:pt-16" role="status" aria-busy="true">
+          <span className="sr-only">{tCommon("loading")}</span>
           <Skeleton className="h-3 w-24" />
           <div className="mt-8 grid gap-8 border-b border-[var(--kanso-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16">
-            <Skeleton className="aspect-square w-full max-w-[320px] rounded-2xl" />
+            <VinylCrateLoader className="aspect-square w-full max-w-[320px]" />
             <div className="space-y-4 pt-2">
               <Skeleton className="h-3 w-32" />
               <Skeleton className="h-16 w-4/5" />
@@ -88,7 +108,7 @@ export default function RecomendationPage({
           <ErrorState
             variant="page"
             title={tRecomendation("empty.errorTitle")}
-            description={activeError}
+            description={tRecomendation("empty.errorDescription")}
             onRetry={() => window.location.reload()}
             action={
               <button
@@ -105,20 +125,27 @@ export default function RecomendationPage({
   }
 
   if (noMatch) {
+    const collectionIsEmpty = collectionEmpty === true;
     return (
       <main className="kanso-main min-h-screen">
         <div className="pt-16">
           <Reveal className="mx-auto max-w-xl text-center">
             <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
-              {tRecomendation("empty.eyebrow")}
+              {collectionIsEmpty
+                ? tRecomendation("empty.noCollectionEyebrow")
+                : tRecomendation("empty.eyebrow")}
             </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--foreground)] md:text-4xl">
-              {tRecomendation("empty.title")}
+              {collectionIsEmpty
+                ? tRecomendation("empty.noCollectionTitle")
+                : tRecomendation("empty.title")}
             </h1>
             <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-[var(--kanso-muted)]">
-              {tRecomendation("empty.description")}
+              {collectionIsEmpty
+                ? tRecomendation("empty.noCollectionDescription")
+                : tRecomendation("empty.description")}
             </p>
-            {moods.length > 0 && (
+            {!collectionIsEmpty && moods.length > 0 && (
               <div className="mt-7 flex flex-wrap justify-center gap-2">
                 {moods.map((mood) => {
                   const option = getMood(mood);
@@ -144,7 +171,9 @@ export default function RecomendationPage({
                 onClick={() => router.push("/search")}
                 className="rounded-xl bg-[var(--kanso-mint)] px-5 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)]"
               >
-                {tRecomendation("empty.cta")}
+                {collectionIsEmpty
+                  ? tRecomendation("empty.noCollectionCta")
+                  : tRecomendation("empty.cta")}
               </button>
               <button
                 onClick={() => window.history.back()}
@@ -161,112 +190,85 @@ export default function RecomendationPage({
 
   const albumInfo = recomendedAlbum?.albumInfo;
   if (!albumInfo) return null;
+
   return (
-    <main className="kanso-main relative min-h-screen overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-emerald-950/40 to-transparent" />
-      <div className="relative pt-12 md:pt-16">
-        <button
-          onClick={() => window.history.back()}
-          className="mb-6 inline-flex items-center gap-2 text-xs text-[var(--kanso-mint)] transition hover:text-[var(--foreground)]"
-        >
-          ← Volver
-        </button>
-        <section className="grid w-full items-start gap-8 border-b border-[var(--kanso-line)] pb-10 md:grid-cols-[320px_1fr] md:gap-16">
-          <img
-            loading="lazy"
-            decoding="async"
-            src={albumInfo.images[0]?.url}
-            alt={albumInfo.name}
-            className="aspect-square w-full max-w-[320px] rounded-2xl object-cover shadow-2xl"
-          />
-          <div className="flex min-w-0 flex-col pt-1">
-            <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
-              Recomendación para ti
-            </p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-tight text-[var(--foreground)] md:text-7xl">
-              {albumInfo.name}
-            </h1>
-            <h2 className="mt-4 text-base text-[var(--kanso-mint)]">
-              {albumInfo.artists
-                .map((artist: { name: string }) => artist.name)
-                .join(", ")}
-            </h2>
-            <p className="mt-6 max-w-lg text-sm leading-relaxed text-[var(--kanso-muted)]">
-              Un álbum seleccionado a partir de tu{" "}
-              {activity
-                ? `actividad: ${activityEmoji ? `${activityEmoji} ` : ""}${activityLabel || activity}`
-                : "estado de ánimo y tus favoritos"}
-              .
-            </p>
+    <AlbumShowcase
+      album={{
+        id: recomendedAlbum.albumId,
+        name: albumInfo.name,
+        images: albumInfo.images,
+        artists: albumInfo.artists,
+      }}
+      eyebrow="Recomendación para ti"
+      description={
+        <>
+          Un álbum seleccionado a partir de tu{" "}
+          {activity
+            ? `actividad: ${activityEmoji ? `${activityEmoji} ` : ""}${activityLabel || activity}`
+            : "estado de ánimo y tu colección"}
+          .
+        </>
+      }
+      actions={
+        <>
+          <button
+            onClick={() => openSpotify(albumInfo.external_urls?.spotify)}
+            className="flex items-center justify-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)]"
+          >
+            <FaSpotify />
+            Escuchar en Spotify
+          </button>
+          <RecommendationFeedback albumId={recomendedAlbum.albumId} />
+        </>
+      }
+      meta={
+        <>
+          {recomendedAlbum.labeledFeelings.length > 0 && (
             <div className="mt-7 flex flex-wrap gap-2">
-              <button
-                onClick={() => openSpotify(albumInfo.external_urls?.spotify)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-[var(--kanso-mint)] px-4 py-3 text-sm font-semibold text-[var(--background)] transition hover:bg-[var(--kanso-lime)]"
-              >
-                <FaSpotify />
-                Escuchar en Spotify
-              </button>
-            </div>
-            {recomendedAlbum.feelings?.length ? (
-              <div className="mt-7 flex flex-wrap gap-2">
-                {recomendedAlbum.feelings.map((feeling) => (
+              {recomendedAlbum.labeledFeelings.map((mood) => {
+                const item = getMood(mood);
+                return (
                   <span
-                    key={feeling.label}
+                    key={mood}
                     className="rounded-full border border-[var(--kanso-line)] px-3 py-1.5 text-xs text-[var(--kanso-muted)]"
                   >
-                    <InlineEmoji emoji={feeling.emoji} />
-                    {tMoods(moodLabelToKey[feeling.label] ?? feeling.label)}
+                    <InlineEmoji emoji={item?.emoji} />
+                    {tMoods(item?.key ?? mood)}
                   </span>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </section>
-        <section className="mt-10 max-w-2xl">
-          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[var(--foreground)]">
-            Tracklist{" "}
-            <span className="text-xs font-normal text-[var(--kanso-muted)]">
-              {tracklistLoading
-                ? "· Cargando"
-                : albumTracklist
-                  ? `· ${albumTracklist.length} pistas`
-                  : ""}
-            </span>
-          </h2>
-          {tracklistLoading ? (
-            <div className="space-y-3">
-              {[...Array(5)].map((_, index) => (
-                <Skeleton key={index} className="h-12 w-full" />
-              ))}
+                );
+              })}
             </div>
-          ) : albumTracklist?.length ? (
-            <ul className="border-t border-[var(--kanso-line)]">
-              {albumTracklist.map((track, index) => (
-                <li
-                  key={`${track.name}-${index}`}
-                  className="grid grid-cols-[30px_1fr] items-center gap-3 border-b border-[var(--kanso-line)] px-1 py-3"
-                >
-                  <span className="text-xs text-[var(--kanso-muted)]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm text-[var(--kanso-muted)]">
-                      {track.name}
-                    </span>
-                    <span className="mt-1 truncate text-xs text-[var(--kanso-muted)]">
-                      {track.artists.map((artist) => artist.name).join(", ")}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-[var(--kanso-muted)]">
-              No hay canciones disponibles para este álbum.
-            </p>
           )}
-        </section>
-      </div>
-    </main>
+          {recomendedAlbum.activities.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {recomendedAlbum.activities.map((activity) => {
+                const item = getActivity(activity);
+                return (
+                  <span
+                    key={activity}
+                    className="rounded-full border border-[var(--kanso-line)] px-3 py-1.5 text-xs text-[var(--kanso-muted)]"
+                  >
+                    <InlineEmoji emoji={item?.emoji} />
+                    {tActivities(item?.id ?? activity)}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </>
+      }
+      onBack={() => window.history.back()}
+      backLabel="Volver"
+      aboveHero={
+        <>
+          {isQuick && (
+            <RecommendationFilterSummary format={format} tags={tags} />
+          )}
+          {debugTools && explain && <RecommendationExplain explain={explain} />}
+        </>
+      }
+      tracks={albumTracklist}
+      tracklistLoading={tracklistLoading}
+    />
   );
 }

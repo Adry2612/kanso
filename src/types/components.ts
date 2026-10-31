@@ -16,20 +16,10 @@ export interface SortModalProps {
 export interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentFilters: {
-    moods: string[];
-    genres: string[];
-    formats: FavoriteFormat[];
-    tags: FavoriteTag[];
-  };
-  onFiltersChange: (filters: {
-    moods: string[];
-    genres: string[];
-    formats: FavoriteFormat[];
-    tags: FavoriteTag[];
-  }) => void;
+  currentFilters: CollectionFilters;
+  onFiltersChange: (filters: CollectionFilters) => void;
   /** Etiquetas presentes en la colección, para filtrar sin escribirlas. */
-  availableTags?: FavoriteTag[];
+  availableTags?: CollectionTag[];
 }
 
-import type { FavoriteFormat, FavoriteTag } from "./favorites";
+import type { CollectionFilters, CollectionTag } from "./collection";

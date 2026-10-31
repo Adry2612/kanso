@@ -45,7 +45,7 @@ export default function ArtistsPage() {
       />
 
       {hasQuery ? (
-        <section className="w-full max-w-6xl pb-16">
+        <section className="w-full pb-16">
           {searching && (
             <div role="status" aria-busy="true">
               <span className="sr-only">{t("loading")}</span>
@@ -62,13 +62,13 @@ export default function ArtistsPage() {
             />
           )}
           {!searching && !error && results.length === 0 && (
-            <p className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">
+            <p className="kanso-empty max-w-2xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">
               {t("noResults")}
             </p>
           )}
           {!searching && results.length > 0 && (
             <Stagger
-              className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6"
+              className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 2xl:grid-cols-5 [@media(min-width:2200px)]:grid-cols-6"
               stagger={0.04}
               onMount
             >
@@ -85,7 +85,7 @@ export default function ArtistsPage() {
           )}
         </section>
       ) : (
-        <section className="w-full max-w-6xl pb-16">
+        <section className="w-full pb-16">
           <h2 className="mb-5 text-lg font-semibold tracking-tight text-[var(--foreground)]">
             {t("yourArtists")}
           </h2>
@@ -96,13 +96,13 @@ export default function ArtistsPage() {
             </div>
           )}
           {favoritesLoaded && favorites.length === 0 && (
-            <p className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">
+            <p className="kanso-empty max-w-2xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 text-sm text-[var(--kanso-muted)]">
               {t("empty")}
             </p>
           )}
           {favorites.length > 0 && (
             <Stagger
-              className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6"
+              className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 2xl:grid-cols-5 [@media(min-width:2200px)]:grid-cols-6"
               stagger={0.04}
               onMount
             >

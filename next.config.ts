@@ -5,7 +5,15 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 const withNextIntl = createNextIntlPlugin("./src/i18n.ts");
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: "/favorites",
+        destination: "/collection",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {

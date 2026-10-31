@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getMood } from "@/constants/moods";
-import { normalizeFavoriteFormats } from "@/utils/formats";
+import { getAlbumGenres } from "@/services/client/albums";
+import { normalizeCollectionFormats } from "@/utils/formats";
+import { normalizeTagCategory, uniqueTags } from "@/utils/tags";
 import { useAlbumCollectionActions } from "@/hooks/client/useAlbumCollectionActions";
 import type { Album } from "@/types/album";
 import type { Mood } from "@/types/mood";
 import type {
   AlbumSaveDestination,
-  CollectionFavorite,
-  FavoriteFormat,
-  FavoriteTag,
+  CollectionAlbum,
+  CollectionFormat,
+  CollectionTag,
   ListenLaterItem,
   SaveAlbumResult,
-} from "@/types/favorites";
+} from "@/types/collection";
 
 export type SaveAlbumWizardStage =
-  | "favorite"
+  | "collection"
   | "pending"
   | "destination"
   | "steps"
@@ -28,10 +30,10 @@ interface StoredFeeling {
 interface UseSaveAlbumWizardOptions {
   isOpen: boolean;
   album: Album;
-  isFavorite?: boolean;
+  isInCollection?: boolean;
   isPending?: boolean;
   pendingData?: ListenLaterItem | null;
-  favoriteData?: CollectionFavorite | null;
+  collectionData?: CollectionAlbum | null;
   startEditing?: boolean;
   startMovingToCollection?: boolean;
   onSaved?: (result: SaveAlbumResult) => void;
@@ -44,8 +46,8 @@ interface UseSaveAlbumWizardOptions {
  * Las claves guardadas son canónicas: resolvemos la marca (emoji/símbolo) del
  * catálogo para que la burbuja muestre la etiqueta traducida y no la clave.
  */
-function toSavedMoods(favorite?: CollectionFavorite | null): Mood[] {
-  const stored = (favorite?.labeledFeelings ?? []) as unknown as Array<
+function toSavedMoods(entry?: CollectionAlbum | null): Mood[] {
+  const stored = (entry?.labeledFeelings ?? []) as unknown as Array<
     string | StoredFeeling | null
   >;
 
@@ -64,26 +66,26 @@ function toSavedMoods(favorite?: CollectionFavorite | null): Mood[] {
   });
 }
 
-function draftFromFavorite(favorite?: CollectionFavorite | null) {
+function draftFromCollection(entry?: CollectionAlbum | null) {
   return {
-    feelings: toSavedMoods(favorite),
-    activities: favorite?.activities ?? [],
-    format: normalizeFavoriteFormats(favorite?.format, favorite?.ownership),
-    tags: favorite?.tags ?? [],
+    feelings: toSavedMoods(entry),
+    activities: entry?.activities ?? [],
+    format: normalizeCollectionFormats(entry?.format, entry?.ownership),
+    tags: entry?.tags ?? [],
   };
 }
 
 /**
  * Estado y acciones del asistente de guardado de un álbum: destino, pasos del
- * formulario, edición de un favorito y deshacer. Los componentes del modal solo
+ * formulario, edición de una entrada y deshacer. Los componentes del modal solo
  * pintan lo que devuelve este hook.
  */
 export function useSaveAlbumWizard({
   isOpen,
   album,
-  isFavorite = false,
+  isInCollection = false,
   isPending = false,
-  favoriteData = null,
+  collectionData = null,
   startEditing = false,
   startMovingToCollection = false,
   onSaved,
@@ -107,31 +109,31 @@ export function useSaveAlbumWizard({
   const [step, setStep] = useState(0);
   const [feelings, setFeelings] = useState<Mood[]>([]);
   const [activities, setActivities] = useState<string[]>([]);
-  const [format, setFormat] = useState<FavoriteFormat[]>(["digital"]);
-  const [tags, setTags] = useState<FavoriteTag[]>([]);
+  const [format, setFormat] = useState<CollectionFormat[]>(["digital"]);
+  const [tags, setTags] = useState<CollectionTag[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [savedAsEdit, setSavedAsEdit] = useState(false);
   const [savedDestination, setSavedDestination] =
     useState<AlbumSaveDestination>("collection");
 
   const savedFeelings = useMemo(
-    () => toSavedMoods(favoriteData),
-    [favoriteData],
+    () => toSavedMoods(collectionData),
+    [collectionData],
   );
 
   // Los valores iniciales se leen al abrir. Guardarlos en un ref evita que un
   // cambio del padre después de guardar devuelva el modal al paso de edición.
   const initial = useRef({
-    isFavorite,
+    isInCollection,
     isPending,
-    favoriteData,
+    collectionData,
     startEditing,
     startMovingToCollection,
   });
   initial.current = {
-    isFavorite,
+    isInCollection,
     isPending,
-    favoriteData,
+    collectionData,
     startEditing,
     startMovingToCollection,
   };
@@ -139,14 +141,15 @@ export function useSaveAlbumWizard({
   useEffect(() => {
     if (!isOpen) return;
 
+    let cancelled = false;
     const options = initial.current;
     const editing = Boolean(options.startEditing);
     const draft = editing
-      ? draftFromFavorite(options.favoriteData)
+      ? draftFromCollection(options.collectionData)
       : {
           feelings: [],
           activities: [],
-          format: ["digital"] as FavoriteFormat[],
+          format: ["digital"] as CollectionFormat[],
           tags: [],
         };
 
@@ -161,8 +164,8 @@ export function useSaveAlbumWizard({
 
     if (editing || options.startMovingToCollection) {
       setStage("steps");
-    } else if (options.isFavorite) {
-      setStage("favorite");
+    } else if (options.isInCollection) {
+      setStage("collection");
     } else if (options.isPending) {
       setStage("pending");
     } else {
@@ -170,6 +173,33 @@ export function useSaveAlbumWizard({
     }
 
     clearError();
+
+    // Relleno previo del género derivado de Spotify, editable en el TagEditor.
+    if (!editing) {
+      getAlbumGenres(album.id)
+        .then((genres) => {
+          if (cancelled || genres.length === 0) return;
+
+          setTags((current) => {
+            const hasGenre = current.some(
+              (tag) => normalizeTagCategory(tag.category) === "género",
+            );
+            if (hasGenre) return current;
+
+            return uniqueTags([
+              ...current,
+              ...genres.map((genre) => ({ category: "género", value: genre })),
+            ]);
+          });
+        })
+        .catch(() => {
+          // Sin Spotify se guarda sin género; la persona puede añadirlo.
+        });
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [album.id, clearError, isOpen]);
 
   const chooseCollection = useCallback(() => {
@@ -237,9 +267,9 @@ export function useSaveAlbumWizard({
     onClose();
   }, [onClose, step]);
 
-  /** Pasa del resumen de un favorito existente al formulario de edición. */
+  /** Pasa del resumen de una entrada existente al formulario de edición. */
   const edit = useCallback(() => {
-    const draft = draftFromFavorite(initial.current.favoriteData);
+    const draft = draftFromCollection(initial.current.collectionData);
 
     setFeelings(draft.feelings);
     setActivities(draft.activities);

@@ -1,7 +1,7 @@
-import type { FavoriteFormat } from "@/types/favorites";
+import type { CollectionFormat } from "@/types/collection";
 
 type RecommendationParams = {
-  format: "all" | FavoriteFormat;
+  format: "all" | CollectionFormat;
   moods?: string[];
   activities?: string[];
   tags?: string[];
@@ -27,11 +27,12 @@ export function buildRecommendationHref({
 
 /** Recomendación rápida: solo formato y, opcionalmente, una etiqueta. */
 export function buildQuickRecommendationHref(
-  format: "all" | FavoriteFormat,
+  format: "all" | CollectionFormat,
   tag: string | null,
 ): string {
   const params = new URLSearchParams({ format });
   if (tag) params.append("tag", tag);
   params.set("type", "mood");
+  params.set("quick", "1");
   return `/recommendation?${params.toString()}`;
 }

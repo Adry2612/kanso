@@ -78,7 +78,11 @@ export function reportApiError(
   route: string,
   level: ApiErrorLevel = "error",
 ) {
-  console.error(`[api:${route}]`, error);
+  if (level === "warning") {
+    console.warn(`[api:${route}]`, error);
+  } else {
+    console.error(`[api:${route}]`, error);
+  }
   Sentry.captureException(error, {
     level,
     tags: { layer: "api", route },

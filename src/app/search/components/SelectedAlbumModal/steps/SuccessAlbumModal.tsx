@@ -10,7 +10,7 @@ import ModalShell from "@/components/ModalShell";
 import ArtistBackdrop from "./ArtistBackdrop";
 import type { Album } from "@/types/album";
 import type { Mood } from "@/types/mood";
-import type { AlbumSaveDestination } from "@/types/favorites";
+import type { AlbumSaveDestination } from "@/types/collection";
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -101,8 +101,8 @@ export const SuccessModal = ({
                 isPending
                   ? "savedToListenLater"
                   : isEditing
-                    ? "updatedToFavorites"
-                    : "savedToFavorites",
+                    ? "updatedToCollection"
+                    : "savedToCollection",
               )}
             </p>
           </div>
@@ -126,7 +126,7 @@ export const SuccessModal = ({
           className="modal-action-primary"
           onClick={() =>
             router.push(
-              isPending ? "/favorites?tab=listen-later" : "/favorites",
+              isPending ? "/collection?tab=listen-later" : "/collection",
             )
           }
         >

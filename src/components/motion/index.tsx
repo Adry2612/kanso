@@ -13,7 +13,9 @@ import {
   AnimatePresence,
   motion,
   MotionConfig,
+  useMotionValue,
   useReducedMotion,
+  useSpring,
   type Variants,
 } from "framer-motion";
 import type { ReactNode } from "react";
@@ -129,4 +131,4 @@ export function StaggerItem({
   );
 }
 
-export { AnimatePresence, motion, useReducedMotion };
+export { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring };

@@ -20,7 +20,7 @@ export function usePublicProfile(code: string, { actionError }: Options) {
   const [profile, setProfile] = useState<PublicProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
@@ -36,7 +36,7 @@ export function usePublicProfile(code: string, { actionError }: Options) {
     let active = true;
     setLoading(true);
     setNotFound(false);
-    setError(null);
+    setError(false);
     setSendError(null);
 
     getPublicProfile(code)
@@ -51,12 +51,9 @@ export function usePublicProfile(code: string, { actionError }: Options) {
       })
       .catch((loadFailure) => {
         if (!active) return;
+        console.error("No se pudo cargar el perfil público:", loadFailure);
         setProfile(null);
-        setError(
-          loadFailure instanceof Error
-            ? loadFailure.message
-            : "No se pudo cargar el perfil.",
-        );
+        setError(true);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -78,9 +75,8 @@ export function usePublicProfile(code: string, { actionError }: Options) {
         current ? applyFriendRequestResult(current, result) : current,
       );
     } catch (sendFailure) {
-      setSendError(
-        sendFailure instanceof Error ? sendFailure.message : actionError,
-      );
+      console.error("No se pudo enviar la solicitud:", sendFailure);
+      setSendError(actionError);
       // La relación puede haber cambiado en otra pestaña: refrescarla sin
       // borrar el mensaje de error que acabamos de mostrar.
       void getPublicProfile(code)

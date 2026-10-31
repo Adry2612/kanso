@@ -9,18 +9,20 @@
     "alreadyInCollection": "Ya está en tu colección",
     "inListenLater": "En pendientes",
     "search": "Buscar",
-    "favorites": "Favoritos",
     "history": "Histórico",
     "logout": "Cerrar sesión",
     "login": "Iniciar sesión",
     "welcome": "Bienvenido",
     "previous": "Anterior",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "collection": "Colección",
+    "sessionInvalidTitle": "No pudimos validar tu sesión",
+    "sessionInvalidDescription": "Puede que la sesión haya caducado o que no haya conexión. Vuelve a iniciar sesión para continuar.",
+    "sessionSignIn": "Iniciar sesión de nuevo"
   },
   "header": {
     "search": "Buscar",
     "artists": "Artistas",
-    "favorites": "Favoritos",
     "history": "Histórico",
     "releases": "Novedades",
     "logout": "Cerrar sesión",
@@ -36,9 +38,10 @@
     "closeMenu": "Cerrar menú",
     "mainNav": "Navegación principal",
     "sidebarTagline": "Tu colección, a tu ritmo.",
-    "sidebarSubtitle": "Guarda discos y vuelve a tus momentos favoritos.",
+    "sidebarSubtitle": "Guarda discos y construye tu colección a tu ritmo.",
     "friends": "Amigos",
-    "profileSettings": "Ajustes de perfil"
+    "profileSettings": "Ajustes de perfil",
+    "collection": "Colección"
   },
   "settings": {
     "back": "Volver",
@@ -89,7 +92,7 @@
   },
   "search": {
     "title": "Encuentra nueva música",
-    "subtitle": "Busca tus discos y artistas favoritos para empezar a construir tu colección.",
+    "subtitle": "Busca discos y artistas para empezar a construir tu colección.",
     "placeholder": "Buscar álbumes, artistas...",
     "emptySearchPrompt": "Busca por título o artista. También puedes explorar las emociones y etiquetas de tu colección.",
     "noAlbumsFound": "No encontramos álbumes con ese título o artista. Prueba con otra búsqueda.",
@@ -107,8 +110,6 @@
     "artistsTitle": "Artistas",
     "album": "Álbum",
     "artist": "Artista",
-    "addToFavorites": "Añadir a favoritos",
-    "removeFromFavorites": "Quitar de favoritos",
     "viewDetails": "Ver detalles",
     "select": "Seleccionar",
     "noResultsTitle": "No encontramos nada para esa búsqueda",
@@ -117,31 +118,9 @@
     "tryCollection": "Explora tu colección",
     "communityTitle": "Búsquedas de la comunidad",
     "communityAlbumsTitle": "Añadidos por la comunidad",
-    "communityAlbumsEmpty": "Todavía no hay discos añadidos. Sé el primero en compartir el tuyo."
-  },
-  "favorites": {
-    "title": "Mis favoritos",
-    "noFavorites": "No tienes álbumes favoritos todavía",
-    "loading": "Cargando favoritos...",
-    "error": "Error al cargar favoritos",
-    "errorDescription": "No pudimos recuperar tu colección. Inténtalo de nuevo.",
-    "addFirst": "Añade tu primer álbum favorito desde la búsqueda",
-    "sort": "Ordenar",
-    "filter": "Filtrar",
-    "collectionTab": "Colección",
-    "listenLaterTab": "Por escuchar",
-    "listenLaterTitle": "Por escuchar",
-    "noListenLater": "No tienes discos pendientes",
-    "listenLaterEmptyDescription": "Busca un disco y elige «Por escuchar» para guardarlo aquí.",
-    "listenLaterLoading": "Cargando pendientes...",
-    "listenLaterError": "No pudimos cargar tus pendientes.",
-    "listenLaterAddFirst": "Buscar un disco",
-    "searchPlaceholder": "Buscar por título o artista...",
-    "clearSearch": "Limpiar búsqueda",
-    "clearFilters": "Limpiar filtros",
-    "allMoods": "Todas",
-    "noMatches": "No hay discos que coincidan",
-    "noMatchesDescription": "Prueba con otro título o cambia los filtros."
+    "communityAlbumsEmpty": "Todavía no hay discos añadidos. Sé el primero en compartir el tuyo.",
+    "addToCollection": "Añadir a mi colección",
+    "removeFromCollection": "Quitar de mi colección"
   },
   "tags": {
     "title": "Idioma y género",
@@ -192,11 +171,11 @@
   "album": {
     "tracklist": "Lista de canciones",
     "noTracks": "No hay canciones disponibles",
+    "viewCover": "Ampliar portada",
+    "closeCover": "Cerrar portada",
     "loading": "Cargando álbum...",
     "error": "Error al cargar el álbum",
     "errorDescription": "Puede que el disco no esté disponible ahora mismo. Vuelve a intentarlo.",
-    "addToFavorites": "Añadir a favoritos",
-    "removeFromFavorites": "Quitar de favoritos",
     "track": "Pista",
     "duration": "Duración",
     "artist": "Artista",
@@ -209,7 +188,9 @@
     "formatDigital": "Digital",
     "formatVinyl": "Vinilo",
     "formatCd": "CD",
-    "formatCassette": "Cassette"
+    "formatCassette": "Cassette",
+    "addToCollection": "Añadir a mi colección",
+    "removeFromCollection": "Quitar de mi colección"
   },
   "modal": {
     "close": "Cerrar",
@@ -219,11 +200,8 @@
     "delete": "Eliminar",
     "edit": "Editar",
     "selectMood": "¿Cómo te hace sentir este disco?",
-    "alreadyFavorite": "Este álbum ya está en tus favoritos",
-    "confirmRemove": "¿Estás seguro de que quieres quitar este álbum de favoritos?",
+    "confirmRemove": "¿Estás seguro de que quieres quitar este álbum de tu colección?",
     "success": "Disco Añadido Correctamente",
-    "savedToFavorites": "Tu nuevo disco ahora forma parte de tu colección.",
-    "removedFromFavorites": "Álbum eliminado de favoritos",
     "undo": "Deshacer",
     "viewCollection": "Ver mi colección",
     "addAnother": "Añadir otro disco",
@@ -236,7 +214,6 @@
     "saveChanges": "Guardar cambios",
     "albumUpdated": "Álbum actualizado",
     "updated": "Álbum actualizado correctamente",
-    "updatedToFavorites": "Los cambios se han guardado en tu colección.",
     "destinationEyebrow": "Nuevo disco",
     "destinationTitle": "¿Dónde quieres guardarlo?",
     "destinationDescription": "Puedes añadirlo a tu colección con emociones y formato, o dejarlo en pendientes para escucharlo más adelante.",
@@ -284,9 +261,34 @@
         "jazz": "Jazz",
         "electronic": "Electrónica",
         "classical": "Clásica",
-        "hiphop": "Hip-Hop"
-      }
-    }
+        "hiphop": "Hip-Hop",
+        "metal": "Metal",
+        "randb": "R&B",
+        "indie": "Indie",
+        "folk": "Folk",
+        "reggaeton": "Reggaetón",
+        "soul": "Soul",
+        "punk": "Punk",
+        "country": "Country",
+        "ambient": "Ambient",
+        "blues": "Blues"
+      },
+      "groupTitle": "Agrupar por",
+      "group": {
+        "none": "Sin agrupar",
+        "date": "Fecha de guardado",
+        "artist": "Artista",
+        "letter": "Letra del título",
+        "year": "Año de lanzamiento"
+      },
+      "statusTitle": "Estado",
+      "incomplete": "Solo incompletos",
+      "incompleteDescription": "Muestra los álbumes a los que les falta alguna emoción o actividad."
+    },
+    "alreadyInCollection": "Este álbum ya está en tu colección",
+    "savedToCollection": "Tu nuevo disco ahora forma parte de tu colección.",
+    "removedFromCollection": "Álbum eliminado de tu colección",
+    "updatedToCollection": "Los cambios se han guardado en tu colección."
   },
   "init": {
     "welcome": "Bienvenido a Kanso",
@@ -320,7 +322,6 @@
     "based": "Basado en tu estado de ánimo",
     "listenOn": "Escuchar en",
     "spotify": "Spotify",
-    "saveToFavorites": "Guardar en favoritos",
     "getAnother": "Obtener otra recomendación",
     "noRecommendation": "No se encontró ninguna recomendación",
     "empty": {
@@ -329,8 +330,54 @@
       "description": "Ningún álbum de tu colección encaja con las emociones que has elegido. Añade uno que te haga sentir así y vuelve a intentarlo.",
       "cta": "Añadir un álbum a mi colección",
       "back": "Volver a elegir",
-      "errorTitle": "No hemos podido cargar tu recomendación"
+      "errorTitle": "No hemos podido cargar tu recomendación",
+      "errorDescription": "Puede ser un problema temporal. Inténtalo de nuevo.",
+      "noCollectionEyebrow": "Empieza tu colección",
+      "noCollectionTitle": "Tu colección está vacía",
+      "noCollectionDescription": "Añade tu primer disco y podremos recomendarte algo que encaje contigo.",
+      "noCollectionCta": "Añadir mi primer disco"
+    },
+    "saveToCollection": "Guardar en mi colección",
+    "recentEmpty": {
+      "title": "Todavía no tienes recomendaciones",
+      "description": "Busca álbumes para empezar tu colección o elige un momento para recibir una.",
+      "cta": "Explorar discos",
+      "noCollectionTitle": "Añade tu primer disco",
+      "noCollectionDescription": "Todavía no tienes colección. Busca un álbum y guárdalo para empezar a recibir recomendaciones.",
+      "noCollectionCta": "Añadir mi primer disco"
     }
+  },
+  "recommendationExplain": {
+    "title": "Por qué este disco",
+    "filters": "Filtros aplicados",
+    "mood": "Emoción",
+    "activity": "Actividad",
+    "format": "Formato",
+    "candidates": "Candidatos",
+    "collection": "Colección",
+    "afterFilters": "Tras filtros",
+    "selected": "Elegido",
+    "matchingMoods": "Emociones coincidentes",
+    "score": {
+      "labelOverlap": "Coincidencia de emociones",
+      "baseScore": "Base (coincidencia)",
+      "recencyPenalty": "Penalización por recencia",
+      "feedbackBoost": "Ajuste por valoración",
+      "finalScore": "Puntuación final"
+    },
+    "alternatives": "Alternativas",
+    "formats": {
+      "all": "Toda la colección",
+      "digital": "Digital",
+      "vinyl": "Vinilo",
+      "cd": "CD",
+      "cassette": "Casete"
+    },
+    "formula": "Fórmula",
+    "formulaMatch": "coincidencia",
+    "formulaRecency": "recencia",
+    "formulaFeedback": "valoración",
+    "scoreHelp": "La puntuación final es relativa: sirve para ordenar candidatos, no es un porcentaje."
   },
   "moods": {
     "joy": "Alegría",
@@ -382,12 +429,9 @@
     "open": "Recomendación rápida",
     "title": "Recomendación rápida",
     "subtitle": "Solo dime si la quieres en un formato físico o de una etiqueta concreta.",
-    "anyFormat": "Cualquiera",
-    "vinyl": "Vinilos",
-    "cd": "CDs",
-    "cassette": "Cassettes",
     "tagsLabel": "De una etiqueta",
-    "cta": "Recomiéndame un disco"
+    "cta": "Recomiéndame un disco",
+    "filtersLabel": "Filtros aplicados"
   },
   "releases": {
     "eyebrow": "Novedades",
@@ -579,5 +623,81 @@
   },
   "toast": {
     "close": "Cerrar notificación"
+  },
+  "collection": {
+    "title": "Mi colección",
+    "eyebrow": "Tu archivo personal",
+    "subtitle": "Todos los discos que has guardado, con sus emociones, formatos y etiquetas.",
+    "noCollection": "Todavía no tienes álbumes en tu colección",
+    "noCollectionDescription": "Explora la búsqueda y guarda tu primer disco para empezar a construirla.",
+    "exploreCollection": "Explorar discos",
+    "loading": "Cargando colección...",
+    "error": "Error al cargar la colección",
+    "errorDescription": "No pudimos recuperar tu colección. Inténtalo de nuevo.",
+    "sort": "Ordenar",
+    "filter": "Filtrar",
+    "collectionTab": "Colección",
+    "listenLaterTab": "Por escuchar",
+    "listenLaterTitle": "Por escuchar",
+    "noListenLater": "No tienes discos pendientes",
+    "listenLaterEmptyDescription": "Busca un disco y elige «Por escuchar» para guardarlo aquí.",
+    "listenLaterLoading": "Cargando pendientes...",
+    "listenLaterError": "No pudimos cargar tus pendientes.",
+    "listenLaterAddFirst": "Buscar un disco",
+    "searchPlaceholder": "Buscar por título o artista...",
+    "clearSearch": "Limpiar búsqueda",
+    "clearFilters": "Limpiar filtros",
+    "allMoods": "Todas",
+    "activeMoodFilter": "filtro activo",
+    "noMatches": "No hay discos que coincidan",
+    "noMatchesDescription": "Prueba con otro título o cambia los filtros.",
+    "viewList": "Ver como lista",
+    "viewGrid": "Ver como cuadrícula",
+    "listen": "Escuchar en Spotify",
+    "unknownArtist": "Artista desconocido",
+    "stats": {
+      "total": "álbumes",
+      "totalOne": "álbum",
+      "artists": "artistas",
+      "artistsOne": "artista",
+      "moods": "emociones",
+      "moodsOne": "emoción"
+    },
+    "formats": {
+      "digital": "Digital",
+      "cd": "CD",
+      "cassette": "Cassette",
+      "vinyl": "Vinilo"
+    },
+    "groupBy": {
+      "label": "Agrupado por",
+      "none": "Sin agrupar",
+      "date": "Fecha de guardado",
+      "artist": "Artista",
+      "letter": "Letra del título",
+      "year": "Año de lanzamiento"
+    },
+    "incomplete": {
+      "both": "Tienes {count} álbumes incompletos",
+      "bothOne": "Tienes 1 álbum incompleto",
+      "moods": "Tienes {count} álbumes sin emociones",
+      "moodsOne": "Tienes 1 álbum sin emociones",
+      "activities": "Tienes {count} álbumes sin actividades",
+      "activitiesOne": "Tienes 1 álbum sin actividades",
+      "detailBoth": "{moods} sin emociones y {activities} sin actividades",
+      "review": "Revisar",
+      "dismiss": "Ocultar aviso",
+      "filterChip": "Incompletos"
+    },
+    "unknownYear": "Sin año",
+    "removeFilter": "Quitar filtro",
+    "discoverPending": "Sorpréndeme"
+  },
+  "formats": {
+    "all": "Toda la colección",
+    "digital": "Digital",
+    "vinyl": "Vinilo",
+    "cd": "CD",
+    "cassette": "Casete"
   }
 }

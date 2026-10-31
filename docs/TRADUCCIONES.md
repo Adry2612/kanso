@@ -86,14 +86,14 @@ Los archivos de traducción están organizados en los siguientes namespaces:
 Textos comunes usados en toda la aplicación:
 
 - `loading`, `error`, `noResults`
-- `search`, `favorites`, `history`
+- `search`, `collection`, `history`
 - `login`, `logout`, `welcome`
 
 ### `header`
 
 Textos del componente Header:
 
-- `search`, `favorites`, `history`, `logout`
+- `search`, `collection`, `history`, `logout`
 
 ### `search`
 
@@ -103,12 +103,13 @@ Textos de la página de búsqueda:
 - `resultsTitle`, `select`, `loading`
 - `album`, `artist`
 
-### `favorites`
+### `collection`
 
-Textos de la página de favoritos:
+Textos de la página de colección:
 
-- `title`, `noFavorites`, `loading`, `error`
-- `addFirst`
+- `title`, `eyebrow`, `subtitle`, `noCollection`, `loading`, `error`
+- `stats`, `groupBy`, `incomplete`, `unknownYear`
+- `viewList`, `viewGrid`, `formats`, `discoverPending`
 
 ### `history`
 
@@ -122,7 +123,7 @@ Textos del histórico de recomendaciones:
 Textos de la página de álbum:
 
 - `tracklist`, `noTracks`, `loading`, `error`
-- `addToFavorites`, `removeFromFavorites`
+- `addToCollection`, `removeFromCollection`
 - `track`, `duration`, `artist`, `releaseDate`
 
 ### `modal`
@@ -130,7 +131,7 @@ Textos de la página de álbum:
 Textos de modales:
 
 - `close`, `confirm`, `cancel`, `save`
-- `selectMood`, `success`, `savedToFavorites`
+- `selectMood`, `success`, `savedToCollection`
 - `undo`, `viewCollection`, `addAnother`
 - `relatedEmotions`, `listenOnSpotify`, `editEmotions`
 
@@ -153,7 +154,32 @@ Textos de login:
 Textos de recomendaciones:
 
 - `title`, `based`, `listenOn`, `spotify`
-- `saveToFavorites`, `getAnother`
+- `saveToCollection`, `getAnother`
+
+### `recommendationExplain`
+
+Textos de la herramienta de desarrollo «Por qué este disco», visible solo con `NEXT_PUBLIC_RECOMMENDATION_DEBUG=true`:
+
+- `title`, `filters`, `mood`, `activity`, `format`
+- `candidates`, `collection`, `afterFilters`
+- `selected`, `matchingMoods`
+- `score.labelOverlap`, `score.baseScore`
+- `score.recencyPenalty`, `score.feedbackBoost`, `score.finalScore`
+- `formula`, `formulaMatch`, `formulaRecency`, `formulaFeedback`, `scoreHelp`
+- `alternatives`, `formats.*`
+
+### `formats`
+
+Etiquetas únicas de formato para los selectores:
+
+- `all`, `digital`, `vinyl`, `cd`, `cassette`
+
+### `quickRecommendation`
+
+Textos de la recomendación rápida:
+
+- `open`, `title`, `subtitle`, `cta`
+- `tagsLabel`, `filtersLabel`
 
 ## 🔄 Cambiar de Idioma
 
@@ -221,7 +247,7 @@ Todas las páginas principales están completamente traducidas:
 
 - ✅ Header (navegación)
 - ✅ Página de búsqueda
-- ✅ Página de favoritos
+- ✅ Página de colección
 - ✅ Página de histórico de recomendaciones
 - ✅ Página de detalle de álbum
 - ✅ Componente AlbumTracklist
@@ -232,8 +258,8 @@ Todas las páginas principales están completamente traducidas:
 
 Las URLs ahora incluyen el prefijo de locale cuando es necesario:
 
-- Español (default): `/search`, `/favorites`, `/albums/123`
-- Inglés: `/en/search`, `/en/favorites`, `/en/albums/123`
+- Español (default): `/search`, `/collection`, `/albums/123`
+- Inglés: `/en/search`, `/en/collection`, `/en/albums/123`
 
 ## 🛠️ Buenas Prácticas
 

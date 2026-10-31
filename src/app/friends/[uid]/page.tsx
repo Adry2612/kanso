@@ -49,7 +49,7 @@ export default function SharedFriendProfilePage() {
     reload,
     selectSection,
     showMore,
-  } = useFriendLibrary(uid, { errorMessage: t("loadError") });
+  } = useFriendLibrary(uid);
 
   if (authLoading || (loading && !data)) {
     return (
@@ -165,7 +165,7 @@ export default function SharedFriendProfilePage() {
         <ErrorState
           className="mt-8"
           title={t("loadError")}
-          description={error ?? t("loadErrorDescription")}
+          description={t("loadErrorDescription")}
           onRetry={() => void reload()}
           retryLabel={t("profile.retry")}
         />
@@ -376,7 +376,7 @@ export default function SharedFriendProfilePage() {
                     </div>
                   ))
                 ) : (
-                  <p className="mt-5 rounded-xl border border-dashed border-[var(--kanso-line)] p-5 text-sm text-[var(--kanso-muted)]">
+                  <p className="kanso-empty mt-5 rounded-xl border border-dashed border-[var(--kanso-line)] p-5 text-sm text-[var(--kanso-muted)]">
                     {t("profile.recommendationsEmpty")}
                   </p>
                 ))}
@@ -391,7 +391,7 @@ export default function SharedFriendProfilePage() {
                       ))}
                   </div>
                 ) : (
-                  <p className="mt-5 rounded-xl border border-dashed border-[var(--kanso-line)] p-5 text-sm text-[var(--kanso-muted)]">
+                  <p className="kanso-empty mt-5 rounded-xl border border-dashed border-[var(--kanso-line)] p-5 text-sm text-[var(--kanso-muted)]">
                     {t("profile.collectionEmpty")}
                   </p>
                 ))}
@@ -410,7 +410,7 @@ export default function SharedFriendProfilePage() {
                       ))}
                   </div>
                 ) : (
-                  <p className="mt-5 rounded-xl border border-dashed border-[var(--kanso-line)] p-5 text-sm text-[var(--kanso-muted)]">
+                  <p className="kanso-empty mt-5 rounded-xl border border-dashed border-[var(--kanso-line)] p-5 text-sm text-[var(--kanso-muted)]">
                     {t("profile.artistsEmpty")}
                   </p>
                 ))}

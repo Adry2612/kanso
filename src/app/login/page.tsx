@@ -43,7 +43,7 @@ function LoginForm() {
               priority
               className="h-7 w-7 max-w-none shrink-0"
             />
-            <span className="text-lg">Kanso</span>
+            <span className="text-lg">kanso.</span>
           </Link>
           <p className="mt-20 max-w-md text-5xl font-semibold leading-[.98] tracking-[-.065em]">
             Tu música, tus momentos,{" "}
@@ -80,7 +80,7 @@ function LoginForm() {
             <p className="public-muted mt-3 text-sm leading-6">
               {isRegisterMode
                 ? "Empieza a construir una colección que se parezca a ti."
-                : "Vuelve a tus favoritos y recomendaciones."}
+                : "Vuelve a tu colección y recomendaciones."}
             </p>
           </div>
           {error && (

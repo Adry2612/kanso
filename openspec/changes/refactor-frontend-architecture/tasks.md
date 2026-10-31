@@ -1,5 +1,7 @@
 # Tasks
 
+> Las tareas 7.1, 7.2, 7.4 y 7.7 quedan absorbidas por el cambio `collection-experience`. No se marcan aquí: su seguimiento vive en ese cambio.
+
 ## 1. Guardarraíles, estructura y tipos base
 
 > Bloqueos confirmados: `report-api-errors` sigue activo y bloquea las tareas que modifican `src/app/api/**/route.ts` (5.4, 6.2, 7.2, 7.4). `fix-mobile-viewport` ya está archivado: Header, ModalShell y los modales (4.4, 4.5, 8.4) están completados.

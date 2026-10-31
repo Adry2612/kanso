@@ -35,6 +35,7 @@
 
   /* Ritmo exterior compartido por todas las pantallas privadas. */
   --page-gutter: clamp(24px, 4vw, 62px);
+  --page-max: 1440px;
   --page-top: 32px;
   --page-bottom: 48px;
 }
@@ -48,18 +49,7 @@
 
 body {
   min-height: 100dvh;
-  background:
-    radial-gradient(
-      circle at 76% 8%,
-      rgba(67, 148, 83, 0.19),
-      transparent 30rem
-    ),
-    radial-gradient(
-      circle at 12% 100%,
-      rgba(30, 93, 58, 0.15),
-      transparent 28rem
-    ),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
 }
@@ -68,10 +58,45 @@ button:active {
   transform: scale(0.98);
 }
 
+/* Afordancia de interacción: Tailwind 4 no añade puntero a los botones. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 .kanso-main {
-  width: min(100%, 1440px);
+  position: relative;
+  z-index: 1;
+  width: min(100%, var(--page-max));
   margin: 0 auto;
   padding: var(--page-top) var(--page-gutter) var(--page-bottom);
+}
+
+/* Tramos de ancho para monitores ultrawide: el contenido gana espacio sin
+   estirar los textos, que conservan sus medidas máximas. */
+@media (min-width: 1600px) {
+  :root {
+    --page-max: 1600px;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --page-max: 2080px;
+  }
+}
+
+@media (min-width: 2400px) {
+  :root {
+    --page-max: 2400px;
+    --page-gutter: clamp(32px, 5vw, 88px);
+  }
 }
 
 /* Inicio es la pantalla de entrada: en escritorio respira un poco más. */
@@ -92,6 +117,8 @@ button:active {
 }
 
 .app-content {
+  position: relative;
+  z-index: 1;
   margin-left: 230px;
   transition: margin-left 0.25s ease;
 }
@@ -377,13 +404,13 @@ html.scroll-locked body {
     min-height: 3.25rem;
   }
 
-  .save-album-modal .mood-carousel .option-carousel__rail > button,
-  .save-album-modal .activity-carousel .option-carousel__rail > button {
+  .save-album-modal .option-selector--mood .option-selector__option,
+  .save-album-modal .option-selector--activity .option-selector__option {
     min-height: 3.25rem;
     font-size: 0.8125rem;
   }
 
-  .save-album-modal .option-carousel__control {
+  .save-album-modal .option-selector__control {
     width: 2.5rem;
     height: 2.5rem;
   }
@@ -499,6 +526,34 @@ html.scroll-locked body {
   box-shadow: 0 16px 35px rgba(0, 0, 0, 0.28);
 }
 
+/* Rejilla de álbumes con ancho de tarjeta estable: en móvil dos columnas y,
+   desde tablet, columnas automáticas que no pasan de 320 px. */
+.kanso-album-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .kanso-album-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 316px));
+    justify-content: center;
+  }
+
+  /* El historial empieza a la izquierda; la colección conserva el centrado. */
+  .kanso-album-grid--start {
+    justify-content: start;
+  }
+}
+
+/* Estados vacíos: ocupan el ancho disponible con un máximo legible y se centran.
+   El ancho máximo concreto lo aporta cada pantalla con utilidades `max-w-*`. */
+.kanso-empty {
+  margin-inline: auto;
+  width: 100%;
+  text-align: center;
+}
+
 .kanso-input {
   border: 1px solid var(--kanso-line);
   border-radius: 11px;
@@ -555,18 +610,7 @@ html.scroll-locked body {
 
 .theme-light body,
 body.theme-light {
-  background:
-    radial-gradient(
-      circle at 80% 0%,
-      rgba(155, 231, 165, 0.34),
-      transparent 30rem
-    ),
-    radial-gradient(
-      circle at 10% 100%,
-      rgba(214, 242, 141, 0.22),
-      transparent 28rem
-    ),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
 }
 
@@ -695,7 +739,7 @@ body.theme-light {
 .public-page {
   min-height: 100dvh;
   overflow: hidden;
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
 }
 
@@ -1197,49 +1241,212 @@ body.theme-light {
    conserva la cabecera vertical del álbum y los tres pasos.
    ========================================================================== */
 
-/* Carrusel de opciones del asistente (emociones y actividades). */
-.option-carousel {
+/* ==========================================================================
+   Sistema compartido de selectores
+   Emoción, actividad y formato usan el mismo botón, carril y rejilla.
+   ========================================================================== */
+
+.option-selector {
   min-width: 0;
 }
 
-.option-carousel__rail {
-  display: flex;
+.option-selector__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .option-selector__grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .option-selector__grid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.option-selector__rail-wrap {
+  min-width: 0;
+}
+
+.option-selector__rail {
+  width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x proximity;
-  scroll-padding-inline: 0.125rem;
+  scroll-padding-inline: 0.5rem;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  padding: 0.125rem;
-  margin: -0.125rem;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-.option-carousel__rail::-webkit-scrollbar {
+.option-selector__rail::-webkit-scrollbar {
   display: none;
 }
 
-.option-carousel__rail > * {
+.option-selector__rail-track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding-inline: 0.5rem;
+}
+
+.option-selector__rail-track--stacked {
+  padding-block: 1.75rem 0.75rem;
+}
+
+.option-selector__snap {
   flex: 0 0 auto;
   scroll-snap-align: start;
 }
 
-.mood-carousel .option-carousel__rail > * {
+.option-selector--mood .option-selector__snap {
   flex-basis: 9.75rem;
 }
 
-.activity-carousel .option-carousel__rail > * {
+.option-selector--activity .option-selector__snap {
   flex-basis: 11.5rem;
 }
 
-.option-carousel__controls {
+.option-selector__option {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--kanso-line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface-1) 50%, transparent);
+  color: var(--foreground);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.option-selector__option:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--kanso-mint) 60%, transparent);
+}
+
+.option-selector__option[data-selected] {
+  border-color: var(--kanso-mint);
+  background: var(--kanso-mint);
+  color: var(--background);
+}
+
+.option-selector__option:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--kanso-mint) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.option-selector__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.option-selector__option--tile {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.option-selector__grid .option-selector__option {
+  height: 100%;
+}
+
+.option-selector__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-selector__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.option-selector__option--stacked {
+  width: 6.25rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0.25rem 0.5rem;
+  color: var(--kanso-muted);
+  text-align: center;
+}
+
+.option-selector__option--stacked[data-selected] {
+  background: transparent;
+  color: var(--foreground);
+}
+
+.option-selector__option--stacked[data-active] {
+  color: var(--foreground);
+}
+
+.option-selector__option--stacked .medallion {
+  transform: scale(0.86);
+  opacity: 0.8;
+}
+
+.option-selector__option--stacked[data-active] .medallion {
+  transform: scale(1.08);
+  opacity: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 18px 34px -22px color-mix(in srgb, var(--kanso-mint) 75%, transparent);
+}
+
+.option-selector__option--stacked .option-selector__label {
+  display: -webkit-box;
+  min-height: 2.3em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.option-selector__option--stacked:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .option-selector__option--stacked:hover .medallion {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+
+  .option-selector__option--stacked:hover {
+    color: var(--foreground);
+  }
+}
+
+.option-selector__controls {
   display: flex;
   justify-content: center;
   gap: 0.375rem;
   margin-top: 0.5rem;
 }
 
-.option-carousel__control {
+.option-selector__control {
   display: inline-flex;
   width: 1.9rem;
   height: 1.9rem;
@@ -1255,22 +1462,22 @@ body.theme-light {
     opacity 0.2s ease;
 }
 
-.option-carousel__control:hover:not(:disabled) {
+.option-selector__control:hover:not(:disabled) {
   border-color: color-mix(in srgb, var(--kanso-mint) 60%, transparent);
   background: color-mix(in srgb, var(--kanso-mint) 14%, transparent);
 }
 
-.option-carousel__control:disabled {
+.option-selector__control:disabled {
   cursor: not-allowed;
   opacity: 0.35;
 }
 
 @media (max-width: 520px) {
-  .mood-carousel .option-carousel__rail > * {
+  .option-selector--mood .option-selector__snap {
     flex-basis: 9rem;
   }
 
-  .activity-carousel .option-carousel__rail > * {
+  .option-selector--activity .option-selector__snap {
     flex-basis: 10.5rem;
   }
 }
@@ -1327,8 +1534,20 @@ body::after {
   }
 }
 
-.theme-light body::before {
+body.theme-light::before {
   opacity: 0.7;
+  background:
+    radial-gradient(
+      38% 44% at 22% 18%,
+      rgba(155, 231, 165, 0.34),
+      transparent 70%
+    ),
+    radial-gradient(
+      30% 36% at 82% 12%,
+      rgba(214, 242, 141, 0.26),
+      transparent 72%
+    ),
+    radial-gradient(34% 40% at 78% 88%, rgba(30, 93, 58, 0.12), transparent 70%);
 }
 
 /* Material surfaces -------------------------------------------------------- */
@@ -1641,103 +1860,6 @@ body::after {
   min-width: 0;
 }
 
-.feelings-rail {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 1rem;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.feelings-rail::-webkit-scrollbar {
-  display: none;
-}
-
-.feelings-rail__track {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.4rem;
-  padding: 1.75rem 0.5rem 0.75rem;
-}
-
-.feelings-rail__snap {
-  scroll-snap-align: center;
-}
-
-.feeling-option {
-  position: relative;
-  display: flex;
-  width: 6.25rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.55rem;
-  border: 0;
-  border-radius: var(--radius-md);
-  background: transparent;
-  padding: 0.4rem 0.25rem 0.5rem;
-  color: var(--kanso-muted);
-  cursor: pointer;
-  transition:
-    transform 0.25s var(--ease-out),
-    color 0.2s ease;
-}
-
-.feeling-option .medallion {
-  transform: scale(0.86);
-  opacity: 0.8;
-}
-
-.feeling-option[data-active] {
-  color: var(--foreground);
-}
-
-.feeling-option[data-active] .medallion {
-  transform: scale(1.08);
-  opacity: 1;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 18px 34px -22px color-mix(in srgb, var(--kanso-mint) 75%, transparent);
-}
-
-.feeling-option[data-selected] {
-  color: var(--kanso-mint);
-}
-
-.feeling-option__label {
-  display: -webkit-box;
-  min-height: 2.3em;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.15;
-  text-align: center;
-  text-wrap: balance;
-  /* Reserva dos líneas siempre: los nombres cortos y largos comparten la misma
-     línea base, así los medallones no se desalinean. */
-}
-
-.feeling-option:active {
-  transform: scale(0.97);
-}
-
-@media (hover: hover) {
-  .feeling-option:hover .medallion {
-    transform: scale(1.02);
-    opacity: 1;
-  }
-
-  .feeling-option:hover {
-    color: var(--foreground);
-  }
-}
-
 /* Pie del carrusel: las flechas van centradas bajo el carril, sin tapar las
    opciones de los extremos. */
 .feelings-carousel__footer {
@@ -1878,7 +2000,7 @@ body::after {
 
 @media (prefers-reduced-motion: reduce) {
   .medallion,
-  .feeling-option,
+  .option-selector__option,
   .feelings-carousel__control {
     transition: none;
   }
@@ -1888,4 +2010,224 @@ body::after {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--kanso-line-strong) transparent;
+}
+
+/* ==========================================================================
+   Visor de portada
+   Portada ampliada sobre fondo oscuro, con paralaje sutil al hover y un único
+   control de cierre. El diálogo no captura clics fuera de la imagen: esos clics
+   llegan al fondo y cierran el visor.
+   ========================================================================== */
+
+.cover-zoom-trigger:not(:disabled) {
+  cursor: zoom-in;
+}
+
+.cover-zoom-trigger:focus-visible {
+  outline: 2px solid var(--kanso-mint);
+  outline-offset: 3px;
+}
+
+/* La ficha invita a ampliar con un brillo, no con un zoom que pueda leerse
+   como un giro o como el inicio de un arrastre. */
+.cover-ficha {
+  border-radius: var(--radius-md);
+  transition: box-shadow 0.25s ease;
+}
+
+.cover-ficha:hover,
+.cover-ficha:focus-within {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--kanso-mint) 28%, transparent),
+    0 20px 55px -28px color-mix(in srgb, var(--kanso-mint) 42%, transparent);
+}
+
+.cover-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+}
+
+.cover-viewer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 8, 5, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: zoom-out;
+}
+
+.cover-viewer-dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: max(1.25rem, env(safe-area-inset-top))
+    max(1.25rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom))
+    max(1.25rem, env(safe-area-inset-left));
+  pointer-events: none;
+}
+
+.cover-viewer-frame {
+  position: relative;
+  max-width: min(92vw, 1100px);
+  max-height: 100%;
+  border-radius: var(--radius-md);
+  --cover-glow-x: 50%;
+  --cover-glow-y: 35%;
+  cursor: default;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cover-viewer-frame::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--cover-glow-x) var(--cover-glow-y),
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.06) 34%,
+    transparent 64%
+  );
+  content: "";
+  opacity: 0.35;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.cover-viewer-frame:hover::after {
+  opacity: 0.6;
+}
+
+.cover-viewer-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(92vw, 1100px);
+  max-height: calc(100dvh - 5rem);
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  box-shadow: 0 32px 90px -32px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+  transition: box-shadow 0.18s ease;
+}
+
+.cover-viewer-frame:hover .cover-viewer-image {
+  box-shadow:
+    0 32px 90px -32px rgba(0, 0, 0, 0.95),
+    0 0 38px color-mix(in srgb, var(--kanso-mint) 22%, transparent);
+}
+
+.cover-viewer-close {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 2;
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  pointer-events: auto;
+  transition: background 0.2s ease;
+}
+
+.cover-viewer-close:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.cover-viewer-close:focus-visible {
+  outline: 2px solid var(--kanso-mint);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-ficha,
+  .cover-viewer-frame::after,
+  .cover-viewer-image {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Pila de portadas
+   Varias portadas en abanico; una se adelanta en ciclo, como al sacar un disco
+   de la pila. Es decorativo: la carga la anuncia el contenedor que lo envuelve.
+   ========================================================================== */
+
+.vinyl-fan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--kanso-line);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in srgb, var(--kanso-mint) 8%, transparent),
+      transparent 70%
+    ),
+    color-mix(in srgb, var(--surface-2) 88%, transparent);
+}
+
+.vinyl-fan-stack {
+  position: relative;
+  width: 62%;
+  aspect-ratio: 1;
+}
+
+.vinyl-fan-cover {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  display: block;
+  width: 54%;
+  aspect-ratio: 1;
+  margin-left: -27%;
+  border: 1px solid var(--kanso-line-strong);
+  border-radius: 6px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--kanso-mint) 26%, var(--surface-1)),
+    var(--surface-2)
+  );
+  box-shadow: 0 14px 26px -16px rgba(0, 0, 0, 0.8);
+  transform-origin: 50% 100%;
+}
+
+.vinyl-fan-disc {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 56%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    var(--kanso-mint) 0 8%,
+    #0c120e 10% 46%,
+    #1a221b 48% 62%,
+    #0c120e 64% 100%
+  );
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-fan-cover {
+    transition: none;
+  }
 }

@@ -1,12 +1,11 @@
-/* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify */
 "use client";
 
-import { Music2 } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
 import { openSpotify } from "@/lib/spotifyUtils";
 import type { SharedCollectionAlbum } from "@/types/friends";
 import { getMood } from "@/constants/moods";
 import { getActivity } from "@/constants/activities";
+import AlbumCover from "@/components/AlbumCover";
 import InlineEmoji from "@/components/InlineEmoji";
 
 interface SharedAlbumCardProps {
@@ -30,21 +29,7 @@ export default function SharedAlbumCard({ item }: SharedAlbumCardProps) {
 
   return (
     <article className="kanso-card flex h-full w-full flex-col overflow-hidden">
-      <div className="relative aspect-square overflow-hidden rounded-[var(--radius-xs)] bg-[var(--surface-3)]">
-        {album.images[0]?.url ? (
-          <img
-            loading="lazy"
-            decoding="async"
-            src={album.images[0].url}
-            alt={album.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <span className="flex h-full w-full items-center justify-center text-[var(--kanso-muted)]">
-            <Music2 className="h-8 w-8" aria-hidden="true" />
-          </span>
-        )}
-      </div>
+      <AlbumCover src={album.images[0]?.url} alt={album.name} />
 
       <div className="flex min-w-0 flex-1 flex-col p-3">
         <p className="truncate text-sm font-semibold text-[var(--foreground)]">

@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getAuthErrorMessage } from "@/lib/authErrorMessage";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
 import {
+  consumeGoogleRedirectResult,
   loginWithEmail,
   registerWithEmail,
   signInAsGuest,
@@ -31,6 +32,31 @@ export function useLoginForm() {
       : "/home";
   const nextQuery =
     destination !== "/home" ? `&next=${encodeURIComponent(destination)}` : "";
+
+  // Al volver de la redirección de Google, Firebase deja el resultado en esta
+  // pantalla. Si no hay cuenta elegida, no se crea ninguna sesión.
+  useEffect(() => {
+    let cancelled = false;
+
+    consumeGoogleRedirectResult()
+      .then((user) => {
+        if (!cancelled && user) router.replace(destination);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(
+            getAuthErrorMessage(
+              err,
+              "No hemos podido iniciar sesión con Google.",
+            ),
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [destination, router]);
 
   useEffect(
     () => () => {

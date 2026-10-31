@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/I18nContext";
 import { getFriendLibrary } from "@/services/client/friends";
 import { groupByDate } from "@/utils/dates";
 import {
@@ -16,21 +17,18 @@ import type { FriendLibraryResponse } from "@/types/friends";
 /** Resultados que se muestran antes de pulsar «Ver más». */
 const PAGE_SIZE = 10;
 
-type Options = {
-  errorMessage: string;
-};
-
 /**
  * Carga y navegación de la biblioteca que un amigo comparte: sección activa,
  * paginación local y estados de error/404.
  */
-export function useFriendLibrary(uid: string, { errorMessage }: Options) {
+export function useFriendLibrary(uid: string) {
   const { user, loading: authLoading } = useAuth();
+  const { locale } = useI18n();
 
   const [data, setData] = useState<FriendLibraryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SharedSection | null>(
     null,
   );
@@ -44,7 +42,7 @@ export function useFriendLibrary(uid: string, { errorMessage }: Options) {
     }
 
     setLoading(true);
-    setError(null);
+    setError(false);
     setNotFound(false);
 
     try {
@@ -56,14 +54,13 @@ export function useFriendLibrary(uid: string, { errorMessage }: Options) {
         setData(library);
       }
     } catch (loadFailure) {
+      console.error("No se pudo cargar la biblioteca compartida:", loadFailure);
       setData(null);
-      setError(
-        loadFailure instanceof Error ? loadFailure.message : errorMessage,
-      );
+      setError(true);
     } finally {
       setLoading(false);
     }
-  }, [errorMessage, uid]);
+  }, [uid]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -83,8 +80,13 @@ export function useFriendLibrary(uid: string, { errorMessage }: Options) {
   );
 
   const recommendationGroups = useMemo(
-    () => groupByDate(recommendationItems.slice(0, visibleCount)),
-    [recommendationItems, visibleCount],
+    () =>
+      groupByDate(
+        recommendationItems.slice(0, visibleCount),
+        (item) => item.providedAt,
+        locale,
+      ),
+    [recommendationItems, visibleCount, locale],
   );
 
   const availableSections = useMemo<SharedSection[]>(

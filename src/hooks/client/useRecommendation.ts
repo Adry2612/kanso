@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getAlbumTracklist } from "@/services/client/albums";
+import { getCollection } from "@/services/client/collection";
 import {
   getRecommendation,
   getRecommendedAlbumByActivity,
   saveRecommendationHistory,
 } from "@/services/client/recommendations";
 import type { Track } from "@/types/album";
-import type { RecommendedAlbum } from "@/types/recommendations";
+import type {
+  RecommendationExplanation,
+  RecommendedAlbum,
+} from "@/types/recommendations";
 
 type Options = {
   moods: string[];
@@ -32,12 +36,14 @@ export function useRecommendation({
   activityLabel = null,
 }: Options) {
   const [recommendedAlbum, setRecommendedAlbum] = useState<RecommendedAlbum>();
+  const [explain, setExplain] = useState<RecommendationExplanation>();
   const [albumTracklist, setAlbumTracklist] = useState<Track[] | null>(null);
   const [tracklistLoading, setTracklistLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const [noMatch, setNoMatch] = useState(false);
+  const [collectionEmpty, setCollectionEmpty] = useState<boolean | null>(null);
 
   const moodsRef = useRef(moods);
   const tagsRef = useRef(tags);
@@ -56,8 +62,24 @@ export function useRecommendation({
 
     let cancelled = false;
     setNoMatch(false);
-    setError(null);
+    setCollectionEmpty(null);
+    setError(false);
+    setExplain(undefined);
     setLoading(true);
+
+    // Solo se consulta la colección cuando no hay resultado: así el estado
+    // normal no paga una petición extra y el vacío puede distinguir entre
+    // «no tienes colección» y «no hay coincidencias».
+    const markNoMatch = () => {
+      setNoMatch(true);
+      getCollection()
+        .then((collection) => {
+          if (!cancelled) setCollectionEmpty(collection.length === 0);
+        })
+        .catch(() => {
+          if (!cancelled) setCollectionEmpty(null);
+        });
+    };
 
     if (activity) {
       getRecommendedAlbumByActivity(
@@ -68,6 +90,7 @@ export function useRecommendation({
       )
         .then((result) => {
           if (cancelled) return;
+          setExplain(result.explain);
 
           if (result.recommendedAlbum) {
             setRecommendedAlbum(result.recommendedAlbum);
@@ -89,18 +112,16 @@ export function useRecommendation({
             }
           } else {
             setRecommendedAlbum(undefined);
-            setError(
-              `No hay recomendaciones disponibles para ${activityLabel || activity}`,
-            );
+            markNoMatch();
           }
         })
         .catch((recommendationError: unknown) => {
           if (cancelled) return;
-          setError(
-            recommendationError instanceof Error
-              ? recommendationError.message
-              : "Error desconocido",
+          console.error(
+            "No se pudo cargar la recomendación:",
+            recommendationError,
           );
+          setError(true);
         })
         .finally(() => {
           if (!cancelled) setLoading(false);
@@ -114,11 +135,13 @@ export function useRecommendation({
     getRecommendation(moodsRef.current, format, tagsRef.current)
       .then((data) => {
         if (cancelled) return;
+        setExplain(data?.explain);
 
         if (data) {
           setRecommendedAlbum({
             albumId: data.albumId,
-            labeledFeelings: [],
+            labeledFeelings: data.labeledFeelings ?? [],
+            activities: data.activities ?? [],
             feelings: [],
             albumInfo: data.albumInfo,
           });
@@ -132,16 +155,16 @@ export function useRecommendation({
             },
           );
         } else {
-          setNoMatch(true);
+          markNoMatch();
         }
       })
       .catch((recommendationError: unknown) => {
         if (cancelled) return;
-        setError(
-          recommendationError instanceof Error
-            ? recommendationError.message
-            : "Error desconocido",
+        console.error(
+          "No se pudo cargar la recomendación:",
+          recommendationError,
         );
+        setError(true);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -180,7 +203,9 @@ export function useRecommendation({
     loading,
     error,
     noMatch,
+    collectionEmpty,
     recommendedAlbum,
+    explain,
     albumTracklist,
     tracklistLoading,
   };

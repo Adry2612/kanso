@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getRecommendationHistory } from "@/services/client/recommendations";
-import { getCollection } from "@/services/client/favorites";
+import { getCollection } from "@/services/client/collection";
 import { formatTodayLabel } from "@/utils/dates";
 import { getRecentRecommendations } from "@/utils/history";
-import type { FavoriteTag } from "@/types/favorites";
+import type { CollectionTag } from "@/types/collection";
 import type { RecommendationHistoryItem } from "@/types/recommendations";
 
 /**
@@ -21,7 +21,11 @@ export function useHomeStart() {
   const [history, setHistory] = useState<RecommendationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
-  const [collectionTags, setCollectionTags] = useState<FavoriteTag[]>([]);
+  const [collectionTags, setCollectionTags] = useState<CollectionTag[]>([]);
+  const [collectionCount, setCollectionCount] = useState(0);
+  const [collectionStatus, setCollectionStatus] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
 
   useEffect(() => {
     setMounted(true);
@@ -67,22 +71,34 @@ export function useHomeStart() {
   }, [mounted, user?.uid]);
 
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      setCollectionTags([]);
+      setCollectionCount(0);
+      setCollectionStatus("ready");
+      return;
+    }
 
     let cancelled = false;
+    setCollectionStatus("loading");
 
     getCollection()
-      .then((favorites) => {
+      .then((collection) => {
         if (cancelled) return;
 
-        const unique = new Map<string, FavoriteTag>();
-        favorites
-          .flatMap((favorite) => favorite.tags ?? [])
+        const unique = new Map<string, CollectionTag>();
+        collection
+          .flatMap((entry) => entry.tags ?? [])
           .forEach((tag) => unique.set(`${tag.category}:${tag.value}`, tag));
         setCollectionTags(Array.from(unique.values()));
+        setCollectionCount(collection.length);
+        setCollectionStatus("ready");
       })
       .catch(() => {
-        if (!cancelled) setCollectionTags([]);
+        if (!cancelled) {
+          setCollectionTags([]);
+          setCollectionCount(0);
+          setCollectionStatus("error");
+        }
       });
 
     return () => {
@@ -103,5 +119,7 @@ export function useHomeStart() {
     historyError,
     recentRecommendations,
     collectionTags,
+    collectionCount,
+    collectionStatus,
   };
 }

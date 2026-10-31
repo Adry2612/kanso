@@ -61,6 +61,29 @@ npm run lint
 npm run build
 ```
 
+## Colección
+
+- La colección vive en `users/{uid}/collection` y se sirve con `GET`, `POST` y
+  `DELETE /api/collection`; las rutas solo autentican, validan y delegan en
+  `src/services/server/collection`.
+- Las pantallas de colección e historial comparten las primitivas de
+  `src/components/gallery/`.
+- Durante el renombrado desde `users/{uid}/favorites`, el repositorio combina
+  ambas rutas con lectura dual y escribe siempre en la nueva. La migración se
+  ejecuta con `npm run migrate:collection:dry` y `npm run migrate:collection`;
+  cuando los recuentos cuadran, se retira la lectura heredada.
+
+## Instalación como aplicación
+
+- `public/manifest.webmanifest` declara la app como Kanso con `start_url: "/"`,
+  `display: "standalone"`, colores de tema y el logo en 192 y 512 px.
+- `src/app/layout.tsx` enlaza el manifiesto y añade los metadatos de app iOS
+  (`appleWebApp`), de modo que al abrirla desde el icono instalado no aparezcan
+  la barra de rutas ni los botones del navegador.
+- No hay service worker: la app instalada sigue necesitando red. En una pestaña
+  normal el navegador conserva su chrome; ocultarlo solo es posible en modo
+  `standalone`.
+
 ## Refactor incremental
 
 El cambio `refactor-frontend-architecture` migra la app por cortes verticales. Mientras dure:

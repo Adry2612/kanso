@@ -1,4 +1,4 @@
-import type { ListenLaterAlbum, ListenLaterItem } from "@/types/favorites";
+import type { ListenLaterAlbum, ListenLaterItem } from "@/types/collection";
 
 /** Pendientes del más reciente al más antiguo. */
 export function sortListenLater(items: ListenLaterItem[]): ListenLaterItem[] {

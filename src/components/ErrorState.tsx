@@ -73,11 +73,11 @@ export default function ErrorState({
   return (
     <section
       role="alert"
-      className={`${
+      className={`mx-auto text-center ${
         variant === "page" ? "max-w-xl" : "max-w-2xl"
       } rounded-2xl border border-[var(--kanso-danger)]/25 bg-[var(--kanso-danger)]/[0.07] p-6 md:p-7 ${className}`}
     >
-      <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--kanso-danger)]/30 bg-[var(--kanso-danger)]/10 text-[var(--kanso-danger)]">
+      <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--kanso-danger)]/30 bg-[var(--kanso-danger)]/10 text-[var(--kanso-danger)]">
         <AlertTriangle className="h-6 w-6" aria-hidden="true" />
       </span>
       <p className="mt-5 text-[11px] font-bold uppercase tracking-[.18em] text-[var(--kanso-danger)]">
@@ -87,12 +87,12 @@ export default function ErrorState({
         {title}
       </h2>
       {description && (
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)]">
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)]">
           {description}
         </p>
       )}
       {(onRetry || action) && (
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           {onRetry && (
             <button
               type="button"

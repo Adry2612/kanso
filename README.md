@@ -11,16 +11,16 @@ Una aplicación web moderna para descubrir, coleccionar y organizar álbumes mus
 - **Detalles de Álbumes**: Visualización completa con lista de canciones, año de lanzamiento y portada
 - **Gradiente Dinámico**: Fondos que se adaptan automáticamente a los colores de la portada del álbum
 
-### ❤️ Gestión de Favoritos
+### ❤️ Gestión de la Colección
 
-- **Colección Personal**: Guarda tus álbumes favoritos vinculados a estados de ánimo
+- **Colección Personal**: Guarda tus álbumes vinculados a estados de ánimo, formatos y etiquetas
 - **Sistema de Ordenamiento**: 7 opciones de ordenamiento
   - Más recientes / Más antiguos (por fecha de guardado)
   - Alfabéticamente (A-Z / Z-A)
   - Por artista
   - Por año de lanzamiento (ascendente / descendente)
 - **Filtros Avanzados**: Filtra por estados de ánimo (5 opciones) y géneros (6 opciones)
-- **Vista Agrupada**: Visualización automática agrupada según el método de ordenamiento seleccionado
+- **Agrupación opcional**: Sin agrupar por defecto, o por fecha, artista, letra del título y año de lanzamiento desde los filtros
 - **Indicadores Visuales**: Badges y chips que muestran los filtros activos
 
 ### 🌐 Internacionalización
@@ -103,11 +103,12 @@ kanso/
 │   ├── app/                    # App Router de Next.js
 │   │   ├── albums/            # Páginas de detalle de álbumes
 │   │   ├── api/               # API Routes
-│   │   ├── favorites/         # Página de favoritos
+│   │   ├── collection/        # Página de colección
 │   │   ├── init/              # Flujo de onboarding
 │   │   ├── login/             # Autenticación
 │   │   └── search/            # Búsqueda de álbumes
 │   ├── components/            # Componentes reutilizables
+│   │   ├── gallery/           # Tarjetas y filas compartidas de colección e historial
 │   │   ├── BaseModal.tsx      # Modal base
 │   │   ├── SortModal.tsx      # Modal de ordenamiento
 │   │   ├── FilterModal.tsx    # Modal de filtros
@@ -131,13 +132,17 @@ kanso/
 - **SortModal**: Modal específico para ordenamiento con 7 opciones
 - **FilterModal**: Modal de filtros multi-selección con moods y géneros
 
-### Agrupación Inteligente
+### Agrupación explícita
 
-Los álbumes se agrupan automáticamente según el método de ordenamiento:
+La colección se muestra como una lista plana por defecto. Desde el modal de
+filtros se puede elegir «Agrupar por»: fecha de guardado, artista, letra del
+título o año de lanzamiento. La ordenación solo reordena dentro de cada grupo.
 
-- Por artista → Agrupa por nombre de artista
-- Alfabético → Agrupa por primera letra
-- Por año → Agrupa por año de lanzamiento o guardado
+### Aviso de álbumes incompletos
+
+Si hay álbumes sin emociones o sin actividades, aparece una línea discreta
+sobre el listado con el recuento y una acción «Revisar» que aplica el filtro de
+incompletos. El aviso se puede ocultar hasta recargar la página.
 
 ## 🚢 Despliegue
 
@@ -162,6 +167,21 @@ La forma más sencilla de desplegar es usar [Vercel Platform](https://vercel.com
 > comodines: para probar el login en un preview hay que autorizar ese dominio
 > concreto o usar el de producción.
 
+### Migración de la colección
+
+El renombrado de `favorites` a `collection` se despliega con lectura dual: el
+servidor lee ambas rutas y escribe siempre en `collection`. Tras desplegar:
+
+```bash
+npm run migrate:collection:dry   # revisa usuarios, documentos y conflictos
+npm run migrate:collection       # copia sin borrar el origen
+# Verifica recuentos y la app; después puedes repetir con:
+npm run migrate:collection -- --delete-source
+```
+
+El script es idempotente y nunca sobrescribe un destino existente ni borra un
+origen con conflicto.
+
 Consulta la [documentación de despliegue de Next.js](https://nextjs.org/docs/app/building-your-application/deploying) para más detalles.
 
 ## 📝 Scripts Disponibles
@@ -170,6 +190,8 @@ Consulta la [documentación de despliegue de Next.js](https://nextjs.org/docs/ap
 - `npm run build` - Crea el build de producción
 - `npm start` - Inicia el servidor de producción
 - `npm run lint` - Ejecuta ESLint
+- `npm run migrate:collection:dry` - Simula la migración de `users/{uid}/favorites` a `users/{uid}/collection`
+- `npm run migrate:collection` - Migra la colección; añade `-- --delete-source` para borrar el origen tras copiar
 
 ## 🤝 Contribuir
 

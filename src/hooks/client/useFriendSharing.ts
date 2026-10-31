@@ -36,11 +36,8 @@ export function useFriendSharing({
         onSharingChange(saved);
       } catch (sharingFailure) {
         onSharingChange(previous);
-        setError(
-          sharingFailure instanceof Error
-            ? sharingFailure.message
-            : errorMessage,
-        );
+        console.error("No se pudo guardar la compartición:", sharingFailure);
+        setError(errorMessage);
       } finally {
         setBusy(null);
       }

@@ -3,13 +3,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useAlbumSearch } from "@/hooks/client/useAlbumSearch";
 import { useCollectionLookup } from "@/hooks/client/useCollectionLookup";
 import { useCommunitySuggestions } from "@/hooks/client/useCommunitySuggestions";
-import { getAvailableMoods, getAvailableTags } from "@/utils/favorites";
+import { getAvailableMoods, getAvailableTags } from "@/utils/collection";
 import type { Album } from "@/types/album";
 import type {
-  CollectionFavorite,
+  CollectionAlbum,
   ListenLaterItem,
   SaveAlbumResult,
-} from "@/types/favorites";
+} from "@/types/collection";
 
 export function useSearchPage() {
   const { user } = useAuth();
@@ -22,11 +22,11 @@ export function useSearchPage() {
     useAlbumSearch(query);
 
   const {
-    favoritesByAlbum,
+    collectionByAlbum,
     pendingByAlbum,
-    favoritesLoaded,
-    favoritesError,
-    setFavorite,
+    collectionLoaded,
+    collectionError,
+    setCollectionEntry,
     setPending,
     removePending,
   } = useCollectionLookup();
@@ -37,15 +37,15 @@ export function useSearchPage() {
     setMounted(true);
   }, []);
 
-  const favorites = Array.from(favoritesByAlbum.values());
-  const collectionMoods = getAvailableMoods(favorites).slice(0, 6);
-  const collectionTags = getAvailableTags(favorites).slice(0, 8);
+  const collection = Array.from(collectionByAlbum.values());
+  const collectionMoods = getAvailableMoods(collection).slice(0, 6);
+  const collectionTags = getAvailableTags(collection).slice(0, 8);
 
-  const selectedIsFavorite = selectedAlbum
-    ? favoritesByAlbum.has(selectedAlbum.id)
+  const selectedIsInCollection = selectedAlbum
+    ? collectionByAlbum.has(selectedAlbum.id)
     : false;
   const selectedIsPending = selectedAlbum
-    ? !favoritesByAlbum.has(selectedAlbum.id) &&
+    ? !collectionByAlbum.has(selectedAlbum.id) &&
       pendingByAlbum.has(selectedAlbum.id)
     : false;
 
@@ -58,7 +58,7 @@ export function useSearchPage() {
 
   const handleSaved = (saved: SaveAlbumResult) => {
     if (!selectedAlbum) return;
-    const favorite: CollectionFavorite = {
+    const entry: CollectionAlbum = {
       id: saved.albumId,
       albumId: saved.albumId,
       album: selectedAlbum,
@@ -69,7 +69,7 @@ export function useSearchPage() {
       tags: saved.tags,
       userId: user?.uid ?? "",
     };
-    setFavorite(selectedAlbum.id, favorite);
+    setCollectionEntry(selectedAlbum.id, entry);
   };
 
   const handlePendingSaved = (pending: ListenLaterItem | null) => {
@@ -91,23 +91,23 @@ export function useSearchPage() {
     loading,
     error,
     retry,
-    favoritesByAlbum,
+    collectionByAlbum,
     pendingByAlbum,
-    favoritesLoaded,
-    favoritesError,
+    collectionLoaded,
+    collectionError,
     communitySearches,
     communityAlbums,
     collectionMoods,
     collectionTags,
     openModal,
     selectedAlbum,
-    selectedIsFavorite,
+    selectedIsInCollection,
     selectedIsPending,
     selectedPendingData: selectedAlbum
       ? (pendingByAlbum.get(selectedAlbum.id) ?? null)
       : null,
-    selectedFavoriteData: selectedAlbum
-      ? favoritesByAlbum.get(selectedAlbum.id)
+    selectedCollectionData: selectedAlbum
+      ? collectionByAlbum.get(selectedAlbum.id)
       : undefined,
     openAlbumModal,
     closeAlbumModal,

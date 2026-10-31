@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { moodOptions, normalizeMood } from "@/constants/moods";
 import { useTranslations } from "@/context/I18nContext";
-import Medallion from "@/components/Medallion";
-import OptionCarousel from "@/components/OptionCarousel";
+import OptionSelector from "@/components/selectors/OptionSelector";
+import type { OptionItem } from "@/components/selectors/types";
 import type { Mood } from "@/types/mood";
 
 type MoodOption = Mood & {
@@ -21,9 +21,9 @@ type MoodSelectorProps = {
 };
 
 /**
- * Selector de emociones. En el modal se muestra como carrusel para que el paso
- * no sea una pared de opciones; la rejilla queda disponible para contextos
- * donde convenga ver todas las emociones a la vez.
+ * Selector de emociones. Usa el mismo botón y carril compartidos que el resto
+ * de selectores; en el modal se muestra como carrusel para que el paso no sea
+ * una pared de opciones.
  */
 const MoodSelector = ({
   onChange,
@@ -63,45 +63,32 @@ const MoodSelector = ({
     onChange?.(next);
   };
 
-  const options = allMoods.map((mood) => {
-    const isSelected = selected.some((item) => item.label === mood.label);
-    return (
-      <button
-        key={mood.label}
-        type="button"
-        aria-pressed={isSelected}
-        onClick={() => toggleMood(mood)}
-        className={`flex items-center gap-3 rounded-[var(--radius-sm)] border px-3 py-2.5 text-left text-xs font-semibold transition ${
-          isSelected
-            ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
-            : "border-[var(--kanso-line)] bg-[var(--surface-1)]/50 text-[var(--foreground)] hover:border-[var(--kanso-mint)]/60"
-        }`}
-      >
-        <Medallion emoji={mood.emoji} size="sm" onAccent={isSelected} />
-        <span>{mood.displayLabel}</span>
-      </button>
-    );
-  });
+  const options: OptionItem[] = allMoods.map((mood) => ({
+    key: mood.label,
+    label: mood.displayLabel,
+    emoji: mood.emoji,
+  }));
 
-  if (variant === "carousel") {
-    return (
-      <OptionCarousel
-        ariaLabel="Selector de emociones"
-        className="mood-carousel"
-      >
-        {options}
-      </OptionCarousel>
-    );
-  }
+  const handleSelect = (key: string) => {
+    const mood = allMoods.find((item) => item.label === key);
+    if (mood) toggleMood(mood);
+  };
 
   return (
-    <div
-      role="group"
-      aria-label="Selector de emociones"
-      className="grid grid-cols-2 gap-2 p-1 sm:grid-cols-3"
-    >
-      {options}
-    </div>
+    <OptionSelector
+      options={options}
+      selectedKeys={selected.map((mood) => mood.label)}
+      onSelect={handleSelect}
+      selection="multiple"
+      layout={variant}
+      semantics="buttons"
+      ariaLabel="Selector de emociones"
+      className={variant === "carousel" ? "option-selector--mood" : undefined}
+      columns={variant === "grid" ? 3 : undefined}
+      buttonClassName={
+        variant === "carousel" ? "save-album-modal-option" : undefined
+      }
+    />
   );
 };
 

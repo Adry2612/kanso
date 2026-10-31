@@ -6,7 +6,12 @@ import {
   type User,
 } from "firebase/auth";
 import { auth, authPersistenceReady } from "@/lib/firebase";
-import { signInAsGuest, signInWithGoogle } from "@/lib/firebaseAuth";
+import { clearGuestEntry } from "@/lib/guestSession";
+import {
+  consumeGoogleRedirectResult,
+  signInAsGuest,
+  signInWithGoogle,
+} from "@/lib/firebaseAuth";
 
 async function waitForAuthState() {
   await authPersistenceReady;
@@ -25,6 +30,7 @@ export async function registerWithEmail(
     password,
   );
   await updateProfile(credential.user, { displayName });
+  clearGuestEntry();
   await auth.authStateReady();
   return credential.user;
 }
@@ -35,12 +41,14 @@ export async function loginWithEmail(
 ): Promise<User> {
   await waitForAuthState();
   const credential = await signInWithEmailAndPassword(auth, email, password);
+  clearGuestEntry();
   await auth.authStateReady();
   return credential.user;
 }
 
 export async function signOutUser(): Promise<void> {
+  clearGuestEntry();
   await signOut(auth);
 }
 
-export { signInAsGuest, signInWithGoogle };
+export { consumeGoogleRedirectResult, signInAsGuest, signInWithGoogle };

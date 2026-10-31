@@ -6,7 +6,7 @@ import { useTranslations } from "@/context/I18nContext";
 import ModalShell from "@/components/ModalShell";
 import ArtistBackdrop from "./ArtistBackdrop";
 import type { Album } from "@/types/album";
-import type { ListenLaterItem } from "@/types/favorites";
+import type { ListenLaterItem } from "@/types/collection";
 
 interface AlbumAlreadyPendingStepProps {
   isOpen: boolean;

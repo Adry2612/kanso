@@ -13,7 +13,7 @@ import { SaveAlbumActivitiesStep } from "./SaveAlbumActivitiesStep";
 import { SaveAlbumFormatStep } from "./SaveAlbumFormatStep";
 import type { Album } from "@/types/album";
 import type { Mood } from "@/types/mood";
-import type { FavoriteFormat, FavoriteTag } from "@/types/favorites";
+import type { CollectionFormat, CollectionTag } from "@/types/collection";
 
 type SaveAlbumModalProps = {
   isOpen: boolean;
@@ -24,8 +24,8 @@ type SaveAlbumModalProps = {
   showDestination: boolean;
   feelings: Mood[];
   activities: string[];
-  format: FavoriteFormat[];
-  tags: FavoriteTag[];
+  format: CollectionFormat[];
+  tags: CollectionTag[];
   isEditing: boolean;
   /** Hay un guardado en curso (colección o pendientes). */
   busy: boolean;
@@ -33,8 +33,8 @@ type SaveAlbumModalProps = {
   error: string | null;
   onFeelingsChange: (moods: Mood[]) => void;
   onActivitiesChange: (activities: string[]) => void;
-  onFormatChange: (format: FavoriteFormat[]) => void;
-  onTagsChange: (tags: FavoriteTag[]) => void;
+  onFormatChange: (format: CollectionFormat[]) => void;
+  onTagsChange: (tags: CollectionTag[]) => void;
   onSelectCollection: () => void;
   onSelectPending: () => void;
   onNext: () => void;
