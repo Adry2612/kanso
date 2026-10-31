@@ -50,6 +50,14 @@ export function getAuthErrorMessage(error: unknown, fallback: string): string {
       return "La autenticación no está configurada correctamente. Inténtalo más tarde.";
     case "auth/redirect-missing":
       return "No se completó el acceso con Google. Inténtalo de nuevo.";
+    case "origin_mismatch":
+    case "invalid_client":
+    case "idpiframe_initialization_failed":
+      return "Google no está autorizado para este dominio. Usa el enlace de acceso por email.";
+    case "google_identity_unavailable":
+    case "google_token_missing":
+    case "google_identity_error":
+      return "No se pudo completar el acceso con Google. Usa el enlace de acceso por email.";
     case "auth/internal-error":
       return "El servicio de acceso no respondió. Inténtalo de nuevo.";
     default:

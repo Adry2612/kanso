@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getAuthErrorMessage } from "@/lib/authErrorMessage";
 import { getGuestSignInErrorMessage } from "@/lib/guestSignInError";
+import { loadGoogleIdentity } from "@/lib/googleIdentity";
 import {
   completeEmailSignInLink,
   consumeGoogleRedirectResult,
@@ -39,6 +40,12 @@ export function useLoginForm() {
       : "/home";
   const nextQuery =
     destination !== "/home" ? `&next=${encodeURIComponent(destination)}` : "";
+
+  // El script de Google Identity Services se precarga para que el popup se
+  // abra dentro del gesto de la persona y no lo bloquee el navegador.
+  useEffect(() => {
+    void loadGoogleIdentity();
+  }, []);
 
   // Al volver de la redirección de Google, Firebase deja el resultado en esta
   // pantalla. Si no hay cuenta elegida, no se crea ninguna sesión.

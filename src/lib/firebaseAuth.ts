@@ -1,4 +1,5 @@
 import { auth, authPersistenceReady } from "./firebase";
+import { requestGoogleAccessToken } from "./googleIdentity";
 import { clearGuestEntry, markGuestEntry } from "./guestSession";
 import {
   GoogleAuthProvider,
@@ -6,6 +7,7 @@ import {
   isSignInWithEmailLink,
   sendSignInLinkToEmail,
   signInAnonymously,
+  signInWithCredential,
   signInWithEmailLink,
   signInWithPopup,
   signInWithRedirect,
@@ -27,11 +29,27 @@ const POPUP_CANCELLED_CODES = new Set([
   "auth/user-cancelled",
 ]);
 
-/** Códigos en los que merece la pena reintentar con redirección completa. */
+/** Códigos en los que merece la pena reintentar con otro flujo. */
 const POPUP_FALLBACK_CODES = new Set([
   "auth/popup-blocked",
   "auth/operation-not-supported-in-this-environment",
   "auth/web-storage-unsupported",
+]);
+
+/** Errores de configuración de Google Identity Services. */
+const GOOGLE_IDENTITY_CONFIG_CODES = new Set([
+  "origin_mismatch",
+  "invalid_client",
+  "idpiframe_initialization_failed",
+  "google_identity_unavailable",
+  "google_token_missing",
+  "google_identity_error",
+]);
+
+const GOOGLE_IDENTITY_CANCELLED_CODES = new Set([
+  "popup_closed",
+  "access_denied",
+  "google_redirect_cancelled",
 ]);
 
 const GOOGLE_REDIRECT_FLAG = "kanso:google-redirect";
@@ -96,6 +114,37 @@ export async function signInAsGuest(): Promise<User> {
   return result.user;
 }
 
+/**
+ * Inicia sesión con un access token de Google Identity Services.
+ *
+ * Evita por completo el popup y la redirección de `authDomain`: Google habla
+ * con la app y el token se canjea por una credencial de Firebase.
+ */
+async function signInWithGoogleIdentity(): Promise<User | null> {
+  try {
+    const accessToken = await requestGoogleAccessToken();
+    const credential = GoogleAuthProvider.credential(null, accessToken);
+    const result = await signInWithCredential(auth, credential);
+    clearGuestEntry();
+    return result.user;
+  } catch (error: unknown) {
+    const code = errorCode(error) ?? "";
+
+    if (
+      GOOGLE_IDENTITY_CANCELLED_CODES.has(code) ||
+      POPUP_CANCELLED_CODES.has(code)
+    ) {
+      return null;
+    }
+
+    console.error(
+      "Error al iniciar sesión con Google Identity Services:",
+      error,
+    );
+    throw error;
+  }
+}
+
 async function signInWithProvider(
   provider: GoogleAuthProvider,
   providerName: string,
@@ -117,11 +166,18 @@ async function signInWithProvider(
     const code = errorCode(error) ?? "";
 
     if (POPUP_FALLBACK_CODES.has(code)) {
-      // El popup no es viable en este navegador: se reintenta con una
-      // navegación completa, que no depende de cookies de terceros.
-      markGoogleRedirect();
-      await signInWithRedirect(auth, provider);
-      return null;
+      // El popup de Firebase no es viable: se intenta Google Identity
+      // Services y, solo si tampoco está disponible, la redirección.
+      try {
+        return await signInWithGoogleIdentity();
+      } catch (identityError: unknown) {
+        if (GOOGLE_IDENTITY_CONFIG_CODES.has(errorCode(identityError) ?? "")) {
+          throw identityError;
+        }
+        markGoogleRedirect();
+        await signInWithRedirect(auth, provider);
+        return null;
+      }
     }
 
     if (POPUP_CANCELLED_CODES.has(code)) {
@@ -141,16 +197,14 @@ export async function signInWithGoogle(): Promise<User | null> {
     return null;
   }
 
-  // En móvil y en Safari la ventana emergente se bloquea, se cierra sola o
-  // queda aislada: la redirección abre el selector de cuenta y vuelve a esta
-  // misma pantalla sin depender de cookies de terceros.
+  // En móvil y en Safari el popup y la redirección de Firebase quedan
+  // aislados por el navegador. Google Identity Services devuelve el token
+  // directamente y evita depender de cookies de terceros.
   if (isMobileViewport() || isSafari()) {
     try {
       isSigningIn = true;
       await authPersistenceReady;
-      markGoogleRedirect();
-      await signInWithRedirect(auth, googleProvider);
-      return null;
+      return await signInWithGoogleIdentity();
     } finally {
       isSigningIn = false;
     }
