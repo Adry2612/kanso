@@ -24,6 +24,13 @@ const POPUP_CANCELLED_CODES = new Set([
   "auth/user-cancelled",
 ]);
 
+/** Códigos en los que merece la pena reintentar con redirección completa. */
+const POPUP_FALLBACK_CODES = new Set([
+  "auth/popup-blocked",
+  "auth/operation-not-supported-in-this-environment",
+  "auth/web-storage-unsupported",
+]);
+
 function errorCode(error: unknown): string | undefined {
   return error && typeof error === "object"
     ? (error as { code?: string }).code
@@ -33,6 +40,20 @@ function errorCode(error: unknown): string | undefined {
 function isMobileViewport(): boolean {
   return (
     typeof window !== "undefined" && window.matchMedia(MOBILE_QUERY).matches
+  );
+}
+
+/**
+ * Safari bloquea o aísla la ventana emergente de Firebase con su protección
+ * contra el seguimiento, así que usa la redirección completa, que no depende
+ * de la comunicación entre la pestaña y el popup.
+ */
+function isSafari(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const userAgent = navigator.userAgent;
+  return (
+    /Safari/i.test(userAgent) &&
+    !/Chrome|Chromium|CriOS|Android|Edg|OPR|Firefox/i.test(userAgent)
   );
 }
 
@@ -62,15 +83,24 @@ async function signInWithProvider(
     isSigningIn = true;
     await authPersistenceReady;
     const result = await signInWithPopup(auth, provider);
-    await auth.authStateReady();
 
     // El perfil no se escribe desde el cliente: Firestore deniega el acceso
     // directo y el documento users/{uid} no tiene consumidores.
     return result.user;
   } catch (error: unknown) {
-    if (POPUP_CANCELLED_CODES.has(errorCode(error) ?? "")) {
+    const code = errorCode(error) ?? "";
+
+    if (POPUP_FALLBACK_CODES.has(code)) {
+      // El popup no es viable en este navegador: se reintenta con una
+      // navegación completa, que no depende de cookies de terceros.
+      await signInWithRedirect(auth, provider);
       return null;
     }
+
+    if (POPUP_CANCELLED_CODES.has(code)) {
+      return null;
+    }
+
     console.error(`Error al iniciar sesión con ${providerName}:`, error);
     throw error;
   } finally {
@@ -84,9 +114,10 @@ export async function signInWithGoogle(): Promise<User | null> {
     return null;
   }
 
-  // En móvil la ventana emergente se bloquea o se cierra sola: la redirección
-  // abre el selector de cuenta del navegador y vuelve a esta misma pantalla.
-  if (isMobileViewport()) {
+  // En móvil y en Safari la ventana emergente se bloquea, se cierra sola o
+  // queda aislada: la redirección abre el selector de cuenta y vuelve a esta
+  // misma pantalla sin depender de cookies de terceros.
+  if (isMobileViewport() || isSafari()) {
     try {
       isSigningIn = true;
       await authPersistenceReady;
@@ -111,7 +142,6 @@ export function consumeGoogleRedirectResult(): Promise<User | null> {
       try {
         const result = await getRedirectResult(auth);
         if (!result) return null;
-        await auth.authStateReady();
         return result.user;
       } catch (error: unknown) {
         if (POPUP_CANCELLED_CODES.has(errorCode(error) ?? "")) return null;
