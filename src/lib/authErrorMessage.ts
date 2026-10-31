@@ -48,6 +48,8 @@ export function getAuthErrorMessage(error: unknown, fallback: string): string {
     case "auth/configuration-not-found":
     case "auth/invalid-api-key":
       return "La autenticación no está configurada correctamente. Inténtalo más tarde.";
+    case "auth/redirect-missing":
+      return "No se completó el acceso con Google. Inténtalo de nuevo.";
     case "auth/internal-error":
       return "El servicio de acceso no respondió. Inténtalo de nuevo.";
     default:

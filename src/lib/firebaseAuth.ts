@@ -31,6 +31,28 @@ const POPUP_FALLBACK_CODES = new Set([
   "auth/web-storage-unsupported",
 ]);
 
+const GOOGLE_REDIRECT_FLAG = "kanso:google-redirect";
+
+/** Marca que salimos a Google con redirección para detectar vueltas vacías. */
+function markGoogleRedirect(): void {
+  try {
+    sessionStorage.setItem(GOOGLE_REDIRECT_FLAG, "1");
+  } catch {
+    // Sin sessionStorage el flujo funciona igual; solo perdemos el aviso.
+  }
+}
+
+/** Devuelve si había una redirección pendiente y limpia la marca. */
+function consumeGoogleRedirectFlag(): boolean {
+  try {
+    const pending = sessionStorage.getItem(GOOGLE_REDIRECT_FLAG) === "1";
+    sessionStorage.removeItem(GOOGLE_REDIRECT_FLAG);
+    return pending;
+  } catch {
+    return false;
+  }
+}
+
 function errorCode(error: unknown): string | undefined {
   return error && typeof error === "object"
     ? (error as { code?: string }).code
@@ -93,6 +115,7 @@ async function signInWithProvider(
     if (POPUP_FALLBACK_CODES.has(code)) {
       // El popup no es viable en este navegador: se reintenta con una
       // navegación completa, que no depende de cookies de terceros.
+      markGoogleRedirect();
       await signInWithRedirect(auth, provider);
       return null;
     }
@@ -121,6 +144,7 @@ export async function signInWithGoogle(): Promise<User | null> {
     try {
       isSigningIn = true;
       await authPersistenceReady;
+      markGoogleRedirect();
       await signInWithRedirect(auth, googleProvider);
       return null;
     } finally {
@@ -139,9 +163,18 @@ export function consumeGoogleRedirectResult(): Promise<User | null> {
   if (!redirectResultPromise) {
     redirectResultPromise = (async () => {
       await authPersistenceReady;
+      const hadPendingRedirect = consumeGoogleRedirectFlag();
       try {
         const result = await getRedirectResult(auth);
-        if (!result) return null;
+        if (!result) {
+          if (hadPendingRedirect) {
+            throw Object.assign(
+              new Error("No se completó el acceso con Google."),
+              { code: "auth/redirect-missing" },
+            );
+          }
+          return null;
+        }
         return result.user;
       } catch (error: unknown) {
         if (POPUP_CANCELLED_CODES.has(errorCode(error) ?? "")) return null;
