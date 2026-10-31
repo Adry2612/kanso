@@ -20,10 +20,14 @@ function LoginForm() {
     isLoggingIn,
     isSubmitting,
     isStartingGuest,
+    isSendingEmailLink,
+    emailLinkSent,
+    emailLinkHref,
     isRegisterMode,
     nextQuery,
     handleSubmit,
     handleGoogleLogin,
+    handleSendEmailLink,
     handleGuestLogin,
   } = useLoginForm();
 
@@ -75,12 +79,18 @@ function LoginForm() {
               Tu espacio musical
             </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-[-.055em]">
-              {isRegisterMode ? "Crea tu cuenta" : "Bienvenido de nuevo"}
+              {emailLinkHref
+                ? "Completa tu acceso"
+                : isRegisterMode
+                  ? "Crea tu cuenta"
+                  : "Bienvenido de nuevo"}
             </h1>
             <p className="public-muted mt-3 text-sm leading-6">
-              {isRegisterMode
-                ? "Empieza a construir una colección que se parezca a ti."
-                : "Vuelve a tu colección y recomendaciones."}
+              {emailLinkHref
+                ? "Confirma el correo con el que pediste el enlace y entra en tu colección."
+                : isRegisterMode
+                  ? "Empieza a construir una colección que se parezca a ti."
+                  : "Vuelve a tu colección y recomendaciones."}
             </p>
           </div>
           {error && (
@@ -91,8 +101,20 @@ function LoginForm() {
               description={error}
             />
           )}
+          {emailLinkSent && (
+            <p className="mt-5 rounded-xl border border-[var(--kanso-mint)]/40 bg-[var(--kanso-mint)]/10 px-4 py-3 text-sm text-[var(--kanso-foreground)]">
+              Te hemos enviado un enlace a <strong>{email}</strong>. Revisa tu
+              correo y ábrelo en este mismo dispositivo.
+            </p>
+          )}
+          {emailLinkHref && !emailLinkSent && (
+            <p className="mt-5 rounded-xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/50 px-4 py-3 text-sm text-[var(--kanso-muted)]">
+              Escribe el correo con el que pediste el enlace. Si lo abres en
+              este mismo navegador, se completará automáticamente.
+            </p>
+          )}
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            {isRegisterMode && (
+            {!emailLinkHref && isRegisterMode && (
               <div>
                 <label htmlFor="name" className="block text-sm font-medium">
                   ¿Cómo te llamas?
@@ -125,24 +147,26 @@ function LoginForm() {
                 className="public-input mt-2 px-4 py-3.5"
               />
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete={
-                  isRegisterMode ? "new-password" : "current-password"
-                }
-                minLength={6}
-                required
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="••••••••"
-                className="public-input mt-2 px-4 py-3.5"
-              />
-            </div>
+            {!emailLinkHref && (
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium">
+                  Contraseña
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete={
+                    isRegisterMode ? "new-password" : "current-password"
+                  }
+                  minLength={6}
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="••••••••"
+                  className="public-input mt-2 px-4 py-3.5"
+                />
+              </div>
+            )}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -150,9 +174,11 @@ function LoginForm() {
             >
               {isSubmitting
                 ? "Un momento..."
-                : isRegisterMode
-                  ? "Crear cuenta"
-                  : "Iniciar sesión"}
+                : emailLinkHref
+                  ? "Completar acceso"
+                  : isRegisterMode
+                    ? "Crear cuenta"
+                    : "Iniciar sesión"}
             </button>
           </form>
           <div className="my-6 flex items-center gap-3">
@@ -172,6 +198,20 @@ function LoginForm() {
             <GoogleIcon className="h-[18px] w-[18px] shrink-0" />
             {isLoggingIn ? "Cargando..." : "Google"}
           </button>
+          <button
+            type="button"
+            onClick={() => void handleSendEmailLink()}
+            disabled={isSendingEmailLink || Boolean(emailLinkHref)}
+            className="public-button-secondary mt-3 w-full px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSendingEmailLink
+              ? "Enviando enlace..."
+              : "Recibir enlace de acceso por email"}
+          </button>
+          <p className="public-muted mt-2 text-center text-[11px] leading-5">
+            Si Google no funciona en tu navegador, te enviamos un enlace al
+            correo para entrar sin ventanas emergentes.
+          </p>
           <button
             type="button"
             onClick={handleGuestLogin}

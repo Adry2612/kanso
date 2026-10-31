@@ -8,9 +8,13 @@ import {
 import { auth, authPersistenceReady } from "@/lib/firebase";
 import { clearGuestEntry } from "@/lib/guestSession";
 import {
+  completeEmailSignInLink,
   consumeGoogleRedirectResult,
+  isEmailSignInLinkUrl,
+  sendEmailSignInLink,
   signInAsGuest,
   signInWithGoogle,
+  storedEmailForSignIn,
 } from "@/lib/firebaseAuth";
 
 async function waitForAuthState() {
@@ -51,4 +55,12 @@ export async function signOutUser(): Promise<void> {
   await signOut(auth);
 }
 
-export { consumeGoogleRedirectResult, signInAsGuest, signInWithGoogle };
+export {
+  completeEmailSignInLink,
+  consumeGoogleRedirectResult,
+  isEmailSignInLinkUrl,
+  sendEmailSignInLink,
+  signInAsGuest,
+  signInWithGoogle,
+  storedEmailForSignIn,
+};

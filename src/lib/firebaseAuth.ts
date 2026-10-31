@@ -1,9 +1,12 @@
 import { auth, authPersistenceReady } from "./firebase";
-import { markGuestEntry } from "./guestSession";
+import { clearGuestEntry, markGuestEntry } from "./guestSession";
 import {
   GoogleAuthProvider,
   getRedirectResult,
+  isSignInWithEmailLink,
+  sendSignInLinkToEmail,
   signInAnonymously,
+  signInWithEmailLink,
   signInWithPopup,
   signInWithRedirect,
   type User,
@@ -32,6 +35,7 @@ const POPUP_FALLBACK_CODES = new Set([
 ]);
 
 const GOOGLE_REDIRECT_FLAG = "kanso:google-redirect";
+const EMAIL_SIGN_IN_KEY = "kanso:email-for-sign-in";
 
 /** Marca que salimos a Google con redirección para detectar vueltas vacías. */
 function markGoogleRedirect(): void {
@@ -153,6 +157,59 @@ export async function signInWithGoogle(): Promise<User | null> {
   }
 
   return signInWithProvider(googleProvider, "Google");
+}
+
+/**
+ * Envía un enlace de acceso al correo indicado.
+ *
+ * Es la vía alternativa cuando el navegador bloquea el popup o la redirección
+ * de Google (Safari, modo privado, apps instaladas). El enlace vuelve a
+ * `/login` y se completa en el mismo navegador.
+ */
+export async function sendEmailSignInLink(email: string): Promise<void> {
+  await authPersistenceReady;
+  await sendSignInLinkToEmail(auth, email, {
+    url: `${window.location.origin}/login?mode=login`,
+    handleCodeInApp: true,
+  });
+
+  try {
+    window.localStorage.setItem(EMAIL_SIGN_IN_KEY, email);
+  } catch {
+    // Sin localStorage el enlace se completa pidiendo el correo de nuevo.
+  }
+}
+
+/** Indica si la URL actual es un enlace de acceso de Firebase. */
+export function isEmailSignInLinkUrl(href: string): boolean {
+  return isSignInWithEmailLink(auth, href);
+}
+
+/** Correo guardado al pedir el enlace, si sigue disponible. */
+export function storedEmailForSignIn(): string | null {
+  try {
+    return window.localStorage.getItem(EMAIL_SIGN_IN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Completa el acceso con el enlace y el correo que lo pidió. */
+export async function completeEmailSignInLink(
+  email: string,
+  href: string,
+): Promise<User> {
+  await authPersistenceReady;
+  const credential = await signInWithEmailLink(auth, email, href);
+  clearGuestEntry();
+
+  try {
+    window.localStorage.removeItem(EMAIL_SIGN_IN_KEY);
+  } catch {
+    // La limpieza es opcional.
+  }
+
+  return credential.user;
 }
 
 /**
