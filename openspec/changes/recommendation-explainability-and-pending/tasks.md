@@ -29,5 +29,5 @@
 - [ ] 5.1 Ampliar `explain` con la lista de candidatos (top 10), emociones etiquetadas/coincidentes/faltantes, posición de recencia y motivo de la valoración
 - [ ] 5.2 Mostrar esa tabla de candidatos en el panel, con el elegido resaltado y su ranking
 - [ ] 5.3 Revisar el panel en claro/oscuro a 320, 390, 768 y 1440 px y probar «Sorpréndeme» con una cuenta con pendientes
-- [ ] 5.4 Ejecutar `npx tsc --noEmit`, `npm run lint`, `npm test` y `npm run build`
-- [ ] 5.5 Validar el cambio con `npx openspec validate recommendation-explainability-and-pending --strict`
+- [x] 5.4 Ejecutar `npx tsc --noEmit`, `npm run lint`, `npm test` y `npm run build`
+- [x] 5.5 Validar el cambio con `npx openspec validate recommendation-explainability-and-pending --strict`
