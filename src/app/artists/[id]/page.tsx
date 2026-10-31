@@ -78,7 +78,7 @@ export default function ArtistPage() {
         )}
 
         {!albums && !error && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 2xl:grid-cols-5 [@media(min-width:2200px)]:grid-cols-6">
             {[...Array(8)].map((_, index) => (
               <Skeleton
                 key={index}
@@ -96,7 +96,7 @@ export default function ArtistPage() {
 
         {albums && albums.length > 0 && (
           <Stagger
-            className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6"
+            className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 2xl:grid-cols-5 [@media(min-width:2200px)]:grid-cols-6"
             stagger={0.04}
             onMount
           >

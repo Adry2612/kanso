@@ -1,13 +1,13 @@
 export {
   addListenLater,
   CollectionApiError,
-  listFavorites,
+  listCollection,
   listListenLater,
-  removeFavorite,
+  removeCollectionAlbum,
   removeListenLater,
-  toggleFavorite,
-  type FavoriteRecord,
-  type ToggleFavoriteResponse,
+  saveCollectionAlbum,
+  type CollectionRecord,
+  type SaveCollectionAlbumResponse,
 } from "./service";
 export { createCollectionRepository } from "./repository";
-export type { CollectionRepository, FavoriteWrite } from "./repository";
+export type { CollectionRepository, CollectionWrite } from "./repository";

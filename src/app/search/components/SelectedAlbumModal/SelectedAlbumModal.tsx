@@ -5,26 +5,26 @@ import { useScrollLock } from "@/hooks/useScrollLock";
 import { useSaveAlbumWizard } from "@/hooks/client/useSaveAlbumWizard";
 import { SuccessModal } from "./steps/SuccessAlbumModal";
 import { SaveAlbumModal } from "./steps/SaveAlbumModal";
-import { AlbumAlreadyFavoriteStep } from "./steps/AlbumAlreadyFavoriteStep";
+import { AlbumInCollectionStep } from "./steps/AlbumInCollectionStep";
 import { AlbumAlreadyPendingStep } from "./steps/AlbumAlreadyPendingStep";
 import type { Album } from "@/types/album";
 import type {
-  CollectionFavorite,
+  CollectionAlbum,
   ListenLaterItem,
   SaveAlbumResult,
-} from "@/types/favorites";
+} from "@/types/collection";
 
 interface SelectedAlbumModalProps {
   isOpen: boolean;
   onClose: () => void;
   album: Album;
-  isFavorite?: boolean;
+  isInCollection?: boolean;
   isPending?: boolean;
   pendingData?: ListenLaterItem | null;
   onSaved?: (result: SaveAlbumResult) => void;
   onPendingSaved?: (pending: ListenLaterItem | null) => void;
   onPendingRemoved?: () => void;
-  favoriteData?: CollectionFavorite | null;
+  collectionData?: CollectionAlbum | null;
   startEditing?: boolean;
   /** Abre directamente el formulario de colección para mover un pendiente. */
   startMovingToCollection?: boolean;
@@ -38,23 +38,23 @@ export default function SelectedAlbumModal({
   isOpen,
   onClose,
   album,
-  isFavorite = false,
+  isInCollection = false,
   isPending = false,
   pendingData = null,
   onSaved,
   onPendingSaved,
   onPendingRemoved,
-  favoriteData = null,
+  collectionData = null,
   startEditing = false,
   startMovingToCollection = false,
 }: SelectedAlbumModalProps) {
   const wizard = useSaveAlbumWizard({
     isOpen,
     album,
-    isFavorite,
+    isInCollection,
     isPending,
     pendingData,
-    favoriteData,
+    collectionData,
     startEditing,
     startMovingToCollection,
     onSaved,
@@ -66,7 +66,7 @@ export default function SelectedAlbumModal({
 
   const stepKey =
     wizard.stage === "success" ||
-    wizard.stage === "favorite" ||
+    wizard.stage === "collection" ||
     wizard.stage === "pending"
       ? wizard.stage
       : "save";
@@ -93,13 +93,13 @@ export default function SelectedAlbumModal({
           />
         )}
 
-        {wizard.stage === "favorite" && (
-          <AlbumAlreadyFavoriteStep
+        {wizard.stage === "collection" && (
+          <AlbumInCollectionStep
             isOpen={isOpen}
             onClose={onClose}
             album={album}
             feelings={wizard.savedFeelings}
-            activities={favoriteData?.activities ?? []}
+            activities={collectionData?.activities ?? []}
             removing={wizard.isRemoving}
             onEdit={wizard.edit}
             onRemove={wizard.deleteFromCollection}

@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify */
 import { Link, useTransitionRouter } from "next-view-transitions";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLandingAlbums } from "@/hooks/client/useLandingAlbums";
 import { signInAsGuest } from "@/lib/firebaseAuth";
@@ -21,7 +21,7 @@ const startingPoints = [
   {
     number: "02",
     title: "Conectamos tu colección",
-    body: "Comparamos ese contexto con tus favoritos.",
+    body: "Comparamos ese contexto con tu colección.",
   },
   {
     number: "03",
@@ -48,7 +48,7 @@ function LandingAlbumsSkeleton() {
 }
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useTransitionRouter();
   const [isStartingGuest, setIsStartingGuest] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
@@ -57,7 +57,16 @@ export default function Home() {
     error: albumsError,
     reload: loadLandingAlbums,
   } = useLandingAlbums();
-  const startHref = user ? "/home" : "/login?mode=register";
+  const startHref =
+    user && !user.isAnonymous ? "/home" : "/login?mode=register";
+
+  // Solo una cuenta real continúa directamente a la app. Una sesión anónima
+  // guardada se queda en la bienvenida hasta que elija entrar como invitado.
+  useEffect(() => {
+    if (!authLoading && user && !user.isAnonymous) {
+      router.replace("/home");
+    }
+  }, [authLoading, router, user]);
 
   const handleGuestStart = async () => {
     setGuestError(null);
@@ -196,7 +205,7 @@ export default function Home() {
               )}
 
               {!albumsError && landingAlbums?.length === 0 && (
-                <div className="py-8">
+                <div className="kanso-empty mx-auto max-w-xl py-8">
                   <p className="public-muted text-sm leading-6">
                     Todavía no hay álbumes compartidos. Explora el catálogo y
                     guarda el primero.

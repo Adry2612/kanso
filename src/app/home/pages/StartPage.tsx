@@ -7,8 +7,11 @@ import { useTransitionRouter } from "next-view-transitions";
 import { moodOptions } from "@/constants/moods";
 import { activityOptions } from "@/constants/activities";
 import { useTranslations } from "@/context/I18nContext";
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import { normalizeTagCategory } from "@/lib/tags";
-import type { FavoriteFormat } from "@/types/favorites";
+import OptionSelector from "@/components/selectors/OptionSelector";
+import { buildFormatOptions } from "@/components/selectors/formatOptions";
+import type { CollectionFormat } from "@/types/collection";
 import {
   buildQuickRecommendationHref,
   buildRecommendationHref,
@@ -31,8 +34,11 @@ export default function StartPage() {
   const tMoods = useTranslations("moods");
   const tActivities = useTranslations("activities");
   const tQuick = useTranslations("quickRecommendation");
+  const tFormats = useTranslations("formats");
   const tFeelings = useTranslations("feelingsCarousel");
   const tTags = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
+  const tRecommendation = useTranslations("recommendation");
   const reduce = useReducedMotion();
   const {
     today,
@@ -40,21 +46,29 @@ export default function StartPage() {
     historyError,
     recentRecommendations,
     collectionTags,
+    collectionCount,
+    collectionStatus,
   } = useHomeStart();
 
+  const physicalFormatOptions = buildFormatOptions(tFormats, {
+    includeAll: true,
+    includeDigital: false,
+  });
   const [selectedMood, setSelectedMood] = useState<string[]>([]);
   const [recommendationType, setRecommendationType] = useState<
     "mood" | "activity"
   >("mood");
   const [selectedActivity, setSelectedActivity] = useState<string[]>([]);
-  const [selectedFormat, setSelectedFormat] = useState<"all" | FavoriteFormat>(
-    "all",
-  );
+  const [selectedFormat, setSelectedFormat] = useState<
+    "all" | CollectionFormat
+  >("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [recommendationStep, setRecommendationStep] = useState<0 | 1>(0);
   const [quickOpen, setQuickOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [quickFormat, setQuickFormat] = useState<"all" | FavoriteFormat>("all");
+  const [quickFormat, setQuickFormat] = useState<"all" | CollectionFormat>(
+    "all",
+  );
   const [quickTag, setQuickTag] = useState<string | null>(null);
 
   const tagCategoryLabel = (category: string) => {
@@ -112,6 +126,18 @@ export default function StartPage() {
     recommendationType === "mood"
       ? selectedMood.map((mood) => tMoods(mood)).join(", ")
       : selectedActivity.map((activity) => tActivities(activity)).join(", ");
+
+  const hasEmptyCollection =
+    collectionStatus === "ready" && collectionCount === 0;
+  const recentEmptyTitle = hasEmptyCollection
+    ? tRecommendation("recentEmpty.noCollectionTitle")
+    : tRecommendation("recentEmpty.title");
+  const recentEmptyDescription = hasEmptyCollection
+    ? tRecommendation("recentEmpty.noCollectionDescription")
+    : tRecommendation("recentEmpty.description");
+  const recentEmptyCta = hasEmptyCollection
+    ? tRecommendation("recentEmpty.noCollectionCta")
+    : tRecommendation("recentEmpty.cta");
 
   return (
     <main className="kanso-main home-main min-h-screen">
@@ -188,32 +214,19 @@ export default function StartPage() {
                     <p className="mt-1 text-xs text-[var(--kanso-muted)]">
                       {tQuick("subtitle")}
                     </p>
-                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {[
-                        [tQuick("anyFormat"), "all"],
-                        [tQuick("vinyl"), "vinyl"],
-                        [tQuick("cd"), "cd"],
-                        [tQuick("cassette"), "cassette"],
-                      ].map(([label, value]) => {
-                        const isSelected = quickFormat === value;
-                        return (
-                          <button
-                            key={value}
-                            type="button"
-                            aria-pressed={isSelected}
-                            onClick={() =>
-                              setQuickFormat(value as "all" | FavoriteFormat)
-                            }
-                            className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
-                              isSelected
-                                ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
-                                : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
+                    <div className="mt-4">
+                      <OptionSelector
+                        options={physicalFormatOptions}
+                        selectedKeys={[quickFormat]}
+                        onSelect={(key) =>
+                          setQuickFormat(key as "all" | CollectionFormat)
+                        }
+                        selection="single"
+                        layout="grid"
+                        semantics="buttons"
+                        ariaLabel={tQuick("title")}
+                        columns={4}
+                      />
                     </div>
                     {collectionTags.length > 0 && (
                       <div className="mt-5">
@@ -238,7 +251,8 @@ export default function StartPage() {
                                     : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                                 }`}
                               >
-                                {tagCategoryLabel(tag.category)}: {tag.value}
+                                {tagCategoryLabel(tag.category)}:{" "}
+                                {tagDisplayLabel(tag, tTaxonomy)}
                               </button>
                             );
                           })}
@@ -352,33 +366,18 @@ export default function StartPage() {
 
             {recommendationStep === 1 && (
               <div className="mt-6">
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    ["Toda mi colección", "all"],
-                    ["Vinilos", "vinyl"],
-                    ["CDs", "cd"],
-                    ["Cassettes", "cassette"],
-                  ].map(([label, value]) => {
-                    const isSelected = selectedFormat === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        aria-pressed={isSelected}
-                        onClick={() =>
-                          setSelectedFormat(value as "all" | FavoriteFormat)
-                        }
-                        className={`rounded-[var(--radius-sm)] border px-3 py-2.5 text-xs font-semibold transition ${
-                          isSelected
-                            ? "border-[var(--kanso-mint)] bg-[var(--kanso-mint)] text-[var(--background)]"
-                            : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)] hover:text-[var(--foreground)]"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <OptionSelector
+                  options={physicalFormatOptions}
+                  selectedKeys={[selectedFormat]}
+                  onSelect={(key) =>
+                    setSelectedFormat(key as "all" | CollectionFormat)
+                  }
+                  selection="single"
+                  layout="grid"
+                  semantics="buttons"
+                  ariaLabel="Fuente de la recomendación"
+                  columns={4}
+                />
 
                 {collectionTags.length > 0 && (
                   <div className="mt-6">
@@ -407,7 +406,8 @@ export default function StartPage() {
                                 : "border-[var(--kanso-line)] text-[var(--kanso-muted)] hover:border-[var(--kanso-mint)]"
                             }`}
                           >
-                            {tagCategoryLabel(tag.category)}: {tag.value}
+                            {tagCategoryLabel(tag.category)}:{" "}
+                            {tagDisplayLabel(tag, tTaxonomy)}
                           </button>
                         );
                       })}
@@ -495,17 +495,19 @@ export default function StartPage() {
                 ))}
               </Stagger>
             ) : (
-              <div className="rounded-[var(--radius-sm)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-4">
-                <p className="text-sm leading-relaxed text-[var(--kanso-muted)]">
-                  Todavía no tienes recomendaciones. Busca álbumes para empezar
-                  tu colección o elige un momento para recibir una.
+              <div className="kanso-empty rounded-[var(--radius-sm)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-4">
+                <p className="text-sm font-semibold text-[var(--foreground)]">
+                  {recentEmptyTitle}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-[var(--kanso-muted)]">
+                  {recentEmptyDescription}
                 </p>
                 <button
                   type="button"
                   onClick={() => router.push("/search")}
                   className="mt-3 text-sm font-semibold text-[var(--kanso-mint)] underline"
                 >
-                  Explorar discos
+                  {recentEmptyCta}
                 </button>
               </div>
             )}

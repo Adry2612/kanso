@@ -1,8 +1,9 @@
 import "server-only";
 
 import { adminDb } from "@/lib/firebaseAdmin";
+import { listMergedCollectionDocs } from "@/services/server/collection/legacy";
 import { normalizeMoods } from "@/constants/moods";
-import { normalizeFavoriteFormats } from "@/lib/favorites";
+import { normalizeCollectionFormats } from "@/utils/formats";
 import { toIsoDate } from "./friends";
 import type {
   SharedAlbumSummary,
@@ -144,13 +145,13 @@ export async function loadSharedCollection(
   uid: string,
 ): Promise<SharedCollectionAlbum[]> {
   const db = adminDb();
-  const snapshot = await db.collection(`users/${uid}/favorites`).get();
+  const docs = await listMergedCollectionDocs(db, uid);
 
   const albums = await loadAlbums(
-    snapshot.docs.flatMap((doc) => albumIdsFrom(doc.data())),
+    docs.flatMap((doc) => albumIdsFrom(doc.data())),
   );
 
-  const collection = snapshot.docs.map((doc) => {
+  const collection = docs.map((doc) => {
     const data = doc.data();
     const albumId = typeof data.albumId === "string" ? data.albumId : "";
 
@@ -161,7 +162,7 @@ export async function loadSharedCollection(
         Array.isArray(data.labeledFeelings) ? data.labeledFeelings : [],
       ),
       activities: toStringArray(data.activities),
-      format: normalizeFavoriteFormats(data.format, data.ownership),
+      format: normalizeCollectionFormats(data.format, data.ownership),
       album: albumId ? (albums.get(albumId) ?? null) : null,
     };
   });

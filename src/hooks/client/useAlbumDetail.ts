@@ -1,33 +1,31 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { FastAverageColor } from "fast-average-color";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getAlbum } from "@/services/client/albums";
-import { getCollection, removeFavorite } from "@/services/client/favorites";
+import {
+  getCollection,
+  removeCollectionAlbum,
+} from "@/services/client/collection";
 import {
   getListenLater,
   removeFromListenLater,
 } from "@/services/client/listenLater";
 import { normalizeMoods } from "@/constants/moods";
-import { deriveBackdropColor } from "@/utils/color";
-import { normalizeFavoriteFormats } from "@/utils/formats";
+import { normalizeCollectionFormats } from "@/utils/formats";
 import { toTracklist } from "@/utils/tracklist";
 import type { Album, SpotifyAlbum } from "@/types/album";
 import type {
-  CollectionFavorite,
-  FavoriteFormat,
+  CollectionAlbum,
+  CollectionFormat,
   ListenLaterItem,
   SaveAlbumResult,
-} from "@/types/favorites";
-
-const DEFAULT_BACKGROUND = "rgba(6, 78, 59, 0.8)";
+} from "@/types/collection";
 
 export function useAlbumDetail(albumId: string) {
   const { user } = useAuth();
-  const imgRef = useRef<HTMLImageElement>(null);
   const [mounted, setMounted] = useState(false);
-  const [bgColor, setBgColor] = useState(DEFAULT_BACKGROUND);
-  const [favorite, setFavorite] = useState<CollectionFavorite | null>(null);
+  const [collectionEntry, setCollectionEntry] =
+    useState<CollectionAlbum | null>(null);
   const [pending, setPending] = useState<ListenLaterItem | null>(null);
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -49,13 +47,13 @@ export function useAlbumDetail(albumId: string) {
   );
 
   const savedMoods = useMemo(
-    () => normalizeMoods(favorite?.labeledFeelings ?? []),
-    [favorite],
+    () => normalizeMoods(collectionEntry?.labeledFeelings ?? []),
+    [collectionEntry],
   );
 
-  const savedFormats: FavoriteFormat[] = useMemo(
-    () => normalizeFavoriteFormats(favorite?.format),
-    [favorite],
+  const savedFormats: CollectionFormat[] = useMemo(
+    () => normalizeCollectionFormats(collectionEntry?.format),
+    [collectionEntry],
   );
 
   useEffect(() => {
@@ -63,29 +61,8 @@ export function useAlbumDetail(albumId: string) {
   }, []);
 
   useEffect(() => {
-    if (!mounted || !album || !imgRef.current) return;
-
-    const fac = new FastAverageColor();
-
-    fac
-      .getColorAsync(imgRef.current, { algorithm: "dominant" })
-      .then((color) => {
-        setBgColor(
-          deriveBackdropColor([color.value[0], color.value[1], color.value[2]]),
-        );
-      })
-      .catch(() => {
-        setBgColor(DEFAULT_BACKGROUND);
-      });
-
-    return () => {
-      fac.destroy();
-    };
-  }, [album, mounted]);
-
-  useEffect(() => {
     if (!user?.uid || !albumId) {
-      setFavorite(null);
+      setCollectionEntry(null);
       setPending(null);
       setCollectionLoading(false);
       return;
@@ -94,13 +71,13 @@ export function useAlbumDetail(albumId: string) {
     setCollectionLoading(true);
     const loadCollectionState = async () => {
       try {
-        const [favorites, pendingAlbums] = await Promise.all([
+        const [collection, pendingAlbums] = await Promise.all([
           getCollection(),
           getListenLater().catch(() => []),
         ]);
 
-        setFavorite(
-          favorites.find(
+        setCollectionEntry(
+          collection.find(
             (item) => (item.album?.id ?? item.albumId) === albumId,
           ) ?? null,
         );
@@ -110,7 +87,7 @@ export function useAlbumDetail(albumId: string) {
           ) ?? null,
         );
       } catch {
-        setFavorite(null);
+        setCollectionEntry(null);
         setPending(null);
       } finally {
         setCollectionLoading(false);
@@ -124,8 +101,8 @@ export function useAlbumDetail(albumId: string) {
     if (!user?.uid || !album) return;
     setRemoving(true);
     try {
-      await removeFavorite(album);
-      setFavorite(null);
+      await removeCollectionAlbum(album);
+      setCollectionEntry(null);
     } finally {
       setRemoving(false);
     }
@@ -144,7 +121,7 @@ export function useAlbumDetail(albumId: string) {
 
   const onSaved = (saved: SaveAlbumResult) => {
     if (!album) return;
-    setFavorite((current) => ({
+    setCollectionEntry((current) => ({
       id: current?.id ?? saved.albumId,
       album: album as Album,
       savedAt: new Date().toISOString(),
@@ -163,10 +140,8 @@ export function useAlbumDetail(albumId: string) {
     error,
     isLoading,
     mounted,
-    bgColor,
-    imgRef,
     albumTracklist,
-    favorite,
+    collectionEntry,
     pending,
     collectionLoading,
     modalOpen,

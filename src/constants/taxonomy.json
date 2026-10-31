@@ -1,0 +1,94 @@
+{
+  "genres": {
+    "pop": ["pop"],
+    "rock": [
+      "rock",
+      "rock alternativo",
+      "alternative",
+      "alternative rock",
+      "grunge",
+      "shoegaze"
+    ],
+    "hip-hop": [
+      "hip-hop",
+      "hip hop",
+      "hiphop",
+      "rap",
+      "trap",
+      "drill",
+      "grime",
+      "boom bap",
+      "rap español",
+      "latin hip hop"
+    ],
+    "metal": [
+      "metal",
+      "heavy metal",
+      "powermetal",
+      "power metal",
+      "metalcore",
+      "deathcore",
+      "grindcore"
+    ],
+    "r&b": [
+      "r&b",
+      "r & b",
+      "rnb",
+      "randb",
+      "rhythm and blues",
+      "contemporary r&b"
+    ],
+    "jazz": ["jazz", "bebop", "swing"],
+    "electronic": [
+      "electronic",
+      "electrónica",
+      "electronica",
+      "edm",
+      "house",
+      "techno",
+      "trance",
+      "dubstep",
+      "drum and bass",
+      "dnb",
+      "dance"
+    ],
+    "classical": [
+      "classical",
+      "clásica",
+      "clasica",
+      "orchestra",
+      "opera",
+      "baroque"
+    ],
+    "indie": ["indie", "bedroom", "indie rock"],
+    "folk": ["folk", "singer-songwriter", "acoustic"],
+    "reggaeton": ["reggaeton", "reggaetón", "dembow", "latin", "latino"],
+    "soul": ["soul", "motown", "neo soul"],
+    "punk": ["punk", "hardcore", "emo", "post-hardcore"],
+    "country": ["country", "americana"],
+    "ambient": ["ambient", "chillout"],
+    "blues": ["blues"]
+  },
+  "languages": {
+    "es": ["es", "español", "espanol", "castellano", "spanish"],
+    "en": ["en", "inglés", "ingles", "english"],
+    "fr": ["fr", "francés", "frances", "french"],
+    "de": ["de", "alemán", "aleman", "german"],
+    "it": ["it", "italiano", "italian"],
+    "pt": ["pt", "portugués", "portugues", "portuguese"],
+    "ja": ["ja", "japonés", "japones", "japanese"],
+    "ko": ["ko", "coreano", "korean"],
+    "ru": ["ru", "ruso", "russian"],
+    "ar": ["ar", "árabe", "arabe", "arabic"],
+    "nl": ["nl", "neerlandés", "neerlandes", "dutch"],
+    "sv": ["sv", "sueco", "swedish"],
+    "ca": ["ca", "catalán", "catalan"],
+    "gl": ["gl", "gallego", "galician"],
+    "eu": ["eu", "euskera", "vasco", "basque"],
+    "zh": ["zh", "chino", "chinese"],
+    "hi": ["hi", "hindi"],
+    "tr": ["tr", "turco", "turkish"],
+    "pl": ["pl", "polaco", "polish"],
+    "el": ["el", "griego", "greek"]
+  }
+}

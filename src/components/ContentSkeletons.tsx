@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/Skeleton";
 
 const GRID_CLASS =
-  "grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6";
+  "grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 2xl:grid-cols-5 [@media(min-width:2200px)]:grid-cols-6";
 
 const visibleItems = (count: number) =>
   Array.from({ length: count }, (_, index) => index);
@@ -47,16 +47,26 @@ export function ReleaseGridSkeleton({ count = 8 }: { count?: number }) {
 export function AlbumGridSkeleton({
   count = 8,
   withAction = false,
+  variant = "panel",
 }: {
   count?: number;
   withAction?: boolean;
+  variant?: "panel" | "plain";
 }) {
+  const isPlain = variant === "plain";
   return (
     <div className={GRID_CLASS} aria-hidden="true">
       {visibleItems(count).map((index) => (
-        <div key={index} className="kanso-card flex h-full w-full flex-col p-2">
+        <div
+          key={index}
+          className={
+            isPlain
+              ? "flex h-full w-full flex-col"
+              : "kanso-card flex h-full w-full flex-col p-2"
+          }
+        >
           <Skeleton className="aspect-square w-full rounded-[var(--radius-xs)]" />
-          <div className="px-2 pb-2 pt-3">
+          <div className={isPlain ? "mt-3" : "px-2 pb-2 pt-3"}>
             <Skeleton className="h-4 w-4/5" />
             <Skeleton className="mt-2 h-3 w-1/2" />
             {withAction && (

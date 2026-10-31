@@ -1,4 +1,4 @@
-import type { FavoriteTag } from "@/types/favorites";
+import type { CollectionTag } from "@/types/collection";
 
 /**
  * Unifica las variantes históricas de una categoría ("genero", "genre"...)
@@ -14,18 +14,18 @@ export function normalizeTagCategory(category: string): string {
 }
 
 /** Clave estable para comparar y deduplicar etiquetas. */
-export function tagKey(tag: Pick<FavoriteTag, "category" | "value">): string {
+export function tagKey(tag: Pick<CollectionTag, "category" | "value">): string {
   return `${normalizeTagCategory(tag.category)}:${tag.value.trim().toLowerCase()}`;
 }
 
 /** Devuelve las etiquetas sin duplicados y con la categoría normalizada. */
-export function uniqueTags(tags: FavoriteTag[]): FavoriteTag[] {
-  const unique = new Map<string, FavoriteTag>();
+export function uniqueTags(tags: CollectionTag[]): CollectionTag[] {
+  const unique = new Map<string, CollectionTag>();
 
   tags.forEach((tag) => {
     const value = tag.value?.trim();
     if (!tag.category || !value) return;
-    const normalized: FavoriteTag = {
+    const normalized: CollectionTag = {
       category: normalizeTagCategory(tag.category),
       value,
     };

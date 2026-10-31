@@ -13,6 +13,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/motion";
 import ViewTransitionGuard from "@/components/ViewTransitionGuard";
 import MobileViewport from "@/components/MobileViewport";
+import GuestSessionGuard from "@/components/GuestSessionGuard";
+import SessionGuard from "@/components/SessionGuard";
 
 const themeInitScript = `
 (function () {
@@ -36,8 +38,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kanso",
+  title: "kanso.",
   description: "Your music collection manager",
+  applicationName: "kanso.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "kanso.",
+    statusBarStyle: "black-translucent",
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 // `viewport-fit=cover` deja que la app pinte también bajo el notch y el
@@ -46,6 +58,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#101b14",
 };
 
 export default function RootLayout({
@@ -66,13 +79,16 @@ export default function RootLayout({
           <I18nProvider>
             <ThemeProvider>
               <AuthProvider>
+                <GuestSessionGuard />
                 <ProfileProvider>
                   <ReactQueryProvider>
                     <MotionProvider>
                       <ToastProvider>
                         <Header />
                         <FriendRequestNotifier />
-                        <div className="app-content">{children}</div>
+                        <div className="app-content">
+                          <SessionGuard>{children}</SessionGuard>
+                        </div>
                       </ToastProvider>
                     </MotionProvider>
                   </ReactQueryProvider>

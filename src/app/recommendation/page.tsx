@@ -30,6 +30,7 @@ function RecommendationReader() {
   const type = searchParams.get("type") || "mood"; // Por defecto "mood"
   const format = searchParams.get("format") || "all";
   const tags = searchParams.getAll("tag");
+  const isQuick = searchParams.get("quick") === "1";
 
   useEffect(() => {
     setMounted(true);
@@ -58,6 +59,7 @@ function RecommendationReader() {
       activity={type === "activity" ? activity : null}
       format={format}
       tags={tags}
+      isQuick={isQuick}
     />
   );
 }

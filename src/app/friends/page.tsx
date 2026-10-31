@@ -154,7 +154,7 @@ export default function FriendsPage() {
         <ErrorState
           className="mt-10"
           title={t("loadError")}
-          description={loadError ?? t("loadErrorDescription")}
+          description={t("loadErrorDescription")}
           onRetry={() => void loadFriends()}
           retryLabel={t("retry")}
         />
@@ -193,7 +193,7 @@ export default function FriendsPage() {
           variant="inline"
           className="mt-5 max-w-5xl"
           title={t("loadError")}
-          description={loadError}
+          description={t("loadErrorDescription")}
           onRetry={() => void loadFriends()}
           retryLabel={t("retry")}
         />

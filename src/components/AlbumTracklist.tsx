@@ -14,6 +14,8 @@ type TrackListItem = {
   artists: { name: string }[];
 };
 
+export type { TrackListItem };
+
 type AlbumTracklistProps = {
   tracks: TrackListItem[] | null;
   loading?: boolean;

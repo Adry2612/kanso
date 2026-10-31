@@ -4,6 +4,7 @@ import { authFetch } from "@/lib/api/authFetch";
 import type {
   ActivityRecommendationsResult,
   MoodRecommendationResponse,
+  RecommendationFeedback,
   RecommendationHistoryResponse,
 } from "@/types/recommendations";
 
@@ -92,7 +93,12 @@ export async function getRecommendedAlbumByActivity(
   const response = await authFetch("/api/getRecommendedAlbumByActivity", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ activity, format, requiredMoods, requiredTags }),
+    body: JSON.stringify({
+      activity,
+      format,
+      requiredMoods,
+      requiredTags,
+    }),
   });
 
   const data = await parseJson<
@@ -104,4 +110,49 @@ export async function getRecommendedAlbumByActivity(
   }
 
   return data;
+}
+
+/** Guarda o sustituye la valoración de una recomendación. */
+export async function rateRecommendation(
+  albumId: string,
+  liked: boolean,
+): Promise<RecommendationFeedback> {
+  const response = await authFetch("/api/rateRecommendation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ albumId, liked }),
+  });
+
+  const data = await parseJson<RecommendationFeedback & { error?: string }>(
+    response,
+  );
+
+  if (!response.ok || !data) {
+    throw new Error(data?.error || "Error al guardar la valoración.");
+  }
+
+  return {
+    albumId: data.albumId,
+    liked: data.liked,
+    topMoods: data.topMoods ?? [],
+  };
+}
+
+/** Valoración guardada de un álbum, si existe. */
+export async function getRecommendationFeedback(
+  albumId: string,
+): Promise<{ albumId: string; liked: boolean } | null> {
+  const response = await authFetch(
+    `/api/rateRecommendation?albumId=${encodeURIComponent(albumId)}`,
+  );
+  const data = await parseJson<{
+    feedback?: { albumId: string; liked: boolean } | null;
+    error?: string;
+  }>(response);
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Error al obtener la valoración.");
+  }
+
+  return data?.feedback ?? null;
 }

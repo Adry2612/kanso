@@ -6,9 +6,9 @@ import { useTransitionRouter } from "next-view-transitions";
 import {
   ChevronLeft,
   ChevronRight,
-  Heart,
   History,
   Home,
+  Library,
   Menu,
   Mic2,
   Search,
@@ -53,10 +53,10 @@ export default function Header() {
   const navItems: { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/home", label: t("home"), icon: Home },
     { href: "/search", label: t("search"), icon: Search },
+    { href: "/collection", label: t("collection"), icon: Library },
     { href: "/artists", label: t("artists"), icon: Mic2 },
     { href: "/releases", label: t("releases"), icon: Sparkles },
     { href: "/friends", label: t("friends"), icon: UsersRound },
-    { href: "/favorites", label: t("favorites"), icon: Heart },
     { href: "/recomendationHistory", label: t("history"), icon: History },
   ];
 

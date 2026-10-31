@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { addFavorite, removeFavorite } from "@/services/client/favorites";
+import {
+  saveCollectionAlbum,
+  removeCollectionAlbum,
+} from "@/services/client/collection";
 import {
   addToListenLater,
   removeFromListenLater,
@@ -8,11 +11,11 @@ import {
 import type { Album } from "@/types/album";
 import type { Mood } from "@/types/mood";
 import type {
-  FavoriteFormat,
-  FavoriteTag,
-  SaveFavoriteResponse,
+  CollectionFormat,
+  CollectionTag,
+  SaveCollectionResponse,
   SaveListenLaterResponse,
-} from "@/types/favorites";
+} from "@/types/collection";
 
 export type AlbumCollectionAction =
   | "save-collection"
@@ -24,8 +27,8 @@ export type AlbumCollectionAction =
 export interface SaveAlbumDraft {
   feelings: Mood[];
   activities: string[];
-  format: FavoriteFormat[];
-  tags: FavoriteTag[];
+  format: CollectionFormat[];
+  tags: CollectionTag[];
 }
 
 const UNAUTHENTICATED = "Usuario no autenticado";
@@ -70,8 +73,8 @@ export function useAlbumCollectionActions(album: Album) {
 
   const saveToCollection = useCallback(
     (draft: SaveAlbumDraft) =>
-      run<SaveFavoriteResponse>("save-collection", () =>
-        addFavorite(
+      run<SaveCollectionResponse>("save-collection", () =>
+        saveCollectionAlbum(
           album,
           draft.feelings,
           draft.format,
@@ -91,7 +94,7 @@ export function useAlbumCollectionActions(album: Album) {
   );
 
   const removeFromCollection = useCallback(
-    () => run("remove-collection", () => removeFavorite(album)),
+    () => run("remove-collection", () => removeCollectionAlbum(album)),
     [album, run],
   );
 

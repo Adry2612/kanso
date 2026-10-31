@@ -3,6 +3,8 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
 import { getAdminApp, isAdminConfigured } from "./firebaseAdmin";
+import { classifyAuthFailure, getAuthErrorCode } from "./authFailure";
+import { reportApiError } from "./sentry";
 
 export type AuthenticatedUser = {
   uid: string;
@@ -10,12 +12,33 @@ export type AuthenticatedUser = {
   isAnonymous: boolean;
 };
 
+const SESSION_INVALID_MESSAGE = "Tu sesión no es válida.";
+const VERIFIER_UNAVAILABLE_MESSAGE =
+  "No pudimos validar tu sesión. Inténtalo de nuevo.";
+
+function reportVerificationFailure(request: Request, code: string) {
+  let route = "desconocida";
+  try {
+    route = new URL(request.url).pathname;
+  } catch {
+    // La URL siempre debería ser válida en Next; el fallback evita romper la respuesta.
+  }
+
+  reportApiError(
+    new Error(`Fallo de verificación de identidad (${code})`),
+    `auth ${request.method} ${route}`,
+    "warning",
+  );
+}
+
 /**
  * Verifica el ID token de la petición y devuelve el usuario autenticado.
  *
  * Devuelve `{ uid }` si el token es válido, o una `NextResponse` de error lista
- * para retornar desde la ruta (503 si el servidor no está configurado, 401 si
- * falta el token o no es válido).
+ * para retornar desde la ruta:
+ * - `401` si falta el token o es inválido, caducado o revocado.
+ * - `503` si el verificador no está configurado o no puede validar la identidad
+ *   por un fallo de red, certificados o configuración.
  *
  * El `uid` sale SIEMPRE del token: nunca de un identificador enviado por el
  * cliente.
@@ -24,8 +47,9 @@ export async function authenticate(
   request: Request,
 ): Promise<AuthenticatedUser | NextResponse> {
   if (!isAdminConfigured()) {
+    reportVerificationFailure(request, "auth/not-configured");
     return NextResponse.json(
-      { error: "La autenticación del servidor no está configurada." },
+      { error: VERIFIER_UNAVAILABLE_MESSAGE },
       { status: 503 },
     );
   }
@@ -34,7 +58,7 @@ export async function authenticate(
   const match = /^Bearer\s+(.+)$/i.exec(header ?? "");
   if (!match) {
     return NextResponse.json(
-      { error: "Falta el token de autenticación." },
+      { error: SESSION_INVALID_MESSAGE },
       { status: 401 },
     );
   }
@@ -45,10 +69,20 @@ export async function authenticate(
       uid: decoded.uid,
       isAnonymous: decoded.firebase?.sign_in_provider === "anonymous",
     };
-  } catch {
+  } catch (error) {
+    const code = getAuthErrorCode(error);
+    reportVerificationFailure(request, code);
+
+    if (classifyAuthFailure(error) === 401) {
+      return NextResponse.json(
+        { error: SESSION_INVALID_MESSAGE },
+        { status: 401 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Token de autenticación inválido." },
-      { status: 401 },
+      { error: VERIFIER_UNAVAILABLE_MESSAGE },
+      { status: 503 },
     );
   }
 }

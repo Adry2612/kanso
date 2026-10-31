@@ -27,7 +27,7 @@ export default function FriendRequestList({
 
   if (requests.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-[var(--kanso-line)] p-4 text-sm text-[var(--kanso-muted)]">
+      <p className="kanso-empty mx-auto max-w-xl rounded-xl border border-dashed border-[var(--kanso-line)] p-4 text-sm text-[var(--kanso-muted)]">
         {emptyLabel}
       </p>
     );

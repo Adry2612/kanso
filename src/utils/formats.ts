@@ -1,35 +1,35 @@
-import type { FavoriteFormat } from "@/types/favorites";
+import type { CollectionFormat } from "@/types/collection";
 
-const FAVORITE_FORMATS: readonly FavoriteFormat[] = [
+const COLLECTION_FORMATS: readonly CollectionFormat[] = [
   "digital",
   "cd",
   "cassette",
   "vinyl",
 ];
 
-function isFavoriteFormat(value: unknown): value is FavoriteFormat {
+function isCollectionFormat(value: unknown): value is CollectionFormat {
   return (
     typeof value === "string" &&
-    FAVORITE_FORMATS.includes(value as FavoriteFormat)
+    COLLECTION_FORMATS.includes(value as CollectionFormat)
   );
 }
 
 /**
- * Normaliza los formatos de un favorito.
+ * Normaliza los formatos de una entrada de la colección.
  *
- * Los favoritos antiguos guardaban un único `format` como string y, antes aún,
+ * Las entradas antiguas guardaban un único `format` como string y, antes aún,
  * el formato vivía en `ownership`. La API expone siempre un array para que la
  * colección propia y la biblioteca compartida tengan el mismo contrato.
  */
-export function normalizeFavoriteFormats(
+export function normalizeCollectionFormats(
   format: unknown,
   ownership?: unknown,
-): FavoriteFormat[] {
+): CollectionFormat[] {
   if (Array.isArray(format)) {
-    return format.filter(isFavoriteFormat);
+    return format.filter(isCollectionFormat);
   }
 
-  if (isFavoriteFormat(format)) {
+  if (isCollectionFormat(format)) {
     return [format];
   }
 
@@ -40,9 +40,9 @@ export function normalizeFavoriteFormats(
 
   if (owner?.type === "physical") {
     if (Array.isArray(owner.format)) {
-      return owner.format.filter(isFavoriteFormat);
+      return owner.format.filter(isCollectionFormat);
     }
-    if (isFavoriteFormat(owner.format)) {
+    if (isCollectionFormat(owner.format)) {
       return [owner.format];
     }
   }

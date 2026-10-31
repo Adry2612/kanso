@@ -7,13 +7,11 @@ import {
   findExactArtist,
   prioritizeExactArtist,
 } from "@/utils/searchTerms";
-import type { SpotifyAlbum, SpotifyArtist, SpotifyTrack } from "@/types/album";
+import type { SpotifyAlbum, SpotifyArtist } from "@/types/album";
 import type { ArtistRelease } from "@/types/artists";
 import type {
   SpotifyArtistAlbum,
   SpotifyArtistAlbumsResponse,
-  SpotifyAudioFeatures,
-  SpotifyAudioFeaturesResponse,
   SpotifySearchResponse,
   SpotifyTokenResponse,
   SpotifyTrackPage,
@@ -335,108 +333,4 @@ export async function getAlbumTracklist(
   }
 
   return (await res.json()) as SpotifyTrackPage;
-}
-
-/**
- * Obtiene las características de audio promedio de todas las canciones de un álbum.
- */
-export async function getAlbumAudioFeaturesAverage(albumId: string): Promise<{
-  energy: number;
-  valence: number;
-  danceability: number;
-  acousticness: number;
-  instrumentalness: number;
-  tempo: number;
-  speechiness: number;
-  totalTracks: number;
-} | null> {
-  try {
-    const token = await getAccessToken();
-
-    const tracksRes = await fetch(
-      `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
-
-    if (!tracksRes.ok) {
-      const errorText = await tracksRes.text();
-      console.error(
-        `❌ Error obteniendo pistas del álbum ${albumId}: ${tracksRes.status} - ${errorText}`,
-      );
-      return null;
-    }
-
-    const tracksData = (await tracksRes.json()) as SpotifyTrackPage;
-
-    const trackIds = (tracksData.items ?? [])
-      .map((track: SpotifyTrack) => track.id)
-      .join(",");
-
-    if (!trackIds) {
-      console.error(
-        `❌ No se encontraron IDs de pistas para el álbum ${albumId}`,
-      );
-      return null;
-    }
-
-    const featuresRes = await fetch(
-      `https://api.spotify.com/v1/audio-features?ids=${trackIds}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
-
-    if (!featuresRes.ok) {
-      const errorText = await featuresRes.text();
-      console.error(
-        `❌ Error obteniendo audio features del álbum ${albumId}: ${featuresRes.status} - ${errorText}`,
-      );
-      return null;
-    }
-
-    const featuresData =
-      (await featuresRes.json()) as SpotifyAudioFeaturesResponse;
-    const validFeatures: SpotifyAudioFeatures[] = (
-      featuresData.audio_features ?? []
-    ).filter((feature): feature is SpotifyAudioFeatures => feature !== null);
-
-    if (validFeatures.length === 0) {
-      console.error(
-        `❌ No se obtuvieron características válidas para el álbum ${albumId}`,
-      );
-      return null;
-    }
-
-    return {
-      energy:
-        validFeatures.reduce((sum, feature) => sum + feature.energy, 0) /
-        validFeatures.length,
-      valence:
-        validFeatures.reduce((sum, feature) => sum + feature.valence, 0) /
-        validFeatures.length,
-      danceability:
-        validFeatures.reduce((sum, feature) => sum + feature.danceability, 0) /
-        validFeatures.length,
-      acousticness:
-        validFeatures.reduce((sum, feature) => sum + feature.acousticness, 0) /
-        validFeatures.length,
-      instrumentalness:
-        validFeatures.reduce(
-          (sum, feature) => sum + feature.instrumentalness,
-          0,
-        ) / validFeatures.length,
-      tempo:
-        validFeatures.reduce((sum, feature) => sum + feature.tempo, 0) /
-        validFeatures.length,
-      speechiness:
-        validFeatures.reduce((sum, feature) => sum + feature.speechiness, 0) /
-        validFeatures.length,
-      totalTracks: validFeatures.length,
-    };
-  } catch (error) {
-    console.error(`❌ Error analizando álbum ${albumId}:`, error);
-    return null;
-  }
 }

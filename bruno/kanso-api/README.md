@@ -90,7 +90,7 @@ llegó, pero la cuenta es anónima y esa ruta exige una cuenta registrada.
 | `activity`           | Actividad para la recomendación por actividad.                                   |
 
 `albumDocId` no es el ID de Spotify: es el `id` del documento de Firestore que
-devuelve, por ejemplo, `GET /api/userFavorites` dentro de cada favorito.
+devuelve, por ejemplo, `GET /api/collection` dentro de cada entrada de la colección.
 
 ## Orden recomendado
 

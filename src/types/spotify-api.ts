@@ -40,17 +40,3 @@ export interface SpotifyArtistAlbumsResponse {
 export interface SpotifyTrackPage {
   items?: SpotifyTrack[];
 }
-
-export interface SpotifyAudioFeatures {
-  energy: number;
-  valence: number;
-  danceability: number;
-  acousticness: number;
-  instrumentalness: number;
-  tempo: number;
-  speechiness: number;
-}
-
-export interface SpotifyAudioFeaturesResponse {
-  audio_features?: (SpotifyAudioFeatures | null)[];
-}

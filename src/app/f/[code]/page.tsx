@@ -67,7 +67,7 @@ export default function PublicFriendProfilePage() {
         <div className="py-4">
           <ErrorState
             title={t("loadError")}
-            description={error ?? t("loadErrorDescription")}
+            description={t("loadErrorDescription")}
             onRetry={() => window.location.reload()}
             retryLabel={t("retry")}
           />

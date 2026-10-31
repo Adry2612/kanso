@@ -1,48 +1,48 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getCollection } from "@/services/client/favorites";
+import { getCollection } from "@/services/client/collection";
 import { getListenLater } from "@/services/client/listenLater";
-import type { CollectionFavorite, ListenLaterItem } from "@/types/favorites";
+import type { CollectionAlbum, ListenLaterItem } from "@/types/collection";
 
 export function useCollectionLookup() {
   const { user } = useAuth();
-  const [favoritesByAlbum, setFavoritesByAlbum] = useState<
-    Map<string, CollectionFavorite>
+  const [collectionByAlbum, setCollectionByAlbum] = useState<
+    Map<string, CollectionAlbum>
   >(new Map());
   const [pendingByAlbum, setPendingByAlbum] = useState<
     Map<string, ListenLaterItem>
   >(new Map());
-  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
-  const [favoritesError, setFavoritesError] = useState(false);
+  const [collectionLoaded, setCollectionLoaded] = useState(false);
+  const [collectionError, setCollectionError] = useState(false);
 
   useEffect(() => {
     if (!user?.uid) {
-      setFavoritesByAlbum(new Map());
+      setCollectionByAlbum(new Map());
       setPendingByAlbum(new Map());
-      setFavoritesLoaded(true);
+      setCollectionLoaded(true);
       return;
     }
 
     let cancelled = false;
-    setFavoritesLoaded(false);
-    setFavoritesError(false);
+    setCollectionLoaded(false);
+    setCollectionError(false);
 
     getCollection()
-      .then((favorites) => {
+      .then((collection) => {
         if (cancelled) return;
-        const map = new Map<string, CollectionFavorite>();
-        favorites.forEach((favorite) => {
-          const albumId = favorite.album?.id ?? favorite.albumId;
-          if (albumId) map.set(albumId, favorite);
+        const map = new Map<string, CollectionAlbum>();
+        collection.forEach((entry) => {
+          const albumId = entry.album?.id ?? entry.albumId;
+          if (albumId) map.set(albumId, entry);
         });
-        setFavoritesByAlbum(map);
-        setFavoritesLoaded(true);
+        setCollectionByAlbum(map);
+        setCollectionLoaded(true);
       })
       .catch(() => {
         if (cancelled) return;
-        setFavoritesByAlbum(new Map());
-        setFavoritesError(true);
-        setFavoritesLoaded(true);
+        setCollectionByAlbum(new Map());
+        setCollectionError(true);
+        setCollectionLoaded(true);
       });
 
     getListenLater()
@@ -64,11 +64,11 @@ export function useCollectionLookup() {
     };
   }, [user?.uid]);
 
-  const setFavorite = useCallback(
-    (albumId: string, favorite: CollectionFavorite) => {
-      setFavoritesByAlbum((current) => {
+  const setCollectionEntry = useCallback(
+    (albumId: string, entry: CollectionAlbum) => {
+      setCollectionByAlbum((current) => {
         const next = new Map(current);
-        next.set(albumId, favorite);
+        next.set(albumId, entry);
         return next;
       });
       setPendingByAlbum((current) => {
@@ -87,7 +87,7 @@ export function useCollectionLookup() {
         next.set(albumId, pending);
         return next;
       });
-      setFavoritesByAlbum((current) => {
+      setCollectionByAlbum((current) => {
         const next = new Map(current);
         next.delete(albumId);
         return next;
@@ -105,11 +105,11 @@ export function useCollectionLookup() {
   }, []);
 
   return {
-    favoritesByAlbum,
+    collectionByAlbum,
     pendingByAlbum,
-    favoritesLoaded,
-    favoritesError,
-    setFavorite,
+    collectionLoaded,
+    collectionError,
+    setCollectionEntry,
     setPending,
     removePending,
   };

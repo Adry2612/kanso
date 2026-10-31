@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify; la optimización de imágenes se decide en improve-performance */
 import React from "react";
 import { useTransitionRouter } from "next-view-transitions";
 import { Check, Clock, Plus } from "lucide-react";
 import { useTranslations } from "@/context/I18nContext";
+import AlbumCover from "./AlbumCover";
 import { motion } from "./motion";
 
 interface AlbumCardProps {
@@ -14,42 +14,53 @@ interface AlbumCardProps {
   };
   onClick?: () => void;
   onAdd?: () => void;
-  isFavorite?: boolean;
+  isInCollection?: boolean;
   isPending?: boolean;
+  /** Contenido adicional al final del bloque de texto. */
+  footer?: React.ReactNode;
+  /**
+   * Composición de la tarjeta: `panel` (tarjeta con elevación) o `plain`
+   * (sin panel, con la portada como pieza principal). El buscador usa `plain`.
+   */
+  variant?: "panel" | "plain";
+  /** Clases extra para el contenedor de la tarjeta. */
+  className?: string;
 }
 
 const AlbumCard: React.FC<AlbumCardProps> = ({
   album,
   onClick,
   onAdd,
-  isFavorite = false,
+  isInCollection = false,
   isPending = false,
+  footer,
+  variant = "panel",
+  className,
 }) => {
   const router = useTransitionRouter();
   const t = useTranslations("common");
+  const isPlain = variant === "plain";
 
   return (
     <motion.article
       key={album.id}
       onClick={onClick ? onClick : () => router.push(`/albums/${album.id}`)}
-      whileHover={{ y: -6 }}
+      whileHover={isPlain ? undefined : { y: -6 }}
       whileTap={{ scale: 0.99 }}
       transition={{ type: "spring", stiffness: 320, damping: 26 }}
       style={{ transition: "border-color .2s ease, box-shadow .2s ease" }}
-      className="kanso-card group w-full cursor-pointer p-2"
+      className={`group w-full cursor-pointer ${isPlain ? "" : "kanso-card p-2"} ${className ?? ""}`}
     >
-      <div className="relative aspect-square overflow-hidden rounded-[var(--radius-xs)]">
-        <img
-          loading="lazy"
-          decoding="async"
-          src={album.images[0]?.url}
-          alt={album.name}
-          style={{ viewTransitionName: `album-cover-${album.id}` }}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.06]"
-        />
-        <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-      </div>
-      <div className="px-2 pb-2 pt-3">
+      <AlbumCover
+        src={album.images[0]?.url}
+        alt={album.name}
+        viewTransitionName={`album-cover-${album.id}`}
+      />
+      <div
+        className={
+          isPlain ? "mt-3 min-w-0" : "flex flex-1 flex-col px-2 pb-2 pt-3"
+        }
+      >
         <span className="block truncate text-sm font-semibold text-[var(--foreground)]">
           {album.name}
         </span>
@@ -65,14 +76,14 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
               onAdd();
             }}
             className={`mt-3 flex w-full items-center justify-center gap-2 rounded-[var(--radius-xs)] border px-2 py-2 text-center text-xs font-semibold transition ${
-              isFavorite
+              isInCollection
                 ? "border-[var(--kanso-mint)]/60 bg-[var(--kanso-mint)]/15 text-[var(--kanso-mint)] hover:bg-[var(--kanso-mint)]/25"
                 : isPending
                   ? "border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 text-[var(--foreground)] hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                   : "border-[var(--kanso-line)] text-[var(--kanso-mint)] hover:border-[var(--kanso-mint)]/60 hover:bg-[var(--kanso-mint)]/10"
             }`}
           >
-            {isFavorite ? (
+            {isInCollection ? (
               <Check className="h-3.5 w-3.5" strokeWidth={2.25} />
             ) : isPending ? (
               <Clock className="h-3.5 w-3.5" strokeWidth={2.25} />
@@ -80,7 +91,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
               <Plus className="h-3.5 w-3.5" strokeWidth={2.25} />
             )}
             <span>
-              {isFavorite
+              {isInCollection
                 ? t("alreadyInCollection")
                 : isPending
                   ? t("inListenLater")
@@ -88,6 +99,8 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
             </span>
           </button>
         )}
+
+        {footer}
       </div>
     </motion.article>
   );

@@ -17,6 +17,8 @@ export interface Artist {
   name: string;
   type: string;
   uri: string;
+  /** Géneros que Spotify expone a nivel de artista. */
+  genres?: string[];
 }
 
 export interface Album {

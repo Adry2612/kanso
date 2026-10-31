@@ -1,42 +1,26 @@
 import { NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { reportApiError } from "@/lib/sentry";
+import {
+  listRecommendationHistory,
+  RecommendationApiError,
+} from "@/services/server/recommendations";
 
 export async function GET(request: Request) {
   const auth = await authenticate(request);
   if (isAuthFailure(auth)) return auth;
-  const { uid } = auth;
 
   try {
-    const db = adminDb();
-    const historySnapshot = await db
-      .collection(`users/${uid}/recomendationHistory`)
-      .orderBy("providedAt", "desc")
-      .get();
-
-    if (historySnapshot.empty) {
-      return NextResponse.json({ history: [] }, { status: 200 });
+    const result = await listRecommendationHistory(auth.uid);
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+    if (error instanceof RecommendationApiError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     }
 
-    const history = await Promise.all(
-      historySnapshot.docs.map(async (historyDoc) => {
-        const { albumId, moods, providedAt } = historyDoc.data();
-
-        const albumSnap = await db.doc(`albums/${albumId}`).get();
-
-        return {
-          id: historyDoc.id,
-          albumId,
-          moods: moods || [],
-          providedAt: providedAt?.toDate?.()?.toISOString() || providedAt,
-          album: albumSnap.exists ? albumSnap.data() : null,
-        };
-      }),
-    );
-
-    return NextResponse.json({ history }, { status: 200 });
-  } catch (error) {
     reportApiError(error, "getRecomendationHistory");
     return NextResponse.json(
       { error: "Error al obtener el historial" },

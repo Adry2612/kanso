@@ -1,38 +1,27 @@
 import { NextResponse } from "next/server";
-import { FieldValue } from "firebase-admin/firestore";
-import { adminDb } from "@/lib/firebaseAdmin";
 import { authenticate, isAuthFailure } from "@/lib/apiAuth";
 import { reportApiError } from "@/lib/sentry";
+import {
+  RecommendationApiError,
+  saveRecommendationHistory,
+} from "@/services/server/recommendations";
 
-export async function POST(req: Request) {
-  const auth = await authenticate(req);
+export async function POST(request: Request) {
+  const auth = await authenticate(request);
   if (isAuthFailure(auth)) return auth;
-  const { uid } = auth;
 
   try {
-    const body = await req.json().catch(() => ({}));
-    const { albumId, moods } = body ?? {};
-
-    if (typeof albumId !== "string" || !albumId.trim()) {
+    const body = await request.json().catch(() => ({}));
+    const result = await saveRecommendationHistory(auth.uid, body);
+    return NextResponse.json(result);
+  } catch (error) {
+    if (error instanceof RecommendationApiError) {
       return NextResponse.json(
-        { error: "Falta el álbum de la recomendación" },
-        { status: 400 },
+        { error: error.message },
+        { status: error.status },
       );
     }
 
-    const docRef = await adminDb()
-      .collection(`users/${uid}/recomendationHistory`)
-      .add({
-        albumId,
-        moods: Array.isArray(moods) ? moods : [],
-        providedAt: FieldValue.serverTimestamp(),
-      });
-
-    return NextResponse.json({
-      success: true,
-      recommendationId: docRef.id,
-    });
-  } catch (error) {
     reportApiError(error, "saveRecomendationHistory");
     return NextResponse.json(
       { error: "No se pudo guardar la recomendación" },

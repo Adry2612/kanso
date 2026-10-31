@@ -1,7 +1,7 @@
 /**
  * Recomendaciones por actividad.
  *
- * Este módulo NO accede a los datos por su cuenta: recibe los favoritos ya
+ * Este módulo NO accede a los datos por su cuenta: recibe las entradas de la colección ya
  * cargados y una función para resolver el detalle de cada álbum. Así la misma
  * lógica se puede ejecutar en el servidor (con el Admin SDK) sin arrastrar el
  * SDK de Firestore al cliente.
@@ -14,6 +14,9 @@ import type {
   ComputeActivityRecommendationsParams,
   FeelingTag,
   MoodTranslator,
+  RecommendationCandidateExplanation,
+  RecommendationExplanation,
+  RecommendationScoreBreakdown,
 } from "@/types/recommendations";
 import { getMood, normalizeMood } from "@/constants/moods";
 
@@ -21,10 +24,13 @@ export type {
   ActivityRecommendation,
   ActivityRecommendationsResult,
   ActivityTranslator,
-  ActivityFavoriteRecord,
+  ActivityCollectionRecord,
   ComputeActivityRecommendationsParams,
   FeelingTag,
   MoodTranslator,
+  RecommendationCandidateExplanation,
+  RecommendationExplanation,
+  RecommendationScoreBreakdown,
   RecommendedAlbum,
   RecommendedAlbumInfo,
 } from "@/types/recommendations";
@@ -40,6 +46,121 @@ export const activityMoodMap: Record<string, string[]> = {
   chores: ["energy", "joy", "triumph", "inspiration", "challenge"],
   party: ["ecstasy", "joy", "energy", "triumph", "challenge"],
 };
+
+/** Ventana de «hace poco» para la penalización por recencia. */
+export const RECENT_WINDOW = 10;
+
+/** Pesos del ranking; se pueden afinar sin tocar la estructura. */
+export const W_RECENT = 0.35;
+export const W_FEEDBACK = 0.5;
+
+/** Señales que ajustan la puntuación de un candidato. */
+export type RankingSignals = {
+  /** Proporción de emociones pedidas presentes en las etiquetas (0..1). */
+  labelOverlap: number;
+  /** Penalización por haber sido recomendado hace poco (0..1). */
+  recencyPenalty?: number;
+  /** Ajuste por valoraciones: +1 me gustó, −1 no me gustó. */
+  feedbackBoost?: number;
+};
+
+/** Valoración guardada de una recomendación. */
+export type FeedbackSignal = { liked: boolean; topMoods: string[] };
+
+/** Un candidato sin formato solo pasa cuando se pide «all». */
+export function matchesCollectionFormat(
+  format: string | string[] | undefined,
+  selected: string,
+): boolean {
+  if (selected === "all") return true;
+  return Array.isArray(format)
+    ? format.includes(selected)
+    : format === selected;
+}
+
+/** Un candidato sin etiquetas solo pasa cuando no se filtra por etiquetas. */
+export function matchesRecommendationTags(
+  tags: { category?: string; value?: string }[] | undefined,
+  selected: string[],
+): boolean {
+  if (selected.length === 0) return true;
+  if (!Array.isArray(tags)) return false;
+
+  return selected.some((tag) =>
+    tags.some(
+      (entry) =>
+        `${entry?.category ?? ""}:${entry?.value ?? ""}`.toLowerCase() ===
+        tag.toLowerCase(),
+    ),
+  );
+}
+
+/** Proporción de `target` presentes en `values` (0..1). */
+export function overlapRatio(
+  values: readonly string[],
+  target: readonly string[],
+): number {
+  if (target.length === 0) return 0;
+  const set = new Set(values);
+  return target.filter((item) => set.has(item)).length / target.length;
+}
+
+/**
+ * Penalización por recencia: 1 para la recomendación más reciente y decreciente
+ * hasta 0 fuera de la ventana. No excluye al álbum.
+ */
+export function recencyPenalty(
+  albumId: string,
+  recentAlbumIds: readonly string[] = [],
+): number {
+  const index = recentAlbumIds.slice(0, RECENT_WINDOW).indexOf(albumId);
+  if (index === -1) return 0;
+  return Math.max(0, 1 - index / RECENT_WINDOW);
+}
+
+/** Desglose completo de la puntuación de un candidato. */
+export function scoreCandidateBreakdown({
+  labelOverlap,
+  recencyPenalty: recent = 0,
+  feedbackBoost = 0,
+}: RankingSignals): RecommendationScoreBreakdown {
+  return {
+    labelOverlap,
+    baseScore: labelOverlap,
+    recencyPenalty: recent,
+    feedbackBoost,
+    finalScore: labelOverlap - W_RECENT * recent + W_FEEDBACK * feedbackBoost,
+  };
+}
+
+/** Puntuación de un candidato: etiquetas, recencia y valoración. */
+export function scoreCandidate(signals: RankingSignals): number {
+  return scoreCandidateBreakdown(signals).finalScore;
+}
+
+/**
+ * Ajuste por valoraciones: el álbum valorado recibe el signo completo y los que
+ * comparten alguna emoción principal, la mitad. Devuelve 0 sin valoraciones.
+ */
+export function feedbackBoostFor(
+  albumId: string,
+  albumMoods: readonly string[],
+  feedback?: ReadonlyMap<string, FeedbackSignal>,
+): number {
+  if (!feedback || feedback.size === 0) return 0;
+
+  const direct = feedback.get(albumId);
+  if (direct) return direct.liked ? 1 : -1;
+
+  let boost = 0;
+  for (const [otherId, signal] of feedback) {
+    if (otherId === albumId) continue;
+    if (!signal.topMoods.some((mood) => albumMoods.includes(mood))) continue;
+    const candidate = signal.liked ? 0.5 : -0.5;
+    if (Math.abs(candidate) > Math.abs(boost)) boost = candidate;
+  }
+  return boost;
+}
 
 const activityLabelToKey: Record<string, string> = {
   working: "working",
@@ -173,13 +294,15 @@ function buildFeelingTags(
 }
 
 export async function computeActivityRecommendations({
-  favorites,
+  collection,
   activity,
   translateMood,
   translateActivity,
   format = "all",
   requiredMoods = [],
   requiredTags = [],
+  recentAlbumIds = [],
+  feedbackByAlbum,
   getAlbum,
 }: ComputeActivityRecommendationsParams): Promise<ActivityRecommendationsResult> {
   const normalizedActivity = resolveActivityKey(activity, translateActivity);
@@ -189,48 +312,42 @@ export async function computeActivityRecommendations({
     return { optimalMoods, recommendations: [], recommendedAlbum: null };
   }
 
-  if (favorites.length === 0) {
+  if (collection.length === 0) {
     return { optimalMoods, recommendations: [], recommendedAlbum: null };
   }
 
   const recommendations: ActivityRecommendation[] = [];
+  const breakdowns = new Map<string, RecommendationScoreBreakdown>();
 
-  for (const favorite of favorites) {
+  for (const entry of collection) {
     if (
       format !== "all" &&
-      !(Array.isArray(favorite.format)
-        ? favorite.format.includes(format)
-        : favorite.format === format) &&
-      !(Array.isArray(favorite.ownership?.format)
-        ? favorite.ownership.format.includes(format)
-        : favorite.ownership?.format === format)
+      !(Array.isArray(entry.format)
+        ? entry.format.includes(format)
+        : entry.format === format) &&
+      !(Array.isArray(entry.ownership?.format)
+        ? entry.ownership.format.includes(format)
+        : entry.ownership?.format === format)
     ) {
       continue;
     }
     if (
       requiredTags.length > 0 &&
       !requiredTags.some((tag) =>
-        favorite.tags?.some(
-          (favoriteTag: { category?: string; value?: string }) =>
-            `${favoriteTag.category}:${favoriteTag.value}` === tag,
+        entry.tags?.some(
+          (entryTag: { category?: string; value?: string }) =>
+            `${entryTag.category}:${entryTag.value}` === tag,
         ),
       )
     ) {
       continue;
     }
-    const labeledFeelings = favorite.labeledFeelings || favorite.feelings || [];
+    const labeledFeelings = entry.labeledFeelings || entry.feelings || [];
     const normalizedFeelings = labeledFeelings
       .map((label: unknown) => normalizeMoodLabel(label))
       .filter((label: string) => label.length > 0);
 
-    if (normalizedFeelings.length === 0) {
-      continue;
-    }
-
-    const matchingMoods = normalizedFeelings.filter((mood: string) =>
-      optimalMoods.includes(mood),
-    );
-
+    // `requiredMoods` sigue siendo un filtro explícito de la persona.
     if (
       requiredMoods.length > 0 &&
       !requiredMoods.some((mood) => normalizedFeelings.includes(mood))
@@ -238,36 +355,99 @@ export async function computeActivityRecommendations({
       continue;
     }
 
-    if (matchingMoods.length > 0) {
-      const albumInfo = await getAlbum(favorite.albumId);
+    const matchingMoods = normalizedFeelings.filter((mood: string) =>
+      optimalMoods.includes(mood),
+    );
+    const labelOverlap =
+      optimalMoods.length > 0 ? matchingMoods.length / optimalMoods.length : 0;
 
-      recommendations.push({
-        id: favorite.id,
-        albumId: favorite.albumId,
-        labeledFeelings: normalizedFeelings,
-        matchingMoods,
-        compatibilityScore: matchingMoods.length / optimalMoods.length,
-        albumInfo,
-      });
+    // Sin audio no hay forma de justificar un álbum sin ninguna coincidencia.
+    if (labelOverlap === 0) {
+      continue;
     }
+
+    const albumInfo = await getAlbum(entry.albumId);
+
+    breakdowns.set(
+      entry.id,
+      scoreCandidateBreakdown({
+        labelOverlap,
+        recencyPenalty: recencyPenalty(entry.albumId, recentAlbumIds),
+        feedbackBoost: feedbackBoostFor(
+          entry.albumId,
+          normalizedFeelings,
+          feedbackByAlbum,
+        ),
+      }),
+    );
+
+    recommendations.push({
+      id: entry.id,
+      albumId: entry.albumId,
+      labeledFeelings: normalizedFeelings,
+      matchingMoods,
+      activities: entry.activities ?? [],
+      format: entry.format,
+      tags: entry.tags,
+      compatibilityScore: labelOverlap,
+      albumInfo,
+    });
   }
 
-  recommendations.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
+  recommendations.sort(
+    (a, b) =>
+      (breakdowns.get(b.id)?.finalScore ?? 0) -
+      (breakdowns.get(a.id)?.finalScore ?? 0),
+  );
 
   const best = recommendations[0];
   const recommendedAlbum = best
     ? {
-        feelings: buildFeelingTags(
-          best.matchingMoods.length > 0
-            ? best.matchingMoods
-            : best.labeledFeelings,
-          translateMood,
-        ),
+        feelings: buildFeelingTags(best.matchingMoods, translateMood),
         albumId: best.albumId,
         labeledFeelings: best.labeledFeelings,
+        activities: best.activities ?? [],
+        format: best.format,
+        tags: best.tags,
         albumInfo: best.albumInfo,
       }
     : null;
 
-  return { optimalMoods, recommendations, recommendedAlbum };
+  const candidateExplanations: RecommendationCandidateExplanation[] =
+    recommendations.flatMap((item) => {
+      const score = breakdowns.get(item.id);
+      if (!score) return [];
+      return [
+        {
+          albumId: item.albumId,
+          albumName: item.albumInfo?.name ?? "",
+          matchingMoods: item.matchingMoods,
+          score,
+        },
+      ];
+    });
+
+  const explain: RecommendationExplanation | undefined =
+    candidateExplanations[0]
+      ? {
+          filters: {
+            moods: requiredMoods,
+            activity: normalizedActivity,
+            format,
+            tags: requiredTags,
+          },
+          counts: {
+            collection: collection.length,
+            afterFilters: recommendations.length,
+          },
+          weights: {
+            recent: W_RECENT,
+            feedback: W_FEEDBACK,
+          },
+          selected: candidateExplanations[0],
+          alternatives: candidateExplanations.slice(1, 4),
+        }
+      : undefined;
+
+  return { optimalMoods, recommendations, recommendedAlbum, explain };
 }

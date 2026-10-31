@@ -3,6 +3,7 @@
 import SelectedAlbumModal from "@/app/search/components/SelectedAlbumModal/SelectedAlbumModal";
 import SearchArtists from "@/app/search/components/SearchArtists";
 import { useTranslations } from "@/context/I18nContext";
+import { tagDisplayLabel } from "@/constants/taxonomy";
 import AlbumCard from "@/components/AlbumCard";
 import {
   AlbumGridSkeleton,
@@ -15,11 +16,12 @@ import ErrorState from "@/components/ErrorState";
 import { Link } from "next-view-transitions";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { useSearchPage } from "@/hooks/client/useSearchPage";
-import { tagCategoryI18nKey } from "@/utils/favorites";
+import { tagCategoryI18nKey } from "@/utils/collection";
 
 export default function SearchPage() {
   const t = useTranslations("search");
   const tTags = useTranslations("tags");
+  const tTaxonomy = useTranslations("taxonomy");
   const {
     query,
     setQuery,
@@ -29,20 +31,20 @@ export default function SearchPage() {
     loading,
     error,
     retry,
-    favoritesByAlbum,
+    collectionByAlbum,
     pendingByAlbum,
-    favoritesLoaded,
-    favoritesError,
+    collectionLoaded,
+    collectionError,
     communitySearches,
     communityAlbums,
     collectionMoods,
     collectionTags,
     openModal,
     selectedAlbum,
-    selectedIsFavorite,
+    selectedIsInCollection,
     selectedIsPending,
     selectedPendingData,
-    selectedFavoriteData,
+    selectedCollectionData,
     openAlbumModal,
     closeAlbumModal,
     handleSaved,
@@ -89,12 +91,12 @@ export default function SearchPage() {
         />
       )}
 
-      <div className="w-full max-w-6xl pb-16">
+      <div className="w-full pb-16">
         {loading && (
           <div role="status" aria-busy="true">
             <span className="sr-only">{t("loading")}</span>
             <Skeleton className="mb-5 h-6 w-56" />
-            <AlbumGridSkeleton withAction />
+            <AlbumGridSkeleton withAction variant="plain" />
           </div>
         )}
         {mounted && result && !loading && (
@@ -108,7 +110,7 @@ export default function SearchPage() {
 
             {albums.length > 0 ? (
               <Stagger
-                className="grid w-full grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                className="grid w-full grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 [@media(min-width:2200px)]:grid-cols-6"
                 stagger={0.04}
                 onMount
               >
@@ -116,9 +118,10 @@ export default function SearchPage() {
                   <StaggerItem key={album.id}>
                     <AlbumCard
                       album={album}
-                      isFavorite={favoritesByAlbum.has(album.id)}
+                      variant="plain"
+                      isInCollection={collectionByAlbum.has(album.id)}
                       isPending={
-                        !favoritesByAlbum.has(album.id) &&
+                        !collectionByAlbum.has(album.id) &&
                         pendingByAlbum.has(album.id)
                       }
                       onAdd={() => openAlbumModal(album)}
@@ -127,13 +130,13 @@ export default function SearchPage() {
                 ))}
               </Stagger>
             ) : artists.length > 0 ? (
-              <section className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
+              <section className="kanso-empty max-w-2xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
                 <p className="text-sm leading-relaxed text-[var(--kanso-muted)]">
                   {t("noAlbumsFound")}
                 </p>
               </section>
             ) : (
-              <section className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
+              <section className="kanso-empty max-w-2xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-8">
                 <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
                   {t("noResults")}
                 </p>
@@ -155,7 +158,7 @@ export default function SearchPage() {
                     <h3 className="text-sm font-semibold text-[var(--foreground)]">
                       {t("tryCollection")}
                     </h3>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap justify-center gap-2">
                       {collectionMoods.map((mood) => {
                         const item = getMood(mood);
                         return (
@@ -177,7 +180,8 @@ export default function SearchPage() {
                           onClick={() => setQuery(tag.value)}
                           className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                         >
-                          {tagCategoryLabel(tag.category)}: {tag.value}
+                          {tagCategoryLabel(tag.category)}:{" "}
+                          {tagDisplayLabel(tag, tTaxonomy)}
                         </button>
                       ))}
                     </div>
@@ -190,11 +194,11 @@ export default function SearchPage() {
                 isOpen={openModal}
                 onClose={closeAlbumModal}
                 album={selectedAlbum}
-                isFavorite={selectedIsFavorite}
+                isInCollection={selectedIsInCollection}
                 isPending={selectedIsPending}
                 pendingData={selectedPendingData}
-                startEditing={selectedIsFavorite}
-                favoriteData={selectedFavoriteData}
+                startEditing={selectedIsInCollection}
+                collectionData={selectedCollectionData}
                 onSaved={handleSaved}
                 onPendingSaved={handlePendingSaved}
                 onPendingRemoved={handlePendingRemoved}
@@ -210,18 +214,18 @@ export default function SearchPage() {
               </h2>
               {communityAlbums.length > 0 ? (
                 <Stagger
-                  className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                  className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 [@media(min-width:2200px)]:grid-cols-6"
                   stagger={0.04}
                   onMount
                 >
                   {communityAlbums.map((album) => (
                     <StaggerItem key={album.id}>
-                      <AlbumCard album={album} />
+                      <AlbumCard album={album} variant="plain" />
                     </StaggerItem>
                   ))}
                 </Stagger>
               ) : (
-                <p className="mt-3 text-sm leading-relaxed text-[var(--kanso-muted)]">
+                <p className="kanso-empty mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)]">
                   {t("communityAlbumsEmpty")}
                 </p>
               )}
@@ -245,8 +249,8 @@ export default function SearchPage() {
                 </div>
               </div>
             )}
-            <div className="rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
-              <p className="text-sm leading-relaxed text-[var(--kanso-muted)]">
+            <div className="kanso-empty max-w-2xl rounded-2xl border border-[var(--kanso-line)] bg-[var(--surface-1)]/45 p-5 sm:p-7">
+              <p className="mx-auto max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)]">
                 {t("emptySearchPrompt")}
               </p>
               {collectionMoods.length > 0 && (
@@ -254,7 +258,7 @@ export default function SearchPage() {
                   <h2 className="text-base font-semibold text-[var(--foreground)]">
                     Tu colección, por emociones
                   </h2>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
                     {collectionMoods.map((mood) => {
                       const item = getMood(mood);
                       return (
@@ -277,7 +281,7 @@ export default function SearchPage() {
                   <h2 className="text-base font-semibold text-[var(--foreground)]">
                     Explora por tus etiquetas
                   </h2>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
                     {collectionTags.map((tag) => (
                       <button
                         key={`${tag.category}-${tag.value}`}
@@ -285,19 +289,20 @@ export default function SearchPage() {
                         onClick={() => setQuery(tag.value)}
                         className="rounded-full border border-[var(--kanso-line-strong)] bg-[var(--surface-1)]/50 px-3 py-2 text-sm text-[var(--foreground)] transition hover:border-[var(--kanso-mint)]/60 hover:text-[var(--kanso-mint)]"
                       >
-                        {tagCategoryLabel(tag.category)}: {tag.value}
+                        {tagCategoryLabel(tag.category)}:{" "}
+                        {tagDisplayLabel(tag, tTaxonomy)}
                       </button>
                     ))}
                   </div>
                 </div>
               )}
-              {!favoritesLoaded && (
+              {!collectionLoaded && (
                 <div role="status" aria-busy="true">
                   <span className="sr-only">{t("loadingCollection")}</span>
                   <CollectionSkeleton />
                 </div>
               )}
-              {favoritesError && (
+              {collectionError && (
                 <ErrorState
                   variant="inline"
                   className="mt-5"
@@ -305,16 +310,16 @@ export default function SearchPage() {
                   onRetry={() => window.location.reload()}
                 />
               )}
-              {favoritesLoaded &&
-                !favoritesError &&
+              {collectionLoaded &&
+                !collectionError &&
                 collectionMoods.length === 0 &&
                 collectionTags.length === 0 && (
-                  <p className="mt-5 text-sm leading-relaxed text-[var(--kanso-muted)]">
-                    {favoritesByAlbum.size === 0 ? (
+                  <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-[var(--kanso-muted)]">
+                    {collectionByAlbum.size === 0 ? (
                       <>
                         {t("emptyCollection")}{" "}
                         <Link
-                          href="/favorites"
+                          href="/collection"
                           className="font-semibold text-[var(--kanso-mint)] underline"
                         >
                           {t("exploreDiscs")}

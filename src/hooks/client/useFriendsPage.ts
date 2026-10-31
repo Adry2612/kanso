@@ -41,7 +41,7 @@ export function useFriendsPage(messages: FriendsPageMessages) {
 
   const [data, setData] = useState<FriendsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
   const [code, setCode] = useState("");
@@ -61,15 +61,12 @@ export function useFriendsPage(messages: FriendsPageMessages) {
 
   const loadFriends = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setError(false);
     try {
       setData(await getFriends());
     } catch (loadFailure) {
-      setError(
-        loadFailure instanceof Error
-          ? loadFailure.message
-          : "No pudimos cargar tus amigos.",
-      );
+      console.error("No se pudieron cargar los amigos:", loadFailure);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -104,9 +101,8 @@ export function useFriendsPage(messages: FriendsPageMessages) {
       setCode("");
       await loadFriends();
     } catch (submitError) {
-      setFormError(
-        submitError instanceof Error ? submitError.message : addError,
-      );
+      console.error("No se pudo enviar la solicitud de amistad:", submitError);
+      setFormError(addError);
     } finally {
       setSubmitting(false);
     }
@@ -121,11 +117,8 @@ export function useFriendsPage(messages: FriendsPageMessages) {
         await respondToFriendRequest(requestId, action);
         await loadFriends();
       } catch (requestFailure) {
-        setActionError(
-          requestFailure instanceof Error
-            ? requestFailure.message
-            : requestError,
-        );
+        console.error("No se pudo responder a la solicitud:", requestFailure);
+        setActionError(requestError);
       } finally {
         setBusyRequestId(null);
         setBusyAction(null);
@@ -154,11 +147,8 @@ export function useFriendsPage(messages: FriendsPageMessages) {
       setConfirmRemoveUid(null);
       await loadFriends();
     } catch (removeFailure) {
-      setRemoveError(
-        removeFailure instanceof Error
-          ? removeFailure.message
-          : removeErrorMessage,
-      );
+      console.error("No se pudo eliminar la amistad:", removeFailure);
+      setRemoveError(removeErrorMessage);
     } finally {
       setRemovingUid(null);
     }

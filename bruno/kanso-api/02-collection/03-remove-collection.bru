@@ -1,0 +1,16 @@
+meta {
+  name: Remove collection album
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/collection?albumId={{albumId}}
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{idToken}}
+}
+
+

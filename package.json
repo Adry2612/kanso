@@ -16,7 +16,12 @@
     "lint:fix": "next lint --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "bruno:env": "node scripts/sync-bruno-env.mjs"
+    "bruno:env": "node scripts/sync-bruno-env.mjs",
+    "migrate:collection": "node scripts/migrate-collection.mjs",
+    "migrate:collection:dry": "node scripts/migrate-collection.mjs --dry-run",
+    "test": "vitest run",
+    "migrate:tags": "node scripts/migrate-tags.mjs",
+    "migrate:tags:dry": "node scripts/migrate-tags.mjs --dry-run"
   },
   "dependencies": {
     "@sentry/nextjs": "^11.8.0",
@@ -51,6 +56,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.7.4",
     "tailwindcss": "^4.1.14",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   }
 }

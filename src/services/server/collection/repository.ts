@@ -8,15 +8,21 @@ import {
   type QueryDocumentSnapshot,
 } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebaseAdmin";
+import {
+  collectionRef,
+  isLegacyCollectionRef,
+  legacyCollectionRef,
+  listMergedCollectionDocs,
+} from "./legacy";
 import type { Album } from "@/types/album";
-import type { FavoriteFormat, FavoriteTag } from "@/types/favorites";
+import type { CollectionFormat, CollectionTag } from "@/types/collection";
 
-/** Datos que se escriben en `users/{uid}/favorites`. */
-export type FavoriteWrite = {
+/** Datos que se escriben en `users/{uid}/collection`. */
+export type CollectionWrite = {
   labeledFeelings: string[];
   activities: string[];
-  format: FavoriteFormat[];
-  tags: FavoriteTag[];
+  format: CollectionFormat[];
+  tags: CollectionTag[];
 };
 
 function isNonEmptyString(value: unknown): value is string {
@@ -31,7 +37,6 @@ function isNonEmptyString(value: unknown): value is string {
  */
 export function createCollectionRepository(db: Firestore = adminDb()) {
   const albums = () => db.collection("albums");
-  const favorites = (uid: string) => db.collection(`users/${uid}/favorites`);
   const pending = (uid: string) => db.collection(`users/${uid}/listenLater`);
 
   return {
@@ -52,25 +57,26 @@ export function createCollectionRepository(db: Firestore = adminDb()) {
       return snapshot.exists ? (snapshot.data() ?? null) : null;
     },
 
-    async listFavoriteRefs(
+    async listCollectionRefs(
       uid: string,
       albumDocId: string,
     ): Promise<DocumentReference[]> {
-      const snapshot = await favorites(uid)
-        .where("albumId", "==", albumDocId)
-        .get();
-      return snapshot.docs.map((document) => document.ref);
+      const [current, legacy] = await Promise.all([
+        collectionRef(db, uid).where("albumId", "==", albumDocId).get(),
+        legacyCollectionRef(db, uid).where("albumId", "==", albumDocId).get(),
+      ]);
+
+      return [...current.docs, ...legacy.docs].map((document) => document.ref);
     },
 
-    async listFavorites(uid: string): Promise<QueryDocumentSnapshot[]> {
-      const snapshot = await favorites(uid).get();
-      return snapshot.docs;
+    async listCollection(uid: string): Promise<QueryDocumentSnapshot[]> {
+      return listMergedCollectionDocs(db, uid);
     },
 
-    async listFavoriteAlbumIds(uid: string): Promise<Set<string>> {
-      const snapshot = await favorites(uid).get();
+    async listCollectionAlbumIds(uid: string): Promise<Set<string>> {
+      const docs = await listMergedCollectionDocs(db, uid);
       return new Set(
-        snapshot.docs
+        docs
           .map((document) => document.data().albumId)
           .filter(isNonEmptyString),
       );
@@ -103,20 +109,29 @@ export function createCollectionRepository(db: Firestore = adminDb()) {
     },
 
     /**
-     * Guarda o actualiza el favorito y descarta el pendiente del mismo álbum
-     * en un solo lote: colección y pendientes son mutuamente excluyentes.
+     * Guarda o actualiza una entrada de la colección y descarta el pendiente
+     * del mismo álbum en un solo lote: colección y pendientes son mutuamente
+     * excluyentes. Las escrituras van siempre a la ruta vigente y limpian las
+     * copias heredadas.
      */
-    async saveFavorite(
+    async saveCollectionEntry(
       uid: string,
       albumDocId: string,
-      write: FavoriteWrite,
-      existingRef: DocumentReference | null,
-    ): Promise<void> {
+      write: CollectionWrite,
+    ): Promise<boolean> {
+      const refs = await this.listCollectionRefs(uid, albumDocId);
+      const currentRef = refs.find(
+        (reference) => !isLegacyCollectionRef(reference, uid),
+      );
+      const legacyRefs = refs.filter((reference) =>
+        isLegacyCollectionRef(reference, uid),
+      );
+
       const batch = db.batch();
 
-      if (existingRef) {
+      if (currentRef) {
         batch.set(
-          existingRef,
+          currentRef,
           {
             ...write,
             updatedAt: FieldValue.serverTimestamp(),
@@ -124,15 +139,18 @@ export function createCollectionRepository(db: Firestore = adminDb()) {
           { merge: true },
         );
       } else {
-        batch.set(favorites(uid).doc(albumDocId), {
+        batch.set(collectionRef(db, uid).doc(albumDocId), {
           albumId: albumDocId,
           ...write,
           addedAt: FieldValue.serverTimestamp(),
         });
       }
 
+      legacyRefs.forEach((reference) => batch.delete(reference));
       batch.delete(pending(uid).doc(albumDocId));
       await batch.commit();
+
+      return Boolean(currentRef || legacyRefs.length > 0);
     },
 
     async deleteRefs(refs: DocumentReference[]): Promise<void> {

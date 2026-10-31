@@ -10,13 +10,13 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import {
-  FaCheck,
   FaChevronLeft,
   FaChevronRight,
   FaSearch,
   FaTimes,
 } from "react-icons/fa";
-import Medallion from "@/components/Medallion";
+import OptionButton from "@/components/selectors/OptionButton";
+import OptionRail, { centerRailItem } from "@/components/selectors/OptionRail";
 import {
   AnimatePresence,
   EASE_OUT,
@@ -108,13 +108,11 @@ const FeelingsCarousel = ({
 
   const centerOption = useCallback(
     (index: number) => {
-      const node = optionRefs.current[index];
-      if (!node?.scrollIntoView) return;
-      node.scrollIntoView({
-        behavior: reduce ? "auto" : "smooth",
-        block: "nearest",
-        inline: "center",
-      });
+      centerRailItem(
+        railRef.current,
+        optionRefs.current[index],
+        reduce ? "auto" : "smooth",
+      );
     },
     [reduce],
   );
@@ -328,31 +326,37 @@ const FeelingsCarousel = ({
       )}
 
       {visible.length > 0 ? (
-        <div
-          ref={railRef}
-          className="feelings-rail"
+        <OptionRail
+          railRef={railRef}
+          ariaLabel={label}
           role={containerRole}
-          aria-label={label}
-          aria-describedby={hintId}
-          aria-multiselectable={isMultiple || undefined}
+          ariaDescribedBy={hintId}
+          ariaMultiselectable={isMultiple || undefined}
+          showControls={false}
         >
-          <Stagger className="feelings-rail__track" stagger={0.045} onMount>
+          <Stagger
+            className="option-selector__rail-track option-selector__rail-track--stacked"
+            stagger={0.045}
+            onMount
+          >
             {visible.map((option, index) => {
               const isSelected = selected.has(option.key);
               const isActive = index === activeIndex;
               return (
-                <StaggerItem key={option.key} className="feelings-rail__snap">
-                  <button
-                    type="button"
-                    ref={(node) => {
-                      optionRefs.current[index] = node;
+                <StaggerItem key={option.key} className="option-selector__snap">
+                  <OptionButton
+                    item={{
+                      key: option.key,
+                      label: option.label,
+                      emoji: option.emoji,
                     }}
+                    selected={isSelected}
+                    active={isActive}
+                    presentation="stacked"
                     role={itemRole}
-                    aria-selected={isMultiple ? isSelected : undefined}
-                    aria-checked={isMultiple ? undefined : isSelected}
+                    ariaSelected={isMultiple ? isSelected : undefined}
+                    ariaChecked={isMultiple ? undefined : isSelected}
                     tabIndex={isActive ? 0 : -1}
-                    data-active={isActive || undefined}
-                    data-selected={isSelected || undefined}
                     onClick={() => onSelect(option.key)}
                     onFocus={() => {
                       userScrollRef.current = false;
@@ -362,23 +366,15 @@ const FeelingsCarousel = ({
                       }
                     }}
                     onKeyDown={(event) => handleKeyDown(event, index)}
-                    className="feeling-option"
-                  >
-                    <Medallion
-                      emoji={option.emoji}
-                      size="lg"
-                      selected={isSelected}
-                      badge={isSelected ? <FaCheck /> : undefined}
-                    />
-                    <span className="feeling-option__label">
-                      {option.label}
-                    </span>
-                  </button>
+                    buttonRef={(node) => {
+                      optionRefs.current[index] = node;
+                    }}
+                  />
                 </StaggerItem>
               );
             })}
           </Stagger>
-        </div>
+        </OptionRail>
       ) : (
         <p role="status" className="feelings-carousel__empty">
           {t("noResults")}
