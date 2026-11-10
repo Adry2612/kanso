@@ -1,6 +1,5 @@
 import { auth, authPersistenceReady } from "./firebase";
 import { requestGoogleAccessToken } from "./googleIdentity";
-import { clearGuestEntry, markGuestEntry } from "./guestSession";
 import {
   GoogleAuthProvider,
   getRedirectResult,
@@ -105,12 +104,10 @@ export async function signInAsGuest(): Promise<User> {
   await authPersistenceReady;
   await auth.authStateReady();
   if (auth.currentUser) {
-    markGuestEntry();
     return auth.currentUser;
   }
 
   const result = await signInAnonymously(auth);
-  markGuestEntry();
   return result.user;
 }
 
@@ -125,7 +122,6 @@ async function signInWithGoogleIdentity(): Promise<User | null> {
     const accessToken = await requestGoogleAccessToken();
     const credential = GoogleAuthProvider.credential(null, accessToken);
     const result = await signInWithCredential(auth, credential);
-    clearGuestEntry();
     return result.user;
   } catch (error: unknown) {
     const code = errorCode(error) ?? "";
@@ -255,7 +251,6 @@ export async function completeEmailSignInLink(
 ): Promise<User> {
   await authPersistenceReady;
   const credential = await signInWithEmailLink(auth, email, href);
-  clearGuestEntry();
 
   try {
     window.localStorage.removeItem(EMAIL_SIGN_IN_KEY);

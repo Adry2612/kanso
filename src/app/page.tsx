@@ -50,6 +50,48 @@ function LandingAlbumsSkeleton() {
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const router = useTransitionRouter();
+
+  // La landing solo se monta cuando la sesión ya se resolvió y no hay usuario.
+  // Así una sesión guardada (también de invitado) entra directa a Inicio y no
+  // se pinta ni se carga la portada pública mientras tanto.
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/home");
+    }
+  }, [authLoading, router, user]);
+
+  if (authLoading || user) return <BootSplash />;
+
+  return <LandingContent />;
+}
+
+function BootSplash() {
+  return (
+    <main className="public-page flex min-h-screen items-center justify-center">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex flex-col items-center gap-4"
+      >
+        <Image
+          src="/kanso-logo.png"
+          alt=""
+          width={44}
+          height={44}
+          priority
+          className="h-11 w-11 max-w-none animate-pulse motion-reduce:animate-none"
+        />
+        <span className="text-xs font-bold uppercase tracking-[.24em] text-[var(--kanso-mint)]">
+          Kanso
+        </span>
+        <span className="sr-only">Cargando tu espacio</span>
+      </div>
+    </main>
+  );
+}
+
+function LandingContent() {
+  const router = useTransitionRouter();
   const [isStartingGuest, setIsStartingGuest] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
   const {
@@ -57,16 +99,7 @@ export default function Home() {
     error: albumsError,
     reload: loadLandingAlbums,
   } = useLandingAlbums();
-  const startHref =
-    user && !user.isAnonymous ? "/home" : "/login?mode=register";
-
-  // Solo una cuenta real continúa directamente a la app. Una sesión anónima
-  // guardada se queda en la bienvenida hasta que elija entrar como invitado.
-  useEffect(() => {
-    if (!authLoading && user && !user.isAnonymous) {
-      router.replace("/home");
-    }
-  }, [authLoading, router, user]);
+  const startHref = "/login?mode=register";
 
   const handleGuestStart = async () => {
     setGuestError(null);

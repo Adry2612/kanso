@@ -39,6 +39,44 @@ El sistema DEBE listar los álbumes pendientes del usuario del más reciente al 
 - **WHEN** la carga de la lista de pendientes falla
 - **THEN** el sistema muestra un estado de error con la opción de reintentar
 
+### Requirement: Resumen de Por escuchar en Inicio
+
+El sistema DEBE mostrar en la pantalla de inicio hasta tres álbumes pendientes, del más reciente al más antiguo, con portada, título, artistas y acceso a su detalle. DEBE ofrecer un acceso directo a la pestaña «Por escuchar» de la colección y DEBE mostrar estados de carga, lista vacía y error con reintento sin impedir que el resto de Inicio se cargue.
+
+#### Scenario: Pendientes disponibles
+
+- **WHEN** la persona abre Inicio y tiene álbumes pendientes
+- **THEN** el sistema muestra hasta tres de los más recientes con su portada, título y artistas
+
+#### Scenario: Sin pendientes
+
+- **WHEN** la persona abre Inicio y no tiene álbumes pendientes
+- **THEN** el sistema muestra un estado vacío con un acceso a la búsqueda
+
+#### Scenario: Error al cargar el resumen
+
+- **WHEN** la carga de pendientes de Inicio falla
+- **THEN** el sistema muestra un aviso con la opción de reintentar y mantiene visibles el historial y el resto de Inicio
+
+#### Scenario: Acceso a todos los pendientes
+
+- **WHEN** la persona pulsa «Ver todos» en el resumen de Inicio
+- **THEN** el sistema abre la colección con la pestaña «Por escuchar» activa
+
+### Requirement: Resumen de la colección en Inicio
+
+Cuando la colección no está vacía, el sistema DEBE mostrar en Inicio un resumen compacto con el número de álbumes, artistas y álbumes pendientes, junto a un acceso a la colección.
+
+#### Scenario: Resumen con colección
+
+- **WHEN** la persona tiene álbumes en su colección y abre Inicio
+- **THEN** el sistema muestra el total de álbumes, artistas y pendientes con un acceso a la colección
+
+#### Scenario: Colección vacía
+
+- **WHEN** la persona no tiene álbumes en su colección
+- **THEN** el sistema no muestra el resumen de colección y deja los estados vacíos del historial y de pendientes
+
 ### Requirement: Guardar un álbum en pendientes
 
 El sistema DEBE guardar un álbum en la lista privada de pendientes del usuario con la referencia al álbum y la fecha de incorporación, sin emociones, actividades, formato ni etiquetas. La operación DEBE ser idempotente: guardar dos veces el mismo álbum NO DEBE crear duplicados.

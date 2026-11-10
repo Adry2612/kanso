@@ -6,7 +6,6 @@ import {
   type User,
 } from "firebase/auth";
 import { auth, authPersistenceReady } from "@/lib/firebase";
-import { clearGuestEntry } from "@/lib/guestSession";
 import {
   completeEmailSignInLink,
   consumeGoogleRedirectResult,
@@ -34,7 +33,6 @@ export async function registerWithEmail(
     password,
   );
   await updateProfile(credential.user, { displayName });
-  clearGuestEntry();
   await auth.authStateReady();
   return credential.user;
 }
@@ -45,13 +43,11 @@ export async function loginWithEmail(
 ): Promise<User> {
   await waitForAuthState();
   const credential = await signInWithEmailAndPassword(auth, email, password);
-  clearGuestEntry();
   await auth.authStateReady();
   return credential.user;
 }
 
 export async function signOutUser(): Promise<void> {
-  clearGuestEntry();
   await signOut(auth);
 }
 

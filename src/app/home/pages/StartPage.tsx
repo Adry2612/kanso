@@ -39,6 +39,7 @@ export default function StartPage() {
   const tTags = useTranslations("tags");
   const tTaxonomy = useTranslations("taxonomy");
   const tRecommendation = useTranslations("recommendation");
+  const tCollection = useTranslations("collection");
   const reduce = useReducedMotion();
   const {
     today,
@@ -47,7 +48,13 @@ export default function StartPage() {
     recentRecommendations,
     collectionTags,
     collectionCount,
+    collectionArtists,
     collectionStatus,
+    recentPending,
+    pendingCount,
+    pendingLoading,
+    pendingError,
+    retryPending,
   } = useHomeStart();
 
   const physicalFormatOptions = buildFormatOptions(tFormats, {
@@ -138,6 +145,16 @@ export default function StartPage() {
   const recentEmptyCta = hasEmptyCollection
     ? tRecommendation("recentEmpty.noCollectionCta")
     : tRecommendation("recentEmpty.cta");
+
+  const collectionSummary = [
+    `${collectionCount} ${tCollection(
+      collectionCount === 1 ? "stats.totalOne" : "stats.total",
+    )}`,
+    `${collectionArtists} ${tCollection(
+      collectionArtists === 1 ? "stats.artistsOne" : "stats.artists",
+    )}`,
+    `${pendingCount} ${tRecommendation("pending.label")}`,
+  ].join(" · ");
 
   return (
     <main className="kanso-main home-main min-h-screen">
@@ -512,6 +529,112 @@ export default function StartPage() {
               </div>
             )}
           </section>
+
+          <section>
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <div className="flex min-w-0 items-baseline gap-2">
+                <h2 className="kanso-section-title">
+                  {tRecommendation("pending.title")}
+                </h2>
+                {!pendingLoading && pendingCount > 0 && (
+                  <span className="rounded-[var(--radius-pill)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] font-semibold text-[var(--kanso-mint)]">
+                    {pendingCount}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/collection?tab=listen-later")}
+                className="shrink-0 text-xs font-semibold text-[var(--kanso-mint)]"
+              >
+                {tRecommendation("pending.viewAll")} →
+              </button>
+            </div>
+            {pendingLoading ? (
+              <div className="grid gap-2">
+                {[...Array(3)].map((_, idx) => (
+                  <Skeleton
+                    key={idx}
+                    className="h-16 rounded-[var(--radius-sm)] bg-[var(--surface-2)]"
+                  />
+                ))}
+              </div>
+            ) : pendingError ? (
+              <ErrorState
+                variant="inline"
+                title={pendingError}
+                onRetry={retryPending}
+              />
+            ) : recentPending.length > 0 ? (
+              <Stagger className="grid gap-2" stagger={0.05} onMount>
+                {recentPending.map((item) => (
+                  <StaggerItem key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        router.push(`/albums/${item.album?.id ?? item.albumId}`)
+                      }
+                      className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-transparent p-2 text-left transition hover:border-[var(--kanso-line)] hover:bg-[var(--surface-2)]"
+                    >
+                      <img
+                        loading="lazy"
+                        decoding="async"
+                        src={item.album.images[0]?.url}
+                        alt={item.album.name}
+                        className="h-14 w-14 rounded-[var(--radius-xs)] object-cover"
+                      />
+                      <span className="min-w-0">
+                        <strong className="block truncate text-sm text-[var(--foreground)]">
+                          {item.album.name}
+                        </strong>
+                        <small className="mt-1 block truncate text-xs text-[var(--kanso-muted)]">
+                          {item.album.artists[0]?.name}
+                        </small>
+                      </span>
+                    </button>
+                  </StaggerItem>
+                ))}
+              </Stagger>
+            ) : (
+              <div className="kanso-empty rounded-[var(--radius-sm)] border border-[var(--kanso-line)] bg-[var(--surface-2)] p-4">
+                <p className="text-sm font-semibold text-[var(--foreground)]">
+                  {tRecommendation("pending.emptyTitle")}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-[var(--kanso-muted)]">
+                  {tRecommendation("pending.emptyDescription")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push("/search")}
+                  className="mt-3 text-sm font-semibold text-[var(--kanso-mint)] underline"
+                >
+                  {tRecommendation("pending.emptyCta")}
+                </button>
+              </div>
+            )}
+          </section>
+
+          {collectionStatus === "ready" && collectionCount > 0 && (
+            <section className="kanso-panel p-4">
+              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[var(--kanso-mint)]">
+                    {tRecommendation("collectionSummary.title")}
+                  </p>
+                  <p className="mt-1 text-sm text-[var(--kanso-muted)]">
+                    {collectionSummary}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => router.push("/collection")}
+                  className="shrink-0 text-xs font-semibold text-[var(--kanso-mint)]"
+                >
+                  {tRecommendation("collectionSummary.open")} →
+                </button>
+              </div>
+            </section>
+          )}
         </aside>
       </div>
     </main>

@@ -7,6 +7,14 @@ export function sortListenLater(items: ListenLaterItem[]): ListenLaterItem[] {
   );
 }
 
+/** Pendientes más recientes, listos para el resumen de Inicio. */
+export function getRecentListenLater(
+  items: ListenLaterItem[],
+  limit = 3,
+): ListenLaterItem[] {
+  return sortListenLater(items).slice(0, limit);
+}
+
 /** Filtra pendientes por título o artistas. */
 export function filterListenLaterByQuery(
   items: ListenLaterItem[],

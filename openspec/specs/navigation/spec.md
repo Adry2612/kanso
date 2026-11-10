@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Proporciona la página de bienvenida pública y la navegación principal de la aplicación mediante un panel lateral con acceso a las secciones y a la identidad del usuario.
+Proporciona la página de bienvenida pública, la entrada directa a la aplicación para las sesiones restauradas y la navegación principal mediante un panel lateral con acceso a las secciones y a la identidad del usuario.
 
 ## Requirements
 
 ### Requirement: Página de bienvenida pública
 
-El sistema DEBE mostrar una página de bienvenida pública con acceso a registro, inicio de sesión y prueba como invitado.
+El sistema DEBE mostrar una página de bienvenida pública con acceso a registro, inicio de sesión y prueba como invitado. La bienvenida NO DEBE pintarse mientras se comprueba una sesión guardada.
 
 #### Scenario: Acceso desde la bienvenida
 
@@ -17,8 +17,13 @@ El sistema DEBE mostrar una página de bienvenida pública con acceso a registro
 
 #### Scenario: Acceso con sesión activa
 
-- **WHEN** una persona con sesión activa abre `/`
-- **THEN** el sistema dirige su acceso principal a `/home`
+- **WHEN** una persona con una sesión activa, incluida una sesión de invitado restaurada, abre `/`
+- **THEN** el sistema muestra un estado de carga de la aplicación y la dirige a `/home` sin pintar la bienvenida
+
+#### Scenario: Sesión no disponible
+
+- **WHEN** la comprobación de sesión termina sin usuario
+- **THEN** el sistema muestra la bienvenida con sus accesos habituales
 
 ### Requirement: Panel lateral de navegación
 

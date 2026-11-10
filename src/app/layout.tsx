@@ -13,7 +13,6 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { MotionProvider } from "@/components/motion";
 import ViewTransitionGuard from "@/components/ViewTransitionGuard";
 import MobileViewport from "@/components/MobileViewport";
-import GuestSessionGuard from "@/components/GuestSessionGuard";
 import SessionGuard from "@/components/SessionGuard";
 
 const themeInitScript = `
@@ -79,7 +78,6 @@ export default function RootLayout({
           <I18nProvider>
             <ThemeProvider>
               <AuthProvider>
-                <GuestSessionGuard />
                 <ProfileProvider>
                   <ReactQueryProvider>
                     <MotionProvider>
