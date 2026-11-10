@@ -70,13 +70,17 @@ export async function saveCollectionAlbum(
   return data as SaveCollectionResponse;
 }
 
-/** Elimina un álbum de la colección. */
+/**
+ * Elimina un álbum de la colección.
+ *
+ * `DELETE /api/collection` identifica el álbum por la query `albumId`, así que
+ * el id viaja en la URL y no en el cuerpo de la petición.
+ */
 export async function removeCollectionAlbum(album: Album): Promise<void> {
-  const response = await authFetch("/api/removeCollectionAlbum", {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ album }),
-  });
+  const response = await authFetch(
+    `/api/collection?albumId=${encodeURIComponent(album.id)}`,
+    { method: "DELETE" },
+  );
 
   if (!response.ok) {
     const data = await parseJson<{ error?: string }>(response);
