@@ -104,6 +104,58 @@ button:disabled,
   .home-main {
     padding-top: 40px;
   }
+
+  /* Inicio ocupa la ventana: el selector queda fijo y solo la columna de
+     historial, pendientes y resumen se desplaza. Si el selector no cabe en
+     pantallas bajas, se desplaza dentro de su panel y avisa con el difuminado
+     en el borde recortado. */
+  .home-scroll-pane {
+    scrollbar-width: thin;
+    scrollbar-color: var(--kanso-line-strong) transparent;
+  }
+
+  .home-scroll-pane--hidden {
+    scrollbar-width: none;
+  }
+
+  .home-scroll-pane--hidden::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-scroll-pane[data-fade-top] {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 2rem);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 2rem);
+  }
+
+  .home-scroll-pane[data-fade-bottom] {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - 2rem),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - 2rem),
+      transparent 100%
+    );
+  }
+
+  .home-scroll-pane[data-fade-top][data-fade-bottom] {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 2rem,
+      #000 calc(100% - 2rem),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 2rem,
+      #000 calc(100% - 2rem),
+      transparent 100%
+    );
+  }
 }
 
 .kanso-sidebar {

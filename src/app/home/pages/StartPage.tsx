@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- portadas del CDN de Spotify; la optimización de imágenes se decide en improve-performance */
 import React, { useState } from "react";
 import { useHomeStart } from "@/hooks/client/useHomeStart";
+import { useScrollEdges } from "@/hooks/ui/useScrollEdges";
 import { Skeleton } from "@/components/Skeleton";
 import ErrorState from "@/components/ErrorState";
 import { useTransitionRouter } from "next-view-transitions";
@@ -56,6 +57,9 @@ export default function StartPage() {
     pendingError,
     retryPending,
   } = useHomeStart();
+
+  const selectorPane = useScrollEdges<HTMLDivElement>();
+  const asidePane = useScrollEdges<HTMLElement>();
 
   const physicalFormatOptions = buildFormatOptions(tFormats, {
     includeAll: true,
@@ -157,8 +161,8 @@ export default function StartPage() {
   ].join(" · ");
 
   return (
-    <main className="kanso-main home-main min-h-screen">
-      <section className="max-w-3xl">
+    <main className="kanso-main home-main min-h-screen lg:flex lg:h-dvh lg:min-h-0 lg:flex-col lg:overflow-hidden">
+      <section className="max-w-3xl lg:shrink-0">
         <p className="text-[11px] font-bold uppercase tracking-[.2em] text-[var(--kanso-mint)]">
           {today || "\u00a0"}
         </p>
@@ -170,8 +174,13 @@ export default function StartPage() {
         </p>
       </section>
 
-      <div className="mt-8 grid gap-7 lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,.72fr)]">
-        <div className="grid min-w-0 content-start gap-7">
+      <div className="mt-8 grid min-h-0 gap-7 lg:flex-1 lg:grid-cols-[minmax(0,1.08fr)_minmax(300px,.72fr)]">
+        <div
+          ref={selectorPane.ref}
+          data-fade-top={selectorPane.edges.top || undefined}
+          data-fade-bottom={selectorPane.edges.bottom || undefined}
+          className="home-scroll-pane home-scroll-pane--hidden grid min-w-0 content-start gap-7 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain"
+        >
           <section className="kanso-panel min-w-0 p-6 md:p-8">
             <div className="feelings-head">
               <div className="min-w-0">
@@ -453,7 +462,12 @@ export default function StartPage() {
           </section>
         </div>
 
-        <aside className="grid min-w-0 content-start gap-7">
+        <aside
+          ref={asidePane.ref}
+          data-fade-top={asidePane.edges.top || undefined}
+          data-fade-bottom={asidePane.edges.bottom || undefined}
+          className="home-scroll-pane grid min-w-0 content-start gap-7 lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
+        >
           <section>
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="kanso-section-title">Últimas recomendaciones</h2>
