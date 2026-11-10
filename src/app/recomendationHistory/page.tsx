@@ -267,12 +267,12 @@ export default function RecomendationHistoryPage() {
                               timestampLabel={formatTime(
                                 recomendation.providedAt,
                               )}
-                              badges={
+                              badges={(max) => (
                                 <>
-                                  {itemMoods.slice(0, 2).map((mood) => (
+                                  {itemMoods.slice(0, max).map((mood) => (
                                     <span
                                       key={mood}
-                                      className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur"
+                                      className="rounded-full border border-white/20 bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur sm:px-2"
                                     >
                                       <InlineEmoji
                                         emoji={getMood(mood)?.emoji}
@@ -280,13 +280,25 @@ export default function RecomendationHistoryPage() {
                                       {tMoods(mood)}
                                     </span>
                                   ))}
-                                  {itemMoods.length > 2 && (
-                                    <span className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur">
-                                      +{itemMoods.length - 2}
+                                  {itemMoods.length > max && (
+                                    <span className="rounded-full border border-white/20 bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur sm:px-2">
+                                      <span aria-hidden="true">
+                                        +{itemMoods.length - max}
+                                      </span>
+                                      <span className="sr-only">
+                                        {t(
+                                          itemMoods.length - max === 1
+                                            ? "moodsMoreOne"
+                                            : "moodsMore",
+                                        ).replace(
+                                          "{count}",
+                                          String(itemMoods.length - max),
+                                        )}
+                                      </span>
                                     </span>
                                   )}
                                 </>
-                              }
+                              )}
                               listenLabel={t("listen")}
                               onListen={() =>
                                 openSpotify(

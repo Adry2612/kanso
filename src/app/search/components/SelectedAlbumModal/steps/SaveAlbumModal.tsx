@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "@/context/I18nContext";
 import ArtistBackdrop from "./ArtistBackdrop";
 import ModalShell from "@/components/ModalShell";
@@ -10,7 +10,10 @@ import { SaveAlbumStepper } from "./SaveAlbumStepper";
 import { SaveAlbumDestinationStep } from "./SaveAlbumDestinationStep";
 import { SaveAlbumFeelingsStep } from "./SaveAlbumFeelingsStep";
 import { SaveAlbumActivitiesStep } from "./SaveAlbumActivitiesStep";
-import { SaveAlbumFormatStep } from "./SaveAlbumFormatStep";
+import {
+  SaveAlbumFormatStep,
+  type FormatStepView,
+} from "./SaveAlbumFormatStep";
 import type { Album } from "@/types/album";
 import type { Mood } from "@/types/mood";
 import type { CollectionFormat, CollectionTag } from "@/types/collection";
@@ -70,16 +73,25 @@ export const SaveAlbumModal = ({
 }: SaveAlbumModalProps) => {
   const t = useTranslations("modal");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [formatView, setFormatView] = useState<FormatStepView>("formats");
 
-  // Cada paso empieza arriba: en móvil el contenido es más alto que el panel.
+  // Cada paso (y cada vista del paso de formato) empieza arriba: en móvil el
+  // contenido puede ser más alto que el panel.
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [step, formatView]);
+
+  // Al entrar en el paso de formato siempre se muestra primero la vista de
+  // formatos, sin heredar la vista opcional de una visita anterior.
+  useEffect(() => {
+    if (step !== 2) setFormatView("formats");
   }, [step]);
 
   return (
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
+      mobileSheet
       size="lg"
       className="save-album-modal"
       labelledBy="save-album-title"
@@ -92,7 +104,7 @@ export const SaveAlbumModal = ({
       }
       heroBadge={isEditing ? t("editingBadge") : t("newAlbum")}
     >
-      <div className="album-art-modal-body !pb-0">
+      <div className="album-art-modal-head">
         <div className="album-modal-album-row">
           <img
             loading="lazy"
@@ -122,7 +134,7 @@ export const SaveAlbumModal = ({
 
       <div
         ref={scrollRef}
-        className="album-action-modal-soft min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7"
+        className="modal-shell-scroll album-action-modal-soft px-5 py-6 max-[380px]:py-4 sm:px-7"
       >
         {showDestination ? (
           <SaveAlbumDestinationStep
@@ -158,6 +170,8 @@ export const SaveAlbumModal = ({
                 <SaveAlbumFormatStep
                   format={format}
                   tags={tags}
+                  view={formatView}
+                  onViewChange={setFormatView}
                   onFormatChange={onFormatChange}
                   onTagsChange={onTagsChange}
                 />

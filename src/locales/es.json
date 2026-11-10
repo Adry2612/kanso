@@ -133,7 +133,8 @@
     "noLanguage": "Sin idioma",
     "noGenre": "Sin género",
     "languageHelp": "Elige un idioma o deja el disco sin idioma.",
-    "genreHelp": "Elige un género principal o deja el disco sin género."
+    "genreHelp": "Elige un género principal o deja el disco sin género.",
+    "summaryEmpty": "Sin especificar"
   },
   "history": {
     "title": "Histórico de recomendaciones",
@@ -164,7 +165,9 @@
     "noMatches": "Ningún disco coincide",
     "noMatchesDescription": "Prueba con otro título, artista o emoción.",
     "listen": "Escuchar",
-    "unknownArtist": "Artista desconocido"
+    "unknownArtist": "Artista desconocido",
+    "moodsMore": "y {count} emociones más",
+    "moodsMoreOne": "y 1 emoción más"
   },
   "album": {
     "tracklist": "Lista de canciones",
@@ -343,6 +346,18 @@
       "noCollectionTitle": "Añade tu primer disco",
       "noCollectionDescription": "Todavía no tienes colección. Busca un álbum y guárdalo para empezar a recibir recomendaciones.",
       "noCollectionCta": "Añadir mi primer disco"
+    },
+    "pending": {
+      "title": "Por escuchar",
+      "viewAll": "Ver todos",
+      "label": "por escuchar",
+      "emptyTitle": "Nada por escuchar",
+      "emptyDescription": "Guarda un disco para volver a él cuando tengas un momento.",
+      "emptyCta": "Buscar un disco"
+    },
+    "collectionSummary": {
+      "title": "Tu colección",
+      "open": "Abrir colección"
     },
     "loading": {
       "title": "Buscando tu próximo disco",
@@ -657,6 +672,8 @@
     "viewGrid": "Ver como cuadrícula",
     "listen": "Escuchar en Spotify",
     "unknownArtist": "Artista desconocido",
+    "moodsMore": "y {count} emociones más",
+    "moodsMoreOne": "y 1 emoción más",
     "stats": {
       "total": "álbumes",
       "totalOne": "álbum",

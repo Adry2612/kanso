@@ -41,6 +41,8 @@ export const SuccessModal = ({
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
+      mobileSheet
+      className="album-result-modal"
       labelledBy="saved-album-title"
       closeLabel={t("close")}
       hero={
@@ -51,7 +53,7 @@ export const SuccessModal = ({
       }
       heroBadge={isPending ? t("pendingBadge") : "En tu colección"}
     >
-      <div className="album-art-modal-body">
+      <div className="album-art-modal-head">
         <div className="album-modal-album-row border-b border-[var(--kanso-line)] pb-5">
           <img
             loading="lazy"
@@ -76,7 +78,9 @@ export const SuccessModal = ({
             </p>
           </div>
         </div>
-        <div className="mt-5 flex items-start gap-3">
+      </div>
+      <div className="modal-shell-scroll album-art-modal-scroll">
+        <div className="mt-4 flex items-start gap-3">
           <div className="album-action-modal-success-mark">
             <FaRegCheckCircle />
           </div>
@@ -108,9 +112,9 @@ export const SuccessModal = ({
           </div>
         </div>
         {!isPending && feelings.length > 0 && (
-          <div className="mt-6 border-t border-[var(--kanso-line)] pt-5">
+          <div className="mt-4 border-t border-[var(--kanso-line)] pt-4">
             <p className="text-sm font-semibold">{t("relatedEmotions")}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               {feelings.map((feeling) => (
                 <MoodBubble mood={feeling} key={feeling.label} />
               ))}

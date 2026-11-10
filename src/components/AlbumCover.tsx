@@ -16,6 +16,12 @@ type AlbumCoverProps = {
   crossOrigin?: "anonymous" | "use-credentials";
   /** Ampliación de la imagen al pasar el puntero; la ficha la desactiva. */
   hoverZoom?: boolean;
+  /**
+   * Velo inferior para dar contraste a contenido superpuesto. Por defecto no
+   * se pinta, de modo que la portada conserva todo su brillo cuando no hay
+   * insignias encima.
+   */
+  scrim?: "none" | "soft";
   /** Contenido superpuesto: enlaces, insignias o acciones. */
   children?: ReactNode;
 };
@@ -23,9 +29,9 @@ type AlbumCoverProps = {
 /**
  * Marco único de portada de álbum.
  *
- * Concentra borde, fondo, degradado, carga diferida y respaldo para que todas
- * las pantallas presenten la portada igual. Las tarjetas añaden sus propios
- * enlaces y acciones como contenido superpuesto.
+ * Concentra borde, fondo, velo opcional, carga diferida y respaldo para que
+ * todas las pantallas presenten la portada igual. Las tarjetas añaden sus
+ * propios enlaces y acciones como contenido superpuesto.
  */
 export default function AlbumCover({
   src,
@@ -36,6 +42,7 @@ export default function AlbumCover({
   imageRef,
   crossOrigin,
   hoverZoom = true,
+  scrim = "none",
   children,
 }: AlbumCoverProps) {
   const imageStyle: CSSProperties | undefined = viewTransitionName
@@ -64,7 +71,9 @@ export default function AlbumCover({
           <Music2 className="h-8 w-8" aria-hidden="true" />
         </span>
       )}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+      {scrim === "soft" && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
+      )}
       {children}
     </div>
   );

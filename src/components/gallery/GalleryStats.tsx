@@ -13,7 +13,7 @@ type GalleryStatsProps = {
 
 export default function GalleryStats({ stats }: GalleryStatsProps) {
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--kanso-muted)]">
+    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--kanso-muted)] sm:mt-5 sm:gap-x-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (

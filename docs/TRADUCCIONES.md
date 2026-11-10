@@ -110,13 +110,14 @@ Textos de la página de colección:
 - `title`, `eyebrow`, `subtitle`, `noCollection`, `loading`, `error`
 - `stats`, `groupBy`, `incomplete`, `unknownYear`
 - `viewList`, `viewGrid`, `formats`, `discoverPending`
+- `moodsMore`, `moodsMoreOne`: resumen accesible del contador `+N` de emociones
 
 ### `history`
 
 Textos del histórico de recomendaciones:
 
 - `title`, `noHistory`, `loading`, `error`
-- `moods`
+- `moods`, `moodsMore`, `moodsMoreOne`
 
 ### `album`
 
@@ -156,6 +157,8 @@ Textos de recomendaciones:
 - `title`, `based`, `listenOn`, `spotify`
 - `saveToCollection`, `getAnother`
 - `loading.title`, `loading.description` (estado de carga a pantalla completa)
+- `pending.*`: resumen de «Por escuchar» en Inicio (`title`, `viewAll`, `label`, textos del estado vacío)
+- `collectionSummary.*`: resumen compacto de la colección en Inicio (`title`, `open`)
 
 ### `recommendationExplain`
 
@@ -183,6 +186,15 @@ La clave guardada no cambia con el idioma de la interfaz; solo cambia la etiquet
 Etiquetas únicas de formato para los selectores:
 
 - `all`, `digital`, `vinyl`, `cd`, `cassette`
+
+### `tags`
+
+Etiquetas de idioma y género del álbum:
+
+- `title`, `categories.language`, `categories.genre`, `categories.other`
+- `noLanguage`, `noGenre`, `languageHelp`, `genreHelp`
+- `summaryEmpty`: resumen del bloque plegable cuando no hay idioma ni género
+- `remove`
 
 ### `quickRecommendation`
 

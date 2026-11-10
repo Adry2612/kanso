@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import OptionButton from "./OptionButton";
 import OptionGrid from "./OptionGrid";
-import OptionRail from "./OptionRail";
+import OptionRail, { centerRailItem } from "./OptionRail";
 import type {
   OptionItem,
   OptionLayout,
@@ -65,6 +65,25 @@ export default function OptionSelector({
 
   const isMultiple = selection === "multiple";
   const useButtons = semantics === "buttons";
+  const railRef = useRef<HTMLDivElement>(null);
+  const centeredKey = useRef<string | null>(null);
+
+  // En los carriles de selección única, la opción elegida se centra al abrir:
+  // si está lejos del inicio (p. ej. un género concreto) no debe quedar fuera
+  // de la vista. Solo se recentra cuando cambia la selección, para no pelearse
+  // con el desplazamiento manual.
+  useEffect(() => {
+    if (layout !== "carousel" || isMultiple) return;
+    const key = selectedKeys[0];
+    if (!key || centeredKey.current === key) return;
+    const rail = railRef.current;
+    const item = rail?.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    if (!rail || !item) return;
+    window.requestAnimationFrame(() => {
+      centerRailItem(rail, item, "auto");
+      centeredKey.current = key;
+    });
+  }, [layout, isMultiple, selectedKeys]);
   const role = useButtons ? "group" : isMultiple ? "listbox" : "radiogroup";
 
   const buttons = visible.map((option) => {
@@ -94,6 +113,7 @@ export default function OptionSelector({
   const content =
     layout === "carousel" ? (
       <OptionRail
+        railRef={railRef}
         ariaLabel={ariaLabel}
         role={role}
         ariaMultiselectable={isMultiple && !useButtons ? true : undefined}
@@ -102,6 +122,7 @@ export default function OptionSelector({
           {buttons.map((button, index) => (
             <div
               key={visible[index]?.key ?? index}
+              data-key={visible[index]?.key}
               className="option-selector__snap"
             >
               {button}

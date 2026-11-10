@@ -153,8 +153,8 @@ export default function CollectionPage() {
               data-filtered={isFiltered || undefined}
               className={
                 isFiltered
-                  ? "rounded-full border-2 border-white bg-[var(--kanso-mint)] px-2 py-0.5 text-[10px] font-bold text-[var(--background)] shadow-[0_0_0_2px_var(--kanso-mint)] backdrop-blur"
-                  : "rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur"
+                  ? "rounded-full border-2 border-white bg-[var(--kanso-mint)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--background)] shadow-[0_0_0_2px_var(--kanso-mint)] backdrop-blur sm:px-2"
+                  : "rounded-full border border-white/20 bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur sm:px-2"
               }
             >
               <InlineEmoji emoji={getMood(mood)?.emoji} />
@@ -166,8 +166,13 @@ export default function CollectionPage() {
           );
         })}
         {orderedMoods.length > max && (
-          <span className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur">
-            +{orderedMoods.length - max}
+          <span className="rounded-full border border-white/20 bg-black/45 px-1.5 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur sm:px-2">
+            <span aria-hidden="true">+{orderedMoods.length - max}</span>
+            <span className="sr-only">
+              {t(
+                orderedMoods.length - max === 1 ? "moodsMoreOne" : "moodsMore",
+              ).replace("{count}", String(orderedMoods.length - max))}
+            </span>
           </span>
         )}
       </>
@@ -295,7 +300,7 @@ export default function CollectionPage() {
               image={entry.album.images[0]?.url}
               title={entry.album.name}
               artist={artistName(entry.album)}
-              badges={moodBadges(entry, 2, filters.moods)}
+              badges={(max) => moodBadges(entry, max, filters.moods)}
               footer={formatBadges(entry)}
               listenLabel={t("listen")}
               onListen={() => openSpotify(entry.album.external_urls?.spotify)}
@@ -470,7 +475,7 @@ export default function CollectionPage() {
 
       {activeTab === "collection" ? (
         <>
-          <section className="mt-8">
+          <section className="mt-5 md:mt-8">
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <CollectionSearch
                 query={query}
@@ -484,7 +489,7 @@ export default function CollectionPage() {
                 <button
                   type="button"
                   onClick={() => setShowSortModal(true)}
-                  className="relative inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-line)] px-3 py-2.5 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--foreground)]"
+                  className="relative inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] md:py-2.5 transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--foreground)]"
                 >
                   <BiSortAlt2 size={18} />
                   {t("sort")}
@@ -495,7 +500,7 @@ export default function CollectionPage() {
                 <button
                   type="button"
                   onClick={() => setShowFilterModal(true)}
-                  className="relative inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-line)] px-3 py-2.5 text-xs font-semibold text-[var(--kanso-muted)] transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--foreground)]"
+                  className="relative inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--kanso-line)] px-3 py-2 text-xs font-semibold text-[var(--kanso-muted)] md:py-2.5 transition hover:border-[var(--kanso-mint)]/50 hover:text-[var(--foreground)]"
                 >
                   <MdFilterList size={18} />
                   {t("filter")}
@@ -564,11 +569,11 @@ export default function CollectionPage() {
               }
             />
           ) : filters.groupBy === "none" ? (
-            <div className="mt-10">
+            <div className="mt-6 md:mt-10">
               {renderCollectionItems(sortedCollection)}
             </div>
           ) : (
-            <div className="mt-10 space-y-10">
+            <div className="mt-6 space-y-8 md:mt-10 md:space-y-10">
               {collectionGroups.map((group, index) => (
                 <section key={`${group.groupName}-${index}`}>
                   <GalleryGroupHeader
@@ -584,7 +589,7 @@ export default function CollectionPage() {
         </>
       ) : (
         <>
-          <section className="mt-8">
+          <section className="mt-5 md:mt-8">
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <CollectionSearch
                 query={query}
@@ -641,7 +646,9 @@ export default function CollectionPage() {
               }
             />
           ) : (
-            <div className="mt-10">{renderPendingItems(filteredPending)}</div>
+            <div className="mt-6 md:mt-10">
+              {renderPendingItems(filteredPending)}
+            </div>
           )}
         </>
       )}

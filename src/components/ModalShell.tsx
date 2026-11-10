@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { IoClose } from "react-icons/io5";
 import { AnimatePresence, motion } from "./motion";
 
@@ -20,6 +21,8 @@ interface ModalShellProps {
   labelledBy?: string;
   /** Accessible label for the close button. Defaults to "Cerrar". */
   closeLabel?: string;
+  /** En móvil se presenta como hoja inferior ajustada al contenido. */
+  mobileSheet?: boolean;
   className?: string;
 }
 
@@ -41,6 +44,7 @@ export default function ModalShell({
   size = "md",
   labelledBy,
   closeLabel = "Cerrar",
+  mobileSheet = false,
   className = "",
 }: ModalShellProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -74,11 +78,13 @@ export default function ModalShell({
     };
   }, [isOpen]);
 
-  return (
+  const dialog = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="modal-shell-overlay"
+          className={`modal-shell-overlay ${
+            mobileSheet ? "modal-shell-overlay--sheet" : ""
+          }`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -96,7 +102,7 @@ export default function ModalShell({
                 : size === "xl"
                   ? "modal-shell-panel--xl"
                   : ""
-            } ${className}`}
+            } ${mobileSheet ? "modal-shell-panel--sheet" : ""} ${className}`}
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -125,10 +131,17 @@ export default function ModalShell({
               </div>
             )}
 
-            {children}
+            <div className="modal-shell-content">{children}</div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
   );
+
+  // El overlay sale del contenedor de contenido: dentro de `.app-content` quedaba
+  // atrapado en su contexto de apilamiento y la barra móvil (z-index mayor)
+  // tapaba el cierre del modal. En `body` el modal siempre queda por encima.
+  return typeof document === "undefined"
+    ? dialog
+    : createPortal(dialog, document.body);
 }

@@ -322,51 +322,11 @@ html.scroll-locked body {
       visibility 0s;
   }
 
-  /* Asistente de incorporación a la colección. En móvil la cabecera del álbum
-     y la barra de acciones fija dejaban el área de interacción en ~200 px (y
-     ~48 px con el teclado abierto). El panel ocupa todo el alto disponible, la
-     cabecera se compacta y las acciones pasan a una fila, para que las
-     emociones, actividades y etiquetas tengan espacio real. */
-  .modal-shell-panel.save-album-modal {
-    height: 100%;
-    max-height: 100%;
-  }
+  /* Asistente de incorporación a la colección: en móvil se presenta como hoja
+     inferior (ver `.modal-shell-panel--sheet`) y las acciones van en una fila
+     para dejar el máximo alto al paso. */
 
-  .save-album-modal .modal-shell-hero {
-    min-height: 128px;
-    padding: 14px 16px;
-  }
-
-  .save-album-modal .modal-shell-hero-content {
-    min-height: 96px;
-  }
-
-  .save-album-modal .album-art-modal-floating-cover {
-    width: 88px;
-    height: 88px;
-    margin-top: -14px;
-    border-width: 3px;
-  }
-
-  .save-album-modal .album-art-modal-body {
-    padding: 0 16px 14px;
-  }
-
-  .save-album-modal .album-modal-album-row {
-    gap: 12px;
-  }
-
-  .save-album-modal .album-modal-album-row h2 {
-    font-size: 1.15rem;
-    line-height: 1.2;
-  }
-
-  .save-album-modal .album-art-modal-body > ol {
-    margin-top: 0.75rem;
-    padding-top: 0.5rem;
-  }
-
-  .save-album-modal .album-art-modal-body > ol > li {
+  .save-album-modal .album-art-modal-head > ol > li {
     min-width: 0;
     overflow: hidden;
     padding-top: 0.375rem;
@@ -382,12 +342,11 @@ html.scroll-locked body {
     padding: 1rem;
   }
 
-  /* Cuando el paso cabe, el contenido se centra en el alto disponible; si no
-     cabe, los márgenes automáticos se resuelven a 0 y el cuerpo sigue
-     empezando arriba y haciendo scroll. */
+  /* El paso empieza arriba: centrarlo dejaba un hueco que parecía contenido
+     perdido y empujaba el resumen fuera de la vista. */
   .save-album-modal .album-action-modal-soft > * {
     flex: 0 0 auto;
-    margin-block: auto;
+    margin-block: 0;
   }
 
   .save-album-modal .modal-shell-actions--roomy {
@@ -414,6 +373,23 @@ html.scroll-locked body {
     width: 2.5rem;
     height: 2.5rem;
   }
+
+  .album-result-modal .modal-shell-actions--roomy {
+    flex-direction: row;
+    padding: 10px 16px;
+  }
+
+  .album-result-modal .modal-shell-undo {
+    padding: 0 16px 12px;
+  }
+}
+
+/* En pantallas muy estrechas (320 px) los botones de formato bajan un escalón
+   para que el resumen de idioma y género quede a la vista. */
+@media (max-width: 380px) {
+  .save-album-modal .save-album-modal-option {
+    min-height: 2.75rem;
+  }
 }
 
 /* Con el teclado abierto (o el móvil en horizontal) el alto visible baja de
@@ -421,6 +397,30 @@ html.scroll-locked body {
    aparece como “Paso N” dentro del contenido, para no dejar los controles en
    una franja de unos pocos píxeles. */
 @media (max-width: 1023px) {
+  /* Pantallas cortas (teclado abierto o móvil apaisado): la cabecera se
+     reduce para todos los modales y, cuando el alto aprieta, las acciones
+     vuelven a una fila para no dejar el cuerpo en una franja inútil. */
+  html[data-visual-viewport="short"] .modal-shell-hero {
+    min-height: 72px;
+    padding: 8px 12px;
+  }
+
+  html[data-visual-viewport="short"] .modal-shell-hero-content {
+    min-height: 56px;
+  }
+
+  html[data-visual-viewport="short"] .album-art-modal-floating-cover {
+    width: 64px;
+    height: 64px;
+    margin-top: -8px;
+    border-width: 2px;
+  }
+
+  html[data-visual-viewport="short"] .modal-shell-actions--roomy {
+    flex-direction: row;
+    padding: 12px 16px;
+  }
+
   html[data-visual-viewport="short"] .save-album-modal .modal-shell-hero {
     min-height: 64px;
     padding: 8px 12px;
@@ -441,8 +441,8 @@ html.scroll-locked body {
     border-width: 2px;
   }
 
-  html[data-visual-viewport="short"] .save-album-modal .album-art-modal-body {
-    padding: 0 12px 10px;
+  html[data-visual-viewport="short"] .save-album-modal .album-art-modal-head {
+    padding: 0 12px;
   }
 
   html[data-visual-viewport="short"]
@@ -454,7 +454,7 @@ html.scroll-locked body {
 
   html[data-visual-viewport="short"]
     .save-album-modal
-    .album-art-modal-body
+    .album-art-modal-head
     > ol {
     display: none;
   }
@@ -532,6 +532,17 @@ html.scroll-locked body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.75rem 1rem;
+}
+
+/* Carril de filtros de emoción: en móvil ocupa una sola fila desplazable, sin
+   barra visible, y desde `sm` vuelve a envolver. */
+.mood-chip-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mood-chip-rail::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 768px) {
@@ -877,7 +888,7 @@ body.theme-light {
   height: var(--visual-viewport-height, 100dvh);
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
+  overflow: hidden;
   padding-top: max(1rem, env(safe-area-inset-top));
   padding-right: max(1rem, env(safe-area-inset-right));
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -925,6 +936,16 @@ body.theme-light {
 
 .modal-shell-panel--xl {
   width: min(64rem, calc(100vw - 2rem));
+}
+
+/* Contenido interno del panel: conserva la columna flex de siempre (cabecera,
+   cuerpo y acciones) para todos los modales. */
+.modal-shell-content {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
 }
 
 .modal-shell-close {
@@ -1014,6 +1035,16 @@ body.theme-light {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   padding: 24px;
+}
+
+/* Misma región desplazable para cuerpos que ya aportan su propio padding
+   (portada del álbum, pasos del asistente). Deja fuera del scroll la cabecera,
+   las acciones y el bloque de deshacer. */
+.modal-shell-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal-shell-footer {
@@ -1207,6 +1238,176 @@ body.theme-light {
   }
 }
 
+/* Cabecera fija del álbum: la portada sigue montada sobre el hero y no se
+   recorta al desplazar el resto del contenido. */
+.album-art-modal-head {
+  padding: 0 24px;
+}
+
+/* Cuerpo desplazable del modal de álbum, alineado con el padding de la
+   cabecera para que ambos bloques compartan el mismo margen lateral. */
+.album-art-modal-scroll {
+  padding: 0 24px 16px;
+}
+
+@media (max-width: 520px) {
+  .album-art-modal-head {
+    padding: 0 18px;
+  }
+
+  .album-art-modal-scroll {
+    padding: 0 18px 16px;
+  }
+}
+
+/* Hoja inferior de los modales de álbum en móvil.
+   Se ajusta al contenido (sin hero ni cuerpo vacío) y mantiene una tarjeta de
+   identidad del álbum; si el contenido supera el alto disponible, solo el
+   cuerpo se desplaza. Va después de las reglas base para ganar en cascada. */
+@media (max-width: 767px) {
+  .modal-shell-overlay--sheet {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-shell-panel.modal-shell-panel--sheet {
+    width: 100%;
+    height: auto;
+    max-height: min(92dvh, 46rem);
+    padding-bottom: env(safe-area-inset-bottom);
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .modal-shell-panel--sheet::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    z-index: 30;
+    width: 36px;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--kanso-line-strong);
+    transform: translateX(-50%);
+  }
+
+  .modal-shell-panel--sheet .modal-shell-hero {
+    display: none;
+  }
+
+  .modal-shell-panel--sheet .album-art-modal-head {
+    padding: 20px 16px 8px;
+  }
+
+  .modal-shell-panel--sheet .album-modal-album-row {
+    gap: 12px;
+    padding: 10px 12px;
+    padding-right: 3rem;
+    border: 1px solid var(--kanso-line);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--background) 55%, transparent);
+  }
+
+  .modal-shell-panel--sheet .album-art-modal-floating-cover {
+    width: 56px;
+    height: 56px;
+    margin-top: 0;
+    border-width: 0;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .modal-shell-panel--sheet .album-modal-album-row h2 {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .modal-shell-panel--sheet .album-modal-album-row .album-action-modal-eyebrow {
+    display: none;
+  }
+
+  .modal-shell-panel--sheet .album-art-modal-head > ol {
+    margin: 10px 0 0;
+    padding: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .modal-shell-panel--sheet .album-art-modal-head {
+    padding-top: 16px;
+  }
+
+  .save-album-modal .album-action-modal-soft {
+    padding: 0.75rem;
+  }
+}
+
+/* Desde tablet, el modal de álbum pasa a una composición horizontal: la foto
+   del artista ocupa la columna izquierda y el paso vive en la derecha. El ancho
+   sustituye al alto, así el contenido cabe sin desplazarse. */
+@media (min-width: 768px) {
+  .modal-shell-panel.modal-shell-panel--sheet {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+    width: min(56rem, calc(100vw - 2rem));
+    height: auto;
+    max-height: min(88vh, 44rem);
+    padding-bottom: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-shell-panel--sheet .modal-shell-hero {
+    display: block;
+    height: 100%;
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .modal-shell-panel--sheet .modal-shell-hero-content {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .modal-shell-panel--sheet .album-art-modal-head {
+    padding: 22px 22px 10px;
+  }
+
+  .modal-shell-panel--sheet .album-art-modal-floating-cover {
+    width: 72px;
+    height: 72px;
+    margin-top: 0;
+    border-width: 0;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+
+  .modal-shell-panel--sheet .album-modal-album-row {
+    gap: 14px;
+    padding: 0;
+    padding-right: 2.5rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .modal-shell-panel--sheet .album-modal-album-row h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .modal-shell-panel--sheet .album-modal-album-row .album-action-modal-eyebrow {
+    display: block;
+  }
+
+  .modal-shell-panel--sheet .album-art-modal-head > ol {
+    margin-top: 12px;
+    padding-top: 8px;
+  }
+}
+
 .album-action-modal-eyebrow {
   color: var(--kanso-mint);
   font-size: 0.65rem;
@@ -1229,6 +1430,27 @@ body.theme-light {
 
 .album-action-modal-soft {
   background: color-mix(in srgb, var(--background) 72%, var(--kanso-panel));
+}
+
+/* Cabecera compacta común en pantallas estrechas. Va después de las reglas
+   base para ganar el mismo nivel de especificidad; el asistente conserva su
+   variante aún más ajustada (112 px / portada de 72 px). */
+@media (max-width: 1023px) {
+  .modal-shell-hero {
+    min-height: 120px;
+    padding: 12px 16px;
+  }
+
+  .modal-shell-hero-content {
+    min-height: 96px;
+  }
+
+  .album-art-modal-floating-cover {
+    width: 96px;
+    height: 96px;
+    margin-top: -14px;
+    border-width: 3px;
+  }
 }
 
 .album-action-modal-muted {
@@ -1280,6 +1502,40 @@ body.theme-light {
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Cuando el carril continúa, el contenido se desvanece en ese borde en vez de
+   quedar cortado a media tarjeta. Solo se aplica en los lados con más
+   contenido, así el primer elemento no se difumina al abrir. */
+.option-selector__rail[data-fade-right] {
+  mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - 2rem),
+    transparent
+  );
+}
+
+.option-selector__rail[data-fade-left] {
+  mask-image: linear-gradient(to right, transparent, #000 2rem);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem);
+}
+
+.option-selector__rail[data-fade-left][data-fade-right] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 2rem,
+    #000 calc(100% - 2rem),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 2rem,
+    #000 calc(100% - 2rem),
+    transparent
+  );
 }
 
 .option-selector__rail::-webkit-scrollbar {
@@ -1857,6 +2113,8 @@ body.theme-light::before {
 
 .feelings-carousel {
   position: relative;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
 }
 

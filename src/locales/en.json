@@ -133,7 +133,8 @@
     "noLanguage": "No language",
     "noGenre": "No genre",
     "languageHelp": "Choose a language or leave the album without one.",
-    "genreHelp": "Choose one main genre or leave the album without one."
+    "genreHelp": "Choose one main genre or leave the album without one.",
+    "summaryEmpty": "Not specified"
   },
   "history": {
     "title": "Recommendation history",
@@ -164,7 +165,9 @@
     "noMatches": "No album matches",
     "noMatchesDescription": "Try another title, artist or mood.",
     "listen": "Listen",
-    "unknownArtist": "Unknown artist"
+    "unknownArtist": "Unknown artist",
+    "moodsMore": "and {count} more moods",
+    "moodsMoreOne": "and 1 more mood"
   },
   "album": {
     "tracklist": "Tracklist",
@@ -343,6 +346,18 @@
       "noCollectionTitle": "Add your first album",
       "noCollectionDescription": "You don't have a collection yet. Search for an album and save it to start receiving recommendations.",
       "noCollectionCta": "Add my first album"
+    },
+    "pending": {
+      "title": "Listen later",
+      "viewAll": "View all",
+      "label": "to listen",
+      "emptyTitle": "Nothing to listen to yet",
+      "emptyDescription": "Save an album to come back to when you have a moment.",
+      "emptyCta": "Search for an album"
+    },
+    "collectionSummary": {
+      "title": "Your collection",
+      "open": "Open collection"
     },
     "loading": {
       "title": "Finding your next record",
@@ -657,6 +672,8 @@
     "viewGrid": "View as grid",
     "listen": "Listen on Spotify",
     "unknownArtist": "Unknown artist",
+    "moodsMore": "and {count} more moods",
+    "moodsMoreOne": "and 1 more mood",
     "stats": {
       "total": "albums",
       "totalOne": "album",

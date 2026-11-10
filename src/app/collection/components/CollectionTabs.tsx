@@ -15,7 +15,7 @@ export default function CollectionTabs({
     <div
       role="tablist"
       aria-label={labels.ariaLabel}
-      className="mt-10 mb-8 flex gap-6 border-b border-[var(--kanso-line)] md:mt-12"
+      className="mt-6 mb-6 flex gap-6 border-b border-[var(--kanso-line)] md:mt-12 md:mb-8"
     >
       {(
         [

@@ -123,6 +123,8 @@ export default function OptionRail({
         aria-label={ariaLabel}
         aria-multiselectable={ariaMultiselectable || undefined}
         aria-describedby={ariaDescribedBy}
+        data-fade-left={canScrollLeft || undefined}
+        data-fade-right={canScrollRight || undefined}
       >
         {children}
       </div>

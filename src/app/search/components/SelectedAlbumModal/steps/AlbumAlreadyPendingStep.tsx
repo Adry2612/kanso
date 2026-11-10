@@ -42,6 +42,8 @@ export const AlbumAlreadyPendingStep = ({
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
+      mobileSheet
+      className="album-result-modal"
       labelledBy="pending-album-title"
       closeLabel={t("close")}
       hero={
@@ -52,7 +54,7 @@ export const AlbumAlreadyPendingStep = ({
       }
       heroBadge={t("pendingBadge")}
     >
-      <div className="album-art-modal-body">
+      <div className="album-art-modal-head">
         <div className="album-modal-album-row">
           <img
             loading="lazy"
@@ -71,7 +73,9 @@ export const AlbumAlreadyPendingStep = ({
             </p>
           </div>
         </div>
+      </div>
 
+      <div className="modal-shell-scroll album-art-modal-scroll">
         <div className="mt-5">
           <h3
             id="pending-album-title"

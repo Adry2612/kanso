@@ -39,6 +39,8 @@ export const AlbumInCollectionStep = ({
     <ModalShell
       isOpen={isOpen}
       onClose={onClose}
+      mobileSheet
+      className="album-result-modal"
       labelledBy="existing-album-title"
       hero={
         <ArtistBackdrop
@@ -48,7 +50,7 @@ export const AlbumInCollectionStep = ({
       }
       heroBadge="Tu colección"
     >
-      <div className="album-art-modal-body">
+      <div className="album-art-modal-head">
         <div className="album-modal-album-row">
           <img
             loading="lazy"
@@ -67,6 +69,8 @@ export const AlbumInCollectionStep = ({
             </p>
           </div>
         </div>
+      </div>
+      <div className="modal-shell-scroll album-art-modal-scroll">
         <div className="mt-5">
           <h3
             id="existing-album-title"
