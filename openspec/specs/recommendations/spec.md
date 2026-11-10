@@ -174,7 +174,7 @@ El sistema DEBE guardar automáticamente cada recomendación entregada en el his
 
 ### Requirement: Historial de recomendaciones
 
-El sistema DEBE mostrar el historial de recomendaciones agrupado por fecha, con la portada, el nombre, los artistas, la hora, las emociones y un enlace a Spotify.
+El sistema DEBE (MUST) mostrar el historial de recomendaciones agrupado por fecha, con la portada, el nombre, los artistas, la hora, las emociones y un enlace a Spotify. En la vista de cuadrícula, las tarjetas DEBEN (MUST) mantener un ancho estable de 300–320 px y repartir las columnas según el espacio, sin encogerse al ensanchar la ventana; en móvil DEBE (MUST) conservar dos columnas.
 
 #### Scenario: Historial con entradas
 
@@ -186,6 +186,11 @@ El sistema DEBE mostrar el historial de recomendaciones agrupado por fecha, con 
 - **WHEN** el usuario no tiene recomendaciones previas
 - **THEN** el sistema muestra el estado vacío del historial
 
+#### Scenario: Historial en ventana ancha
+
+- **WHEN** el usuario abre el historial en una ventana de 2400 px o más con entradas suficientes
+- **THEN** la cuadrícula añade columnas para llenar el ancho y las tarjetas conservan entre 300 y 320 px, sin desplazamiento horizontal
+
 ### Requirement: Recomendaciones recientes en el inicio
 
 El sistema DEBE mostrar hasta tres recomendaciones recientes en la pantalla de inicio con acceso a su detalle.
@@ -194,6 +199,25 @@ El sistema DEBE mostrar hasta tres recomendaciones recientes en la pantalla de i
 
 - **WHEN** el usuario abre el inicio y tiene recomendaciones previas
 - **THEN** el sistema muestra hasta tres de las más recientes enlazando al detalle del álbum
+
+### Requirement: Inicio con selector fijo en escritorio
+
+En escritorio, el sistema DEBE mantener fijo el selector de recomendación y DEBE limitar el desplazamiento a la columna de historial, pendientes y resumen. Si el selector no cabe en la altura disponible, DEBE desplazarse dentro de su propio panel y mostrar un difuminado en el borde recortado, sin mover el resto de la pantalla.
+
+#### Scenario: Columna lateral con contenido largo
+
+- **WHEN** la persona abre Inicio en escritorio y la columna de historial o pendientes supera la altura visible
+- **THEN** solo se desplaza esa columna, mientras el selector y la cabecera permanecen en su sitio
+
+#### Scenario: Selector que no cabe en la altura
+
+- **WHEN** la altura de la ventana no permite mostrar el selector completo
+- **THEN** el selector se desplaza dentro de su panel y muestra un difuminado en el borde con contenido oculto
+
+#### Scenario: Pantalla estrecha
+
+- **WHEN** la persona abre Inicio por debajo de 1024 px
+- **THEN** la página vuelve al desplazamiento normal y el selector no queda fijado
 
 ### Requirement: Acceso al detalle desde la recomendación
 
@@ -227,3 +251,22 @@ La pantalla de inicio DEBE presentar una sola decisión principal —emoción o 
 
 - **WHEN** la persona elige la recomendación rápida
 - **THEN** el sistema le pide solo formato o etiqueta y genera la recomendación sin pedir emociones
+
+### Requirement: Filtro por género derivado
+
+La recomendación DEBE (MUST) aceptar una rama de género y limitar los candidatos a los álbumes cuyo género derivado o etiqueta de género coincida. Si no hay candidatos para esa rama, DEBE (MUST) mostrarse el estado sin coincidencias.
+
+#### Scenario: Recomendar por género
+
+- **WHEN** la persona elige la rama `hip-hop` como filtro
+- **THEN** la recomendación solo considera álbumes de esa rama
+
+#### Scenario: Género combinado con emoción y formato
+
+- **WHEN** la persona combina género, emoción y formato
+- **THEN** se aplican los tres filtros antes de puntuar
+
+#### Scenario: Sin álbumes de esa rama
+
+- **WHEN** ningún álbum de la colección pertenece a la rama elegida
+- **THEN** el sistema muestra el estado sin coincidencias
